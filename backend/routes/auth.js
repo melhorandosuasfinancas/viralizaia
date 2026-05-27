@@ -43,6 +43,17 @@ router.post('/token', (req, res) => {
   res.json({ token });
 });
 
+// Ativa usuário diretamente via admin (para testes)
+router.post('/admin/activate', express.json(), (req, res) => {
+  const { email, plan, secret } = req.body;
+  if (secret !== process.env.ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  activateUser(email, plan === 'pro' ? process.env.KIWIFY_PRO_ID : process.env.KIWIFY_STARTER_ID);
+  const token = generateToken(email);
+  res.json({ ok: true, token });
+});
+
 // Armazenamento em memória (produção: Supabase/PostgreSQL)
 const activeUsers = new Map();
 
