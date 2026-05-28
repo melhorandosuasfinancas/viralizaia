@@ -7,7 +7,7 @@ const openai = new OpenAI({
 
 const CLIP_MIN_SECONDS = 30;
 const CLIP_MAX_SECONDS = 90;
-const MAX_CLIPS = 5;
+const MAX_CLIPS = 3;
 
 async function findBestSegments(transcript, originalUrl = '') {
   if (!transcript || transcript.length === 0) {

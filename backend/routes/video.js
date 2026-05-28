@@ -81,7 +81,9 @@ async function processVideo(jobId, url, platforms, mode) {
 
     // 4. FFmpeg corta e redimensiona para cada plataforma
     updateJob({ status: 'processing', progress: 70 });
-    const clips = await processor.createClips(videoPath, segments, platforms, outputDir, jobId);
+    const clips = await processor.createClips(videoPath, segments, platforms, outputDir, jobId, (done, total) => {
+      updateJob({ progress: Math.round(70 + (done / total) * 25) });
+    });
 
     updateJob({ status: 'done', progress: 100, clips });
 

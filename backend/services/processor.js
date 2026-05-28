@@ -51,9 +51,11 @@ const PLATFORM_MAP = {
   all: Object.keys(PLATFORM_CONFIGS)
 };
 
-async function createClips(videoPath, segments, platforms, outputDir, jobId) {
+async function createClips(videoPath, segments, platforms, outputDir, jobId, onProgress) {
   const clips = [];
   const configs = getConfigs(platforms);
+  const total = segments.length * configs.length;
+  let done = 0;
 
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
@@ -81,6 +83,9 @@ async function createClips(videoPath, segments, platforms, outputDir, jobId) {
       } catch (err) {
         console.error(`Erro ao renderizar ${fileName}:`, err.message);
       }
+
+      done++;
+      if (onProgress) onProgress(done, total);
     }
   }
 
