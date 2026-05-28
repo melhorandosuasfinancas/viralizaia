@@ -13,9 +13,9 @@ const COOKIES_FILE = path.join(os.tmpdir(), 'yt-cookies.txt');
 
 // Instâncias públicas do Invidious (fallback quando YouTube bloqueia)
 const INVIDIOUS_INSTANCES = [
+  'https://y.com.sb',
+  'https://invidious.protokolla.fi',
   'https://inv.nadeko.net',
-  'https://invidious.privacyredirect.com',
-  'https://yt.cdaut.de',
   'https://invidious.perennialte.ch'
 ];
 
@@ -39,10 +39,17 @@ function extractVideoId(url) {
   return m ? m[1] : null;
 }
 
-function fetchJson(url) {
+function fetchJson(url, redirects = 0) {
+  if (redirects > 5) return Promise.reject(new Error('Too many redirects'));
   return new Promise((resolve, reject) => {
     const lib = url.startsWith('https') ? https : http;
     const req = lib.get(url, { timeout: 15000 }, (res) => {
+      if (res.statusCode === 301 || res.statusCode === 302) {
+        res.resume();
+        const location = res.headers.location;
+        if (!location) return reject(new Error('Redirect without location'));
+        return fetchJson(location, redirects + 1).then(resolve, reject);
+      }
       if (res.statusCode !== 200) {
         res.resume();
         return reject(new Error(`HTTP ${res.statusCode}`));
