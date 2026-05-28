@@ -60,6 +60,8 @@ export default function AppPage() {
         }
       } catch {
         clearInterval(pollRef.current!);
+        setProcessing(false);
+        setJob({ status: "error", progress: 0, clips: [], error: "Conexão perdida com o servidor. Tente novamente." });
       }
     }, 2000);
     return () => clearInterval(pollRef.current!);

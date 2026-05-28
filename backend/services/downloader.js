@@ -6,7 +6,7 @@ const os = require('os');
 
 const execAsync = promisify(exec);
 
-const MAX_DURATION_SECONDS = 600;
+const MAX_DURATION_SECONDS = 1200; // 20 minutos
 const COOKIES_FILE = path.join(os.tmpdir(), 'yt-cookies.txt');
 
 let cookiesReady = false;
@@ -40,7 +40,7 @@ async function download(url, outputDir) {
 
   const cmd = [
     'yt-dlp',
-    '--format', '"bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best"',
+    '--format', '"bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best[ext=mp4]/best"',
     '--merge-output-format', 'mp4',
     '--output', `"${outputPath}"`,
     '--no-playlist',
@@ -48,12 +48,13 @@ async function download(url, outputDir) {
     '--extractor-args', '"youtube:player_client=android,ios,web"',
     '--js-runtimes', 'node',
     '--no-check-certificate',
+    '--concurrent-fragments', '1',
     cookiesArg(),
     `"${url}"`
   ].filter(Boolean).join(' ');
 
   try {
-    await execAsync(cmd, { timeout: 120000 });
+    await execAsync(cmd, { timeout: 300000 }); // 5 minutos
   } catch (err) {
     throw new Error(`Erro ao baixar vídeo: ${err.message}`);
   }
@@ -71,13 +72,14 @@ async function download(url, outputDir) {
 async function getVideoInfo(url) {
   const cmd = `yt-dlp --print duration --print title --no-playlist --quiet --extractor-args "youtube:player_client=android,ios,web" --js-runtimes node --no-check-certificate ${cookiesArg()} "${url}"`;
   try {
-    const { stdout } = await execAsync(cmd, { timeout: 30000 });
+    const { stdout } = await execAsync(cmd, { timeout: 45000 });
     const lines = stdout.trim().split('\n');
     return {
       duration: parseFloat(lines[0]) || 0,
       title: lines[1] || 'video'
     };
-  } catch {
+  } catch (err) {
+    console.error('getVideoInfo failed:', err.message);
     return { duration: 0, title: 'video' };
   }
 }
