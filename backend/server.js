@@ -47,6 +47,9 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', version: '1.0.0', service: 'ViralizaIA Backend' });
 });
 
+const os = require('os');
+const COOKIES_FILE_DBG = path.join(os.tmpdir(), 'yt-cookies-debug.txt');
+
 app.get('/debug/formats', async (req, res) => {
   if (req.query.secret !== 'vrlz_dbg_2026') {
     return res.status(403).json({ error: 'forbidden' });
@@ -54,10 +57,18 @@ app.get('/debug/formats', async (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).json({ error: 'url required' });
   const client = req.query.client || 'web';
+  const useCookies = req.query.cookies !== '0' && process.env.YOUTUBE_COOKIES_B64;
+
+  let cookiesArg = '';
+  if (useCookies) {
+    await fs.writeFile(COOKIES_FILE_DBG, Buffer.from(process.env.YOUTUBE_COOKIES_B64, 'base64').toString('utf8'));
+    cookiesArg = `--cookies "${COOKIES_FILE_DBG}"`;
+  }
+
   try {
-    const cmd = `yt-dlp --list-formats --extractor-args "youtube:player_client=${client}" --no-check-certificate --no-warnings "${url}"`;
-    const { stdout, stderr } = await execAsync(cmd, { timeout: 30000 });
-    res.type('text').send(stdout + (stderr ? '\nSTDERR:\n' + stderr : ''));
+    const cmd = `yt-dlp --list-formats --extractor-args "youtube:player_client=${client}" --no-check-certificate --verbose ${cookiesArg} "${url}"`;
+    const { stdout, stderr } = await execAsync(cmd, { timeout: 60000 });
+    res.type('text').send('STDOUT:\n' + stdout + '\nSTDERR:\n' + stderr);
   } catch (err) {
     res.type('text').send('ERROR:\n' + (err.stderr || err.message || '') + '\nSTDOUT:\n' + (err.stdout || ''));
   }
