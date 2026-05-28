@@ -2,41 +2,41 @@ const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
 const fs = require('fs-extra');
 
-// Formatos por plataforma
+// Formatos por plataforma — 720p para velocidade no free tier (~2.5x mais rápido que 1080p)
 const PLATFORM_CONFIGS = {
   tiktok: {
-    width: 1080,
-    height: 1920,
+    width: 720,
+    height: 1280,
     aspectRatio: '9:16',
     label: 'TikTok'
   },
   instagram_reels: {
-    width: 1080,
-    height: 1920,
+    width: 720,
+    height: 1280,
     aspectRatio: '9:16',
     label: 'Instagram Reels'
   },
   instagram_feed: {
-    width: 1080,
-    height: 1350,
+    width: 720,
+    height: 900,
     aspectRatio: '4:5',
     label: 'Instagram Feed'
   },
   instagram_square: {
-    width: 1080,
-    height: 1080,
+    width: 720,
+    height: 720,
     aspectRatio: '1:1',
     label: 'Instagram Quadrado'
   },
   facebook: {
-    width: 1280,
-    height: 720,
+    width: 854,
+    height: 480,
     aspectRatio: '16:9',
     label: 'Facebook'
   },
   youtube_shorts: {
-    width: 1080,
-    height: 1920,
+    width: 720,
+    height: 1280,
     aspectRatio: '9:16',
     label: 'YouTube Shorts'
   }
