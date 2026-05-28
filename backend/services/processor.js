@@ -95,51 +95,20 @@ function renderClip(videoPath, segment, config, outputPath) {
       .setStartTime(segment.start)
       .setDuration(segment.end - segment.start)
       .videoFilters([
-        // Redimensiona mantendo proporção e adiciona blur nas bordas
-        `scale=${width}:${height}:force_original_aspect_ratio=increase`,
-        `crop=${width}:${height}`,
-        // Overlay nítido no centro sobre fundo blur
-        `split[original][blur];` +
-        `[blur]scale=${width}:${height},boxblur=20:5[blurred];` +
-        `[original]scale=${width}:${height}:force_original_aspect_ratio=decrease[scaled];` +
-        `[blurred][scaled]overlay=(W-w)/2:(H-h)/2`
-      ])
-      .videoCodec('libx264')
-      .audioCodec('aac')
-      .audioBitrate('128k')
-      .videoBitrate('2000k')
-      .outputOptions([
-        '-preset fast',
-        '-crf 23',
-        '-movflags +faststart',
-        '-pix_fmt yuv420p'
-      ])
-      .output(outputPath)
-      .on('end', resolve)
-      .on('error', (err) => {
-        // Fallback: redimensionamento simples sem blur
-        renderClipSimple(videoPath, segment, config, outputPath)
-          .then(resolve)
-          .catch(reject);
-      })
-      .run();
-  });
-}
-
-function renderClipSimple(videoPath, segment, config, outputPath) {
-  const { width, height } = config;
-
-  return new Promise((resolve, reject) => {
-    ffmpeg(videoPath)
-      .setStartTime(segment.start)
-      .setDuration(segment.end - segment.start)
-      .videoFilters([
         `scale=${width}:${height}:force_original_aspect_ratio=decrease`,
         `pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:black`
       ])
       .videoCodec('libx264')
       .audioCodec('aac')
-      .outputOptions(['-preset fast', '-crf 23', '-movflags +faststart', '-pix_fmt yuv420p'])
+      .audioBitrate('128k')
+      .videoBitrate('1500k')
+      .outputOptions([
+        '-preset ultrafast',
+        '-crf 23',
+        '-movflags +faststart',
+        '-pix_fmt yuv420p',
+        '-threads 1'
+      ])
       .output(outputPath)
       .on('end', resolve)
       .on('error', reject)
