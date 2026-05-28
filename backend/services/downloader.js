@@ -11,16 +11,16 @@ const execAsync = promisify(exec);
 const MAX_DURATION_SECONDS = 1200; // 20 minutos
 const COOKIES_FILE = path.join(os.tmpdir(), 'yt-cookies.txt');
 
-// Instâncias públicas do Invidious (fallback quando YouTube bloqueia)
+// Instâncias públicas do Invidious (fallback)
 const INVIDIOUS_INSTANCES = [
-  'https://y.com.sb',
-  'https://invidious.protokolla.fi',
+  'https://inv.thepixora.com',
   'https://inv.nadeko.net',
+  'https://y.com.sb',
   'https://invidious.perennialte.ch'
 ];
 
 // Player clients do yt-dlp para tentar em sequência
-const PLAYER_CLIENTS = ['tv_embedded', 'android', 'android_embedded', 'web'];
+const PLAYER_CLIENTS = ['tv_embedded', 'mweb', 'android', 'ios', 'android_embedded', 'web'];
 
 let cookiesReady = false;
 
