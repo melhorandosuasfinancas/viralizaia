@@ -2,7 +2,10 @@ const OpenAI = require('openai');
 const fs = require('fs');
 const path = require('path');
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const groq = new OpenAI({
+  apiKey: process.env.GROQ_API_KEY,
+  baseURL: 'https://api.groq.com/openai/v1'
+});
 
 async function transcribe(videoPath) {
   const audioPath = videoPath.replace('.mp4', '_audio.mp3');
@@ -11,9 +14,9 @@ async function transcribe(videoPath) {
   await extractAudio(videoPath, audioPath);
 
   try {
-    const response = await openai.audio.transcriptions.create({
+    const response = await groq.audio.transcriptions.create({
       file: fs.createReadStream(audioPath),
-      model: 'whisper-1',
+      model: 'whisper-large-v3-turbo',
       language: 'pt',
       response_format: 'verbose_json',
       timestamp_granularities: ['segment']
