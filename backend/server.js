@@ -12,6 +12,9 @@ const { cleanupOldFiles } = require('./services/cleanup');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Render (and most PaaS) puts a proxy in front — trust it so rate-limit sees real IPs
+app.set('trust proxy', 1);
+
 // Diretórios de trabalho
 const DIRS = ['./temp', './output', './uploads'];
 DIRS.forEach(dir => fs.ensureDirSync(dir));
