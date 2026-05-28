@@ -101,11 +101,14 @@ async function tryYtDlp(url, outputDir) {
         return path.join(outputDir, videoFile);
       }
     } catch (err) {
+      const stderr = (err.stderr || '').toLowerCase();
       const msg = (err.message || '').toLowerCase();
-      const isBlocked = msg.includes('429') || msg.includes('sign in') || msg.includes('bot')
-        || msg.includes('precondition') || msg.includes('forbidden') || msg.includes('403')
-        || msg.includes('nsig') || msg.includes('cipher');
-      console.log(`yt-dlp cliente ${client} falhou (blocked=${isBlocked}): ${msg.slice(0, 120)}`);
+      const errText = stderr || msg;
+      const isBlocked = errText.includes('429') || errText.includes('sign in') || errText.includes('bot')
+        || errText.includes('precondition') || errText.includes('forbidden') || errText.includes('403')
+        || errText.includes('nsig') || errText.includes('cipher');
+      const errShort = (err.stderr || err.message || '').slice(0, 300);
+      console.log(`yt-dlp cliente ${client} falhou (blocked=${isBlocked}): ${errShort}`);
       // Tenta próximo cliente independente do erro
     }
   }
