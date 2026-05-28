@@ -361,6 +361,8 @@ function ClipCard({ clip }: { clip: Clip }) {
       <a
         href={getDownloadUrl(clip.downloadUrl)}
         download={clip.fileName}
+        target="_blank"
+        rel="noopener noreferrer"
         className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold hover:bg-white/10 transition-colors"
       >
         ⬇️ Baixar {clip.platformLabel}
