@@ -19,6 +19,9 @@ const INVIDIOUS_INSTANCES = [
   'https://invidious.perennialte.ch'
 ];
 
+// Player clients do yt-dlp para tentar em sequência
+const PLAYER_CLIENTS = ['tv_embedded', 'android', 'android_embedded', 'web'];
+
 let cookiesReady = false;
 
 async function ensureCookies() {
@@ -66,10 +69,55 @@ function fetchJson(url, redirects = 0) {
   });
 }
 
+function buildYtDlpCmd(url, outputPath, playerClient) {
+  return [
+    'yt-dlp',
+    '--format', '"bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best[ext=mp4]/best"',
+    '--merge-output-format', 'mp4',
+    '--output', `"${outputPath}"`,
+    '--no-playlist',
+    '--quiet',
+    '--extractor-args', `"youtube:player_client=${playerClient}"`,
+    '--no-check-certificate',
+    '--concurrent-fragments', '1',
+    '--no-warnings',
+    cookiesArg(),
+    `"${url}"`
+  ].filter(Boolean).join(' ');
+}
+
+async function tryYtDlp(url, outputDir) {
+  const outputPath = path.join(outputDir, 'source.%(ext)s');
+
+  for (const client of PLAYER_CLIENTS) {
+    console.log(`yt-dlp tentando player_client=${client}...`);
+    const cmd = buildYtDlpCmd(url, outputPath, client);
+    try {
+      await execAsync(cmd, { timeout: 180000 });
+      const files = await fs.readdir(outputDir);
+      const videoFile = files.find(f => f.startsWith('source.') && f.endsWith('.mp4'));
+      if (videoFile) {
+        console.log(`yt-dlp sucesso com cliente: ${client}`);
+        return path.join(outputDir, videoFile);
+      }
+    } catch (err) {
+      const msg = (err.message || '').toLowerCase();
+      const isBlocked = msg.includes('429') || msg.includes('sign in') || msg.includes('bot')
+        || msg.includes('precondition') || msg.includes('forbidden') || msg.includes('403')
+        || msg.includes('nsig') || msg.includes('cipher');
+      console.log(`yt-dlp cliente ${client} falhou (blocked=${isBlocked}): ${msg.slice(0, 120)}`);
+      // Tenta próximo cliente independente do erro
+    }
+  }
+
+  return null; // todos os clientes falharam
+}
+
 async function downloadViaInvidious(url, outputDir) {
   const videoId = extractVideoId(url);
   if (!videoId) throw new Error('URL inválida');
 
+  let lastError = 'Nenhuma instância disponível';
   let videoData = null;
   let usedInstance = null;
 
@@ -77,17 +125,38 @@ async function downloadViaInvidious(url, outputDir) {
     try {
       console.log(`Tentando Invidious: ${instance}`);
       videoData = await fetchJson(`${instance}/api/v1/videos/${videoId}`);
-      if (videoData && !videoData.error && videoData.formatStreams) {
+
+      if (videoData && videoData.error) {
+        const errLower = videoData.error.toLowerCase();
+        // Detecta restrição de comunidade do YouTube
+        if (errLower.includes('protect') || errLower.includes('sign in') || errLower.includes('age')) {
+          console.error(`Invidious ${instance}: vídeo com restrição: ${videoData.error}`);
+          lastError = 'restricted';
+          continue;
+        }
+        console.error(`Invidious ${instance} erro: ${videoData.error}`);
+        continue;
+      }
+
+      if (videoData && videoData.formatStreams && videoData.formatStreams.length > 0) {
         usedInstance = instance;
         break;
       }
+
+      console.error(`Invidious ${instance}: sem streams disponíveis`);
     } catch (e) {
       console.error(`Invidious ${instance} falhou:`, e.message);
     }
   }
 
-  if (!videoData || !videoData.formatStreams) {
-    throw new Error('Nenhuma instância Invidious disponível. Tente novamente mais tarde.');
+  if (!usedInstance) {
+    if (lastError === 'restricted') {
+      throw new Error(
+        'Este vídeo tem restrição de comunidade do YouTube. ' +
+        'Use um vídeo público sem restrições ou tente outro link.'
+      );
+    }
+    throw new Error('Serviço temporariamente indisponível. Tente novamente em alguns minutos.');
   }
 
   const duration = videoData.lengthSeconds || 0;
@@ -95,21 +164,19 @@ async function downloadViaInvidious(url, outputDir) {
     throw new Error(`Vídeo muito longo (${Math.round(duration / 60)} min). Máximo: 20 minutos.`);
   }
 
-  // formatStreams tem vídeo+áudio combinados (até 720p)
   const streams = videoData.formatStreams || [];
-  const best = streams.find(s => s.itag === '22')   // 720p mp4
-             || streams.find(s => s.itag === '59')   // 480p mp4
-             || streams.find(s => s.itag === '18')   // 360p mp4
+  const best = streams.find(s => s.itag === '22')
+             || streams.find(s => s.itag === '59')
+             || streams.find(s => s.itag === '18')
              || streams.find(s => s.container === 'mp4')
              || streams[0];
 
   if (!best || !best.url) {
-    throw new Error('Nenhum formato de vídeo disponível via Invidious.');
+    throw new Error('Nenhum formato de vídeo disponível.');
   }
 
   console.log(`Baixando via Invidious ${usedInstance}, qualidade: ${best.qualityLabel || best.quality}`);
 
-  // Usar ffmpeg para baixar o stream diretamente
   const outputPath = path.join(outputDir, 'source.mp4');
   const ffmpeg = require('fluent-ffmpeg');
 
@@ -133,57 +200,32 @@ async function download(url, outputDir) {
 
   await ensureCookies();
 
-  const outputPath = path.join(outputDir, 'source.%(ext)s');
-
   const info = await getVideoInfo(url);
   if (info.duration > MAX_DURATION_SECONDS) {
     throw new Error(`Vídeo muito longo (${Math.round(info.duration / 60)} min). Máximo: 20 minutos.`);
   }
 
-  const cmd = [
-    'yt-dlp',
-    '--format', '"bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best[ext=mp4]/best"',
-    '--merge-output-format', 'mp4',
-    '--output', `"${outputPath}"`,
-    '--no-playlist',
-    '--quiet',
-    '--extractor-args', '"youtube:player_client=android"',
-    '--no-check-certificate',
-    '--concurrent-fragments', '1',
-    cookiesArg(),
-    `"${url}"`
-  ].filter(Boolean).join(' ');
+  // Tenta yt-dlp com múltiplos player clients
+  const ytdlpResult = await tryYtDlp(url, outputDir);
+  if (ytdlpResult) return ytdlpResult;
 
-  try {
-    await execAsync(cmd, { timeout: 300000 });
-    const files = await fs.readdir(outputDir);
-    const videoFile = files.find(f => f.startsWith('source.') && f.endsWith('.mp4'));
-    if (videoFile) return path.join(outputDir, videoFile);
-  } catch (err) {
-    const msg = err.message || '';
-    const isBlocked = msg.includes('429') || msg.includes('Sign in') || msg.includes('bot');
-    if (isBlocked) {
-      console.log('yt-dlp bloqueado pelo YouTube, tentando Invidious...');
-      return downloadViaInvidious(url, outputDir);
-    }
-    throw new Error(`Erro ao baixar vídeo: ${msg}`);
-  }
-
-  throw new Error('Arquivo de vídeo não encontrado após download.');
+  // Fallback: Invidious
+  console.log('Todos os clientes yt-dlp falharam, tentando Invidious...');
+  return downloadViaInvidious(url, outputDir);
 }
 
 async function getVideoInfo(url) {
   const videoId = extractVideoId(url);
 
-  // Tenta yt-dlp primeiro
-  const cmd = `yt-dlp --print duration --print title --no-playlist --quiet --extractor-args "youtube:player_client=android" --no-check-certificate ${cookiesArg()} "${url}"`;
+  // Tenta yt-dlp com tv_embedded (mais tolerante a restrições)
+  const cmd = `yt-dlp --print duration --print title --no-playlist --quiet --extractor-args "youtube:player_client=tv_embedded" --no-check-certificate ${cookiesArg()} "${url}"`;
   try {
-    const { stdout } = await execAsync(cmd, { timeout: 45000 });
+    const { stdout } = await execAsync(cmd, { timeout: 30000 });
     const lines = stdout.trim().split('\n');
     const duration = parseFloat(lines[0]);
     if (duration > 0) return { duration, title: lines[1] || 'video' };
   } catch (e) {
-    console.error('getVideoInfo yt-dlp falhou:', e.message);
+    console.error('getVideoInfo yt-dlp falhou:', e.message.slice(0, 100));
   }
 
   // Fallback: Invidious para obter duração
@@ -191,7 +233,7 @@ async function getVideoInfo(url) {
     for (const instance of INVIDIOUS_INSTANCES) {
       try {
         const data = await fetchJson(`${instance}/api/v1/videos/${videoId}?fields=title,lengthSeconds`);
-        if (data.lengthSeconds) {
+        if (data && data.lengthSeconds && !data.error) {
           return { duration: data.lengthSeconds, title: data.title || 'video' };
         }
       } catch (e) { continue; }
