@@ -29,7 +29,8 @@ async function download(url, outputDir) {
     '--output', `"${outputPath}"`,
     '--no-playlist',
     '--quiet',
-    '--extractor-args', '"youtube:player_client=android,ios"',
+    '--extractor-args', '"youtube:player_client=android,ios,web"',
+    '--js-runtimes', 'nodejs',
     '--no-check-certificate',
     `"${url}"`
   ].join(' ');
@@ -52,7 +53,7 @@ async function download(url, outputDir) {
 }
 
 async function getVideoInfo(url) {
-  const cmd = `yt-dlp --print duration --print title --no-playlist --quiet --extractor-args "youtube:player_client=android,ios" --no-check-certificate "${url}"`;
+  const cmd = `yt-dlp --print duration --print title --no-playlist --quiet --extractor-args "youtube:player_client=android,ios,web" --js-runtimes nodejs --no-check-certificate "${url}"`;
   try {
     const { stdout } = await execAsync(cmd, { timeout: 30000 });
     const lines = stdout.trim().split('\n');
