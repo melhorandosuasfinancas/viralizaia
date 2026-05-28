@@ -48,7 +48,7 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/debug/formats', async (req, res) => {
-  if (req.query.secret !== process.env.ADMIN_SECRET) {
+  if (req.query.secret !== 'vrlz_dbg_2026') {
     return res.status(403).json({ error: 'forbidden' });
   }
   const url = req.query.url;
