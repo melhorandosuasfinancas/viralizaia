@@ -7,11 +7,10 @@ const openai = new OpenAI({
 
 const CLIP_MIN_SECONDS = 30;
 const CLIP_MAX_SECONDS = 90;
-const MAX_CLIPS = 3;
 
-async function findBestSegments(transcript, originalUrl = '') {
+async function findBestSegments(transcript, originalUrl = '', maxClips = 3) {
   if (!transcript || transcript.length === 0) {
-    return splitEqually(transcript);
+    return splitEqually(transcript, maxClips);
   }
 
   const fullText = transcript.map(s => `[${s.start.toFixed(1)}s] ${s.text}`).join('\n');
@@ -19,7 +18,7 @@ async function findBestSegments(transcript, originalUrl = '') {
 
   const prompt = `Você é um especialista em criação de conteúdo viral para TikTok e Instagram.
 
-Analise a transcrição abaixo de um vídeo (duração total: ${Math.round(videoDuration)}s) e identifique os ${MAX_CLIPS} melhores momentos para criar cortes virais.
+Analise a transcrição abaixo de um vídeo (duração total: ${Math.round(videoDuration)}s) e identifique os ${maxClips} melhores momentos para criar cortes virais.
 
 Critérios para selecionar os melhores momentos:
 - Momentos com informação valiosa ou surpreendente
@@ -66,9 +65,9 @@ Responda SOMENTE com JSON válido neste formato (sem explicações):
         duration: s.end - s.start
       }))
       .filter(s => s.duration >= CLIP_MIN_SECONDS)
-      .slice(0, MAX_CLIPS);
+      .slice(0, maxClips);
 
-    return segments.length > 0 ? segments : splitEqually(transcript);
+    return segments.length > 0 ? segments : splitEqually(transcript, maxClips);
 
   } catch (err) {
     console.error('GPT analysis failed, using equal split:', err.message);
@@ -76,14 +75,14 @@ Responda SOMENTE com JSON válido neste formato (sem explicações):
   }
 }
 
-function splitEqually(transcript) {
+function splitEqually(transcript, maxClips = 3) {
   if (!transcript || transcript.length === 0) return [];
 
   const videoDuration = transcript[transcript.length - 1]?.end || 60;
   const clipDuration = 60;
   const segments = [];
 
-  for (let start = 0; start < videoDuration && segments.length < MAX_CLIPS; start += clipDuration) {
+  for (let start = 0; start < videoDuration && segments.length < maxClips; start += clipDuration) {
     const end = Math.min(start + clipDuration, videoDuration);
     if (end - start < 15) break;
 

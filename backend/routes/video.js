@@ -15,7 +15,7 @@ const jobs = new Map();
 
 // POST /api/video/process — envia URL e inicia processamento
 router.post('/process', verifySubscription, async (req, res) => {
-  const { url, platforms = ['tiktok', 'instagram', 'facebook'], mode = 'ai' } = req.body;
+  const { url, platforms = ['tiktok', 'instagram', 'facebook'], mode = 'ai', maxClips = 3 } = req.body;
 
   if (!url) {
     return res.status(400).json({ error: 'URL do YouTube é obrigatória.' });
@@ -27,7 +27,7 @@ router.post('/process', verifySubscription, async (req, res) => {
   res.json({ jobId, message: 'Processamento iniciado.' });
 
   // Processar em background
-  processVideo(jobId, url, platforms, mode).catch(err => {
+  processVideo(jobId, url, platforms, mode, Math.min(Math.max(parseInt(maxClips) || 3, 1), 3)).catch(err => {
     jobs.set(jobId, { status: 'error', progress: 0, clips: [], error: err.message });
   });
 });
@@ -52,7 +52,7 @@ router.delete('/job/:jobId', async (req, res) => {
   res.json({ message: 'Job removido.' });
 });
 
-async function processVideo(jobId, url, platforms, mode) {
+async function processVideo(jobId, url, platforms, mode, maxClips = 3) {
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
   const tempDir = path.join(__dirname, '../temp', jobId);
   const outputDir = path.join(__dirname, '../output', jobId);
@@ -73,10 +73,9 @@ async function processVideo(jobId, url, platforms, mode) {
     updateJob({ status: 'analyzing', progress: 50 });
     let segments;
     if (mode === 'ai') {
-      segments = await analyzer.findBestSegments(transcript, url);
+      segments = await analyzer.findBestSegments(transcript, url, maxClips);
     } else {
-      // Modo manual: divide em segmentos de 60s
-      segments = analyzer.splitEqually(transcript);
+      segments = analyzer.splitEqually(transcript, maxClips);
     }
 
     // 4. FFmpeg corta e redimensiona para cada plataforma

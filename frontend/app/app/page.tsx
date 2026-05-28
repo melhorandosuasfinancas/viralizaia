@@ -36,6 +36,7 @@ export default function AppPage() {
   const [url, setUrl] = useState("");
   const [platforms, setPlatforms] = useState<Platform[]>(["tiktok", "instagram"]);
   const [mode, setMode] = useState<"ai" | "manual">("ai");
+  const [maxClips, setMaxClips] = useState<1 | 2 | 3>(3);
   const [jobId, setJobId] = useState<string | null>(null);
   const [job, setJob] = useState<Job | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -100,7 +101,7 @@ export default function AppPage() {
     setJob(null);
     setJobId(null);
     try {
-      const { jobId: id } = await startProcessing(url, platforms, mode, token);
+      const { jobId: id } = await startProcessing(url, platforms, mode, token, maxClips);
       setJobId(id);
       setJob({ status: "queued", progress: 0, clips: [], error: null });
     } catch (err: unknown) {
@@ -229,6 +230,31 @@ export default function AppPage() {
                   }`}
                 >
                   {m === "ai" ? "🤖 IA escolhe" : "✂️ Dividir igual"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-400 mb-3 block">
+              Quantidade de clips
+              <span className="ml-2 text-gray-600">
+                {maxClips === 1 ? "⚡ Mais rápido" : maxClips === 2 ? "⚖️ Equilibrado" : "📦 Mais conteúdo"}
+              </span>
+            </label>
+            <div className="flex gap-2">
+              {([1, 2, 3] as const).map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setMaxClips(n)}
+                  className={`flex-1 py-2 rounded-xl text-sm font-bold border transition-all ${
+                    maxClips === n
+                      ? "border-purple-500/50 bg-purple-500/15 text-white"
+                      : "border-white/10 bg-white/5 text-gray-400"
+                  }`}
+                >
+                  {n} {n === 1 ? "clip" : "clips"}
                 </button>
               ))}
             </div>

@@ -27,7 +27,8 @@ export async function startProcessing(
   url: string,
   platforms: Platform[],
   mode: ProcessMode = "ai",
-  token: string
+  token: string,
+  maxClips: 1 | 2 | 3 = 3
 ): Promise<{ jobId: string }> {
   const res = await fetch(`${API_URL}/api/video/process`, {
     method: "POST",
@@ -35,7 +36,7 @@ export async function startProcessing(
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ url, platforms, mode }),
+    body: JSON.stringify({ url, platforms, mode, maxClips }),
   });
 
   if (!res.ok) {
