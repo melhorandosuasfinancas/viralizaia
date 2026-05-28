@@ -2,26 +2,42 @@ const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs-extra');
 const { promisify } = require('util');
+const os = require('os');
 
 const execAsync = promisify(exec);
 
-const MAX_DURATION_SECONDS = 600; // 10 minutos máximo
+const MAX_DURATION_SECONDS = 600;
+const COOKIES_FILE = path.join(os.tmpdir(), 'yt-cookies.txt');
+
+let cookiesReady = false;
+
+async function ensureCookies() {
+  if (cookiesReady) return;
+  const b64 = process.env.YOUTUBE_COOKIES_B64;
+  if (b64) {
+    await fs.writeFile(COOKIES_FILE, Buffer.from(b64, 'base64').toString('utf8'));
+    cookiesReady = true;
+  }
+}
+
+function cookiesArg() {
+  return process.env.YOUTUBE_COOKIES_B64 ? `--cookies "${COOKIES_FILE}"` : '';
+}
 
 async function download(url, outputDir) {
-  // Valida URL do YouTube
   if (!isValidYoutubeUrl(url)) {
     throw new Error('URL inválida. Use um link do YouTube (youtube.com ou youtu.be).');
   }
 
+  await ensureCookies();
+
   const outputPath = path.join(outputDir, 'source.%(ext)s');
 
-  // Verifica duração antes de baixar
   const info = await getVideoInfo(url);
   if (info.duration > MAX_DURATION_SECONDS) {
     throw new Error(`Vídeo muito longo (${Math.round(info.duration / 60)} min). Máximo: 10 minutos.`);
   }
 
-  // Baixa em melhor qualidade até 1080p
   const cmd = [
     'yt-dlp',
     '--format', '"bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best"',
@@ -30,10 +46,11 @@ async function download(url, outputDir) {
     '--no-playlist',
     '--quiet',
     '--extractor-args', '"youtube:player_client=android,ios,web"',
-    '--js-runtimes', 'nodejs',
+    '--js-runtimes', 'node',
     '--no-check-certificate',
+    cookiesArg(),
     `"${url}"`
-  ].join(' ');
+  ].filter(Boolean).join(' ');
 
   try {
     await execAsync(cmd, { timeout: 120000 });
@@ -41,7 +58,6 @@ async function download(url, outputDir) {
     throw new Error(`Erro ao baixar vídeo: ${err.message}`);
   }
 
-  // Encontra o arquivo baixado
   const files = await fs.readdir(outputDir);
   const videoFile = files.find(f => f.startsWith('source.') && f.endsWith('.mp4'));
 
@@ -53,7 +69,7 @@ async function download(url, outputDir) {
 }
 
 async function getVideoInfo(url) {
-  const cmd = `yt-dlp --print duration --print title --no-playlist --quiet --extractor-args "youtube:player_client=android,ios,web" --js-runtimes nodejs --no-check-certificate "${url}"`;
+  const cmd = `yt-dlp --print duration --print title --no-playlist --quiet --extractor-args "youtube:player_client=android,ios,web" --js-runtimes node --no-check-certificate ${cookiesArg()} "${url}"`;
   try {
     const { stdout } = await execAsync(cmd, { timeout: 30000 });
     const lines = stdout.trim().split('\n');
