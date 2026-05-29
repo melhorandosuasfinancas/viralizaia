@@ -20,7 +20,8 @@ const INVIDIOUS_INSTANCES = [
 ];
 
 // Player clients do yt-dlp para tentar em sequência
-const PLAYER_CLIENTS = ['tv_embedded', 'mweb', 'android', 'ios', 'android_embedded', 'web'];
+// tv_embedded foi removido no yt-dlp v2026.03.17
+const PLAYER_CLIENTS = ['web', 'mweb', 'android', 'ios', 'android_embedded', 'web_creator'];
 
 let cookiesReady = false;
 
@@ -81,6 +82,7 @@ function buildYtDlpCmd(url, outputPath, playerClient) {
     '--no-check-certificate',
     '--concurrent-fragments', '1',
     '--no-warnings',
+    '--js-runtimes', 'node:/usr/local/bin/node',
     cookiesArg(),
     `"${url}"`
   ].filter(Boolean).join(' ');
@@ -275,8 +277,8 @@ async function download(url, outputDir) {
 async function getVideoInfo(url) {
   const videoId = extractVideoId(url);
 
-  // Tenta yt-dlp com tv_embedded (mais tolerante a restrições)
-  const cmd = `yt-dlp --print duration --print title --no-playlist --quiet --extractor-args "youtube:player_client=tv_embedded" --no-check-certificate ${cookiesArg()} "${url}"`;
+  // Tenta yt-dlp com web client + bgutil PO token
+  const cmd = `yt-dlp --print duration --print title --no-playlist --quiet --extractor-args "youtube:player_client=web" --no-check-certificate --js-runtimes node:/usr/local/bin/node ${cookiesArg()} "${url}"`;
   try {
     const { stdout } = await execAsync(cmd, { timeout: 30000 });
     const lines = stdout.trim().split('\n');
