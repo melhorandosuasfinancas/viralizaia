@@ -9,6 +9,7 @@ const downloader = require('../services/downloader');
 const transcriber = require('../services/transcriber');
 const analyzer = require('../services/analyzer');
 const processor = require('../services/processor');
+const { getTranscript } = require('../services/youtube-transcript');
 const { verifySubscription } = require('../services/auth');
 
 const upload = multer({
@@ -19,6 +20,8 @@ const upload = multer({
     cb(null, ok);
   }
 });
+
+const MAX_DURATION_SECONDS = 1200; // 20 minutos
 
 // Status dos jobs em memória (produção: usar Redis)
 const jobs = new Map();
@@ -92,9 +95,77 @@ async function processVideo(jobId, url, platforms, mode, maxClips = 3) {
   await fs.ensureDir(outputDir);
 
   try {
-    updateJob({ status: 'downloading', progress: 10 });
+    // 1. Busca transcrição via YouTube (sem baixar o vídeo — funciona de qualquer IP)
+    updateJob({ status: 'transcribing', progress: 15 });
+    let segments;
+    let usedTranscriptAPI = false;
+
+    try {
+      console.log('Buscando transcrição via YouTube Transcript API...');
+      const { segments: ytSegments, fullText, duration } = await getTranscript(url);
+      console.log(`Transcrição obtida: ${ytSegments.length} segmentos, ${duration}s`);
+
+      if (duration > MAX_DURATION_SECONDS) {
+        throw new Error(`Vídeo muito longo (${Math.round(duration / 60)} min). Máximo: 20 minutos.`);
+      }
+
+      // 2. IA analisa o texto e identifica os melhores momentos
+      updateJob({ status: 'analyzing', progress: 35 });
+      if (mode === 'ai') {
+        segments = await analyzer.findBestSegments(ytSegments, url, maxClips);
+      } else {
+        segments = analyzer.splitEqually(ytSegments, maxClips);
+      }
+      usedTranscriptAPI = true;
+    } catch (transcriptErr) {
+      console.log(`Transcript API falhou (${transcriptErr.message}), usando download completo como fallback`);
+    }
+
+    if (usedTranscriptAPI && segments && segments.length > 0) {
+      // 3. Baixa apenas os segmentos identificados (não o vídeo inteiro)
+      updateJob({ status: 'downloading', progress: 50 });
+      const clips = [];
+
+      for (let i = 0; i < segments.length; i++) {
+        const seg = segments[i];
+        const padding = 2; // 2s de margem para garantir o keyframe
+        const startWithPad = Math.max(0, seg.start - padding);
+        const endWithPad = seg.end + padding;
+
+        console.log(`Baixando segmento ${i + 1}/${segments.length}: ${seg.start}s-${seg.end}s`);
+        const segPath = await downloader.downloadSection(url, startWithPad, endWithPad, tempDir, i);
+
+        if (segPath) {
+          // Re-corta com FFmpeg para remover o padding
+          const trimStart = seg.start - startWithPad;
+          const trimDuration = seg.end - seg.start;
+          const clipsResult = await processor.createClips(
+            segPath,
+            [{ ...seg, start: trimStart, end: trimStart + trimDuration, duration: trimDuration }],
+            platforms,
+            outputDir,
+            jobId,
+            (done, total) => updateJob({ progress: Math.round(50 + ((i * total + done) / (segments.length * total)) * 45) })
+          );
+          clips.push(...clipsResult);
+        } else {
+          console.log(`Segmento ${i + 1} não baixou, pulando`);
+        }
+      }
+
+      if (clips.length > 0) {
+        updateJob({ status: 'done', progress: 100, clips });
+        return;
+      }
+      // Se nenhum segmento baixou, cai no fallback abaixo
+      console.log('Nenhum segmento baixado via sections, tentando download completo...');
+    }
+
+    // Fallback: download completo + processamento tradicional
+    updateJob({ status: 'downloading', progress: 20 });
     const videoPath = await downloader.download(url, tempDir);
     await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, url);
+
   } catch (err) {
     updateJob({ status: 'error', error: err.message });
     throw err;
