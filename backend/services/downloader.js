@@ -19,6 +19,14 @@ const INVIDIOUS_INSTANCES = [
   'https://invidious.perennialte.ch'
 ];
 
+// Instâncias públicas do Piped (fallback alternativo)
+const PIPED_INSTANCES = [
+  'https://pipedapi.kavin.rocks',
+  'https://pipedapi.leptons.xyz',
+  'https://api.piped.yt',
+  'https://piped-api.privacy.com.de'
+];
+
 // Player clients do yt-dlp para tentar em sequência
 // tv_embedded foi removido no yt-dlp v2026.03.17
 const PLAYER_CLIENTS = ['web', 'mweb', 'android', 'ios', 'android_embedded', 'web_creator'];
@@ -198,6 +206,90 @@ async function downloadViaInvidious(url, outputDir) {
   return outputPath;
 }
 
+async function downloadViaPiped(url, outputDir) {
+  const videoId = extractVideoId(url);
+  if (!videoId) throw new Error('URL inválida');
+
+  let lastErr = 'Nenhuma instância Piped disponível';
+  let streams = null;
+  let usedInstance = null;
+
+  for (const instance of PIPED_INSTANCES) {
+    try {
+      console.log(`Tentando Piped: ${instance}`);
+      const data = await fetchJson(`${instance}/streams/${videoId}`);
+      if (data && (data.videoStreams || data.audioStreams)) {
+        streams = data;
+        usedInstance = instance;
+        break;
+      }
+      lastErr = 'Sem streams';
+    } catch (e) {
+      console.error(`Piped ${instance} falhou:`, e.message);
+      lastErr = e.message;
+    }
+  }
+
+  if (!usedInstance) throw new Error(`Piped indisponível: ${lastErr}`);
+
+  const duration = streams.duration || 0;
+  if (duration > MAX_DURATION_SECONDS) {
+    throw new Error(`Vídeo muito longo (${Math.round(duration / 60)} min). Máximo: 20 minutos.`);
+  }
+
+  // Procura stream combinado (vídeo+áudio) até 720p
+  const videoStreams = streams.videoStreams || [];
+  const audioStreams = streams.audioStreams || [];
+
+  const combined = videoStreams
+    .filter(s => !s.videoOnly && s.url)
+    .sort((a, b) => (b.quality || 0) - (a.quality || 0))
+    .find(s => (s.quality || 9999) <= 720) || videoStreams.find(s => !s.videoOnly && s.url);
+
+  if (combined) {
+    console.log(`Piped ${usedInstance}: stream combinado ${combined.quality}p`);
+    const outputPath = path.join(outputDir, 'source.mp4');
+    const ffmpeg = require('fluent-ffmpeg');
+    await new Promise((resolve, reject) => {
+      ffmpeg(combined.url)
+        .inputOptions(['-timeout', '120000000'])
+        .outputOptions(['-c', 'copy', '-movflags', '+faststart'])
+        .output(outputPath)
+        .on('end', resolve)
+        .on('error', reject)
+        .run();
+    });
+    return outputPath;
+  }
+
+  // Fallback: melhor videoOnly + melhor audio → mux com ffmpeg
+  const bestVideo = videoStreams
+    .filter(s => s.videoOnly && s.url)
+    .sort((a, b) => (b.quality || 0) - (a.quality || 0))
+    .find(s => (s.quality || 9999) <= 720);
+
+  const bestAudio = audioStreams
+    .filter(s => s.url)
+    .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0))[0];
+
+  if (!bestVideo || !bestAudio) throw new Error('Piped: sem formatos utilizáveis');
+
+  console.log(`Piped ${usedInstance}: muxing ${bestVideo.quality}p video + audio`);
+  const outputPath = path.join(outputDir, 'source.mp4');
+  const ffmpeg = require('fluent-ffmpeg');
+  await new Promise((resolve, reject) => {
+    ffmpeg(bestVideo.url)
+      .input(bestAudio.url)
+      .inputOptions(['-timeout', '120000000'])
+      .outputOptions(['-c:v', 'copy', '-c:a', 'aac', '-movflags', '+faststart'])
+      .output(outputPath)
+      .on('end', resolve)
+      .on('error', reject)
+      .run();
+  });
+  return outputPath;
+}
+
 async function downloadViaCobalt(url, outputDir) {
   console.log('Tentando Cobalt.tools...');
   const videoId = extractVideoId(url);
@@ -261,16 +353,16 @@ async function download(url, outputDir) {
   const ytdlpResult = await tryYtDlp(url, outputDir);
   if (ytdlpResult) return ytdlpResult;
 
-  // 2. Fallback: Cobalt.tools
-  console.log('Todos os clientes yt-dlp falharam, tentando Cobalt.tools...');
+  // 2. Fallback: Piped (proxy que não depende do IP do Render)
+  console.log('yt-dlp falhou, tentando Piped...');
   try {
-    return await downloadViaCobalt(url, outputDir);
-  } catch (cobaltErr) {
-    console.error('Cobalt falhou:', cobaltErr.message);
+    return await downloadViaPiped(url, outputDir);
+  } catch (pipedErr) {
+    console.error('Piped falhou:', pipedErr.message);
   }
 
   // 3. Fallback: Invidious
-  console.log('Cobalt falhou, tentando Invidious...');
+  console.log('Piped falhou, tentando Invidious...');
   return downloadViaInvidious(url, outputDir);
 }
 
