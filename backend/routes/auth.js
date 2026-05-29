@@ -75,6 +75,10 @@ function deactivateUser(email) {
 }
 
 function isUserActive(email) {
+  // Whitelist de emails de teste (env var separada por vírgula)
+  const testEmails = (process.env.TEST_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+  if (testEmails.includes(email?.toLowerCase())) return true;
+
   const user = activeUsers.get(email?.toLowerCase());
   return user?.active === true;
 }
