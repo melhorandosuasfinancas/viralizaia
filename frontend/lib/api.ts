@@ -47,6 +47,33 @@ export async function startProcessing(
   return res.json();
 }
 
+export async function uploadAndProcess(
+  file: File,
+  platforms: Platform[],
+  mode: ProcessMode = "ai",
+  token: string,
+  maxClips: 1 | 2 | 3 = 3
+): Promise<{ jobId: string }> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("platforms", JSON.stringify(platforms));
+  formData.append("mode", mode);
+  formData.append("maxClips", String(maxClips));
+
+  const res = await fetch(`${API_URL}/api/video/upload`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Erro desconhecido" }));
+    throw new Error(err.error || "Erro ao fazer upload");
+  }
+
+  return res.json();
+}
+
 export async function getJobStatus(jobId: string): Promise<Job> {
   const res = await fetch(`${API_URL}/api/video/status/${jobId}`);
   if (!res.ok) throw new Error("Job não encontrado");

@@ -3,6 +3,7 @@ const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const fs = require('fs-extra');
+const multer = require('multer');
 
 const downloader = require('../services/downloader');
 const transcriber = require('../services/transcriber');
@@ -10,8 +11,38 @@ const analyzer = require('../services/analyzer');
 const processor = require('../services/processor');
 const { verifySubscription } = require('../services/auth');
 
+const upload = multer({
+  dest: path.join(__dirname, '../uploads'),
+  limits: { fileSize: 500 * 1024 * 1024 }, // 500 MB
+  fileFilter: (req, file, cb) => {
+    const ok = /video\/|application\/octet-stream/.test(file.mimetype) || /\.(mp4|mov|avi|mkv|webm)$/i.test(file.originalname);
+    cb(null, ok);
+  }
+});
+
 // Status dos jobs em memória (produção: usar Redis)
 const jobs = new Map();
+
+// POST /api/video/upload — envia arquivo de vídeo e inicia processamento
+router.post('/upload', verifySubscription, upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Arquivo de vídeo é obrigatório.' });
+
+  const { platforms = '["tiktok","instagram"]', mode = 'ai', maxClips = '3' } = req.body;
+  let parsedPlatforms;
+  try { parsedPlatforms = JSON.parse(platforms); } catch { parsedPlatforms = ['tiktok', 'instagram']; }
+
+  const jobId = uuidv4();
+  jobs.set(jobId, { status: 'queued', progress: 0, clips: [], error: null });
+  res.json({ jobId, message: 'Processamento iniciado.' });
+
+  const tempDir = path.join(__dirname, '../temp', jobId);
+  await fs.ensureDir(tempDir);
+  const destPath = path.join(tempDir, 'source.mp4');
+  await fs.move(req.file.path, destPath);
+
+  processVideoFromFile(jobId, destPath, tempDir, parsedPlatforms, mode, Math.min(Math.max(parseInt(maxClips) || 3, 1), 3))
+    .catch(err => jobs.set(jobId, { status: 'error', progress: 0, clips: [], error: err.message }));
+});
 
 // POST /api/video/process — envia URL e inicia processamento
 router.post('/process', verifySubscription, async (req, res) => {
@@ -61,37 +92,51 @@ async function processVideo(jobId, url, platforms, mode, maxClips = 3) {
   await fs.ensureDir(outputDir);
 
   try {
-    // 1. Download do vídeo
     updateJob({ status: 'downloading', progress: 10 });
     const videoPath = await downloader.download(url, tempDir);
-
-    // 2. Transcrição com Whisper
-    updateJob({ status: 'transcribing', progress: 30 });
-    const transcript = await transcriber.transcribe(videoPath);
-
-    // 3. IA identifica melhores momentos
-    updateJob({ status: 'analyzing', progress: 50 });
-    let segments;
-    if (mode === 'ai') {
-      segments = await analyzer.findBestSegments(transcript, url, maxClips);
-    } else {
-      segments = analyzer.splitEqually(transcript, maxClips);
-    }
-
-    // 4. FFmpeg corta e redimensiona para cada plataforma
-    updateJob({ status: 'processing', progress: 70 });
-    const clips = await processor.createClips(videoPath, segments, platforms, outputDir, jobId, (done, total) => {
-      updateJob({ progress: Math.round(70 + (done / total) * 25) });
-    });
-
-    updateJob({ status: 'done', progress: 100, clips });
-
+    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, url);
   } catch (err) {
     updateJob({ status: 'error', error: err.message });
     throw err;
   } finally {
     await fs.remove(tempDir).catch(() => {});
   }
+}
+
+async function processVideoFromFile(jobId, videoPath, tempDir, platforms, mode, maxClips = 3) {
+  const outputDir = path.join(__dirname, '../output', jobId);
+  await fs.ensureDir(outputDir);
+  const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
+  try {
+    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, null);
+  } catch (err) {
+    updateJob({ status: 'error', error: err.message });
+    throw err;
+  } finally {
+    await fs.remove(tempDir).catch(() => {});
+  }
+}
+
+async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, url) {
+  const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
+
+  updateJob({ status: 'transcribing', progress: 30 });
+  const transcript = await transcriber.transcribe(videoPath);
+
+  updateJob({ status: 'analyzing', progress: 50 });
+  let segments;
+  if (mode === 'ai') {
+    segments = await analyzer.findBestSegments(transcript, url || 'upload', maxClips);
+  } else {
+    segments = analyzer.splitEqually(transcript, maxClips);
+  }
+
+  updateJob({ status: 'processing', progress: 70 });
+  const clips = await processor.createClips(videoPath, segments, platforms, outputDir, jobId, (done, total) => {
+    updateJob({ progress: Math.round(70 + (done / total) * 25) });
+  });
+
+  updateJob({ status: 'done', progress: 100, clips });
 }
 
 module.exports = router;

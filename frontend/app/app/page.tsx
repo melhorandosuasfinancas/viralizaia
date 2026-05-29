@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   startProcessing,
+  uploadAndProcess,
   getJobStatus,
   getDownloadUrl,
   deleteJob,
@@ -33,7 +34,9 @@ export default function AppPage() {
   const [loginError, setLoginError] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
 
+  const [inputMode, setInputMode] = useState<"url" | "upload">("url");
   const [url, setUrl] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [platforms, setPlatforms] = useState<Platform[]>(["tiktok", "instagram"]);
   const [mode, setMode] = useState<"ai" | "manual">("ai");
   const [maxClips, setMaxClips] = useState<1 | 2 | 3>(3);
@@ -90,20 +93,32 @@ export default function AppPage() {
   async function handleProcess(e: React.FormEvent) {
     e.preventDefault();
     if (!token) return;
-    if (!url.includes("youtube.com") && !url.includes("youtu.be")) {
-      setUrlError("Use um link do YouTube válido.");
-      return;
-    }
     if (platforms.length === 0) {
       setUrlError("Selecione ao menos uma plataforma.");
       return;
+    }
+    if (inputMode === "url") {
+      if (!url.includes("youtube.com") && !url.includes("youtu.be")) {
+        setUrlError("Use um link do YouTube válido.");
+        return;
+      }
+    } else {
+      if (!selectedFile) {
+        setUrlError("Selecione um arquivo de vídeo.");
+        return;
+      }
     }
     setUrlError("");
     setProcessing(true);
     setJob(null);
     setJobId(null);
     try {
-      const { jobId: id } = await startProcessing(url, platforms, mode, token, maxClips);
+      let id: string;
+      if (inputMode === "url") {
+        ({ jobId: id } = await startProcessing(url, platforms, mode, token, maxClips));
+      } else {
+        ({ jobId: id } = await uploadAndProcess(selectedFile!, platforms, mode, token, maxClips));
+      }
       setJobId(id);
       setJob({ status: "queued", progress: 0, clips: [], error: null });
     } catch (err: unknown) {
@@ -123,6 +138,7 @@ export default function AppPage() {
     setJobId(null);
     setJob(null);
     setUrl("");
+    setSelectedFile(null);
     setProcessing(false);
   }
 
@@ -182,17 +198,68 @@ export default function AppPage() {
       {/* Form */}
       {!job && (
         <form onSubmit={handleProcess} className="space-y-6">
+          {/* Toggle URL / Upload */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setInputMode("url")}
+              className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all ${
+                inputMode === "url"
+                  ? "border-purple-500/50 bg-purple-500/15 text-white"
+                  : "border-white/10 bg-white/5 text-gray-400"
+              }`}
+            >
+              🔗 Link YouTube
+            </button>
+            <button
+              type="button"
+              onClick={() => setInputMode("upload")}
+              className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all ${
+                inputMode === "upload"
+                  ? "border-purple-500/50 bg-purple-500/15 text-white"
+                  : "border-white/10 bg-white/5 text-gray-400"
+              }`}
+            >
+              📁 Upload de arquivo
+            </button>
+          </div>
+
           <div>
-            <label className="text-xs text-gray-400 mb-2 block">Link do YouTube</label>
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://youtube.com/watch?v=..."
-              required
-              disabled={processing}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition-colors disabled:opacity-50"
-            />
+            {inputMode === "url" ? (
+              <>
+                <label className="text-xs text-gray-400 mb-2 block">Link do YouTube</label>
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://youtube.com/watch?v=..."
+                  disabled={processing}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition-colors disabled:opacity-50"
+                />
+              </>
+            ) : (
+              <>
+                <label className="text-xs text-gray-400 mb-2 block">
+                  Arquivo de vídeo <span className="text-gray-600">(MP4, MOV, AVI — máx 500 MB)</span>
+                </label>
+                <label className={`flex flex-col items-center justify-center w-full h-28 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+                  selectedFile ? "border-purple-500/50 bg-purple-500/5" : "border-white/10 bg-white/5 hover:border-white/20"
+                } ${processing ? "opacity-50 pointer-events-none" : ""}`}>
+                  <input
+                    type="file"
+                    accept="video/*"
+                    className="hidden"
+                    disabled={processing}
+                    onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+                  />
+                  {selectedFile ? (
+                    <span className="text-sm text-purple-300 px-4 text-center truncate max-w-full">{selectedFile.name}</span>
+                  ) : (
+                    <span className="text-sm text-gray-500">Clique para selecionar o vídeo</span>
+                  )}
+                </label>
+              </>
+            )}
             {urlError && <p className="text-red-400 text-xs mt-1">{urlError}</p>}
           </div>
 
