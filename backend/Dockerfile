@@ -14,6 +14,8 @@ RUN apt-get update && apt-get install -y \
     libgif7 \
     librsvg2-2 \
     libfontconfig1 \
+    fonts-liberation \
+    fonts-dejavu-core \
     && pip3 install -U yt-dlp bgutil-ytdlp-pot-provider --break-system-packages \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

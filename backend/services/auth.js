@@ -1,7 +1,10 @@
-// Middleware de verificação de assinatura
+// Middleware de verificação de assinatura — extrai email e plano do token
 function verifySubscription(req, res, next) {
-  // Em desenvolvimento, pula verificação
-  if (process.env.NODE_ENV === 'development') return next();
+  if (process.env.NODE_ENV === 'development') {
+    req.userEmail = 'dev@test.com';
+    req.userPlan = 'pro';
+    return next();
+  }
 
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) {
@@ -16,6 +19,7 @@ function verifySubscription(req, res, next) {
     }
 
     req.userEmail = payload.email;
+    req.userPlan = payload.plan || 'starter'; // trial | starter | pro
     next();
   } catch {
     return res.status(401).json({ error: 'Token inválido.' });
