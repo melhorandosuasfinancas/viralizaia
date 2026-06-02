@@ -347,16 +347,18 @@ async function downloadViaPiped(url, outputDir) {
   return outputPath;
 }
 
-async function downloadViaCobalt(url, outputDir) {
-  console.log('Tentando Cobalt.tools...');
-  const videoId = extractVideoId(url);
-  const outputPath = path.join(outputDir, 'source.mp4');
+const COBALT_INSTANCES = [
+  'https://cobalt.api.timelessnesses.me/',
+  'https://cob.frisk.app/',
+  'https://cobalt.canine.tools/',
+  'https://cobalt.lunar.icu/',
+  'https://api.cobalt.tools/',
+];
 
-  const cobaltUrl = 'https://api.cobalt.tools/';
+async function tryCobaltInstance(instanceUrl, url) {
   const body = JSON.stringify({ url, videoQuality: '720', filenameStyle: 'basic' });
-
-  const data = await new Promise((resolve, reject) => {
-    const req = https.request(cobaltUrl, {
+  return new Promise((resolve, reject) => {
+    const req = https.request(instanceUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       timeout: 20000
@@ -364,25 +366,45 @@ async function downloadViaCobalt(url, outputDir) {
       let d = '';
       res.on('data', c => d += c);
       res.on('end', () => {
-        try { resolve(JSON.parse(d)); }
-        catch (e) { reject(new Error('Cobalt resposta inválida')); }
+        try {
+          const data = JSON.parse(d);
+          if (data && data.url && (data.status === 'stream' || data.status === 'redirect' || data.status === 'tunnel')) {
+            resolve(data.url);
+          } else {
+            reject(new Error(`Cobalt ${instanceUrl}: ${JSON.stringify(data).slice(0, 80)}`));
+          }
+        } catch (e) { reject(new Error(`Cobalt ${instanceUrl}: resposta inválida`)); }
       });
     });
     req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('Cobalt timeout')); });
+    req.on('timeout', () => { req.destroy(); reject(new Error(`Cobalt ${instanceUrl}: timeout`)); });
     req.write(body);
     req.end();
   });
+}
 
-  if (!data || !data.url || (data.status !== 'stream' && data.status !== 'redirect' && data.status !== 'tunnel')) {
-    throw new Error(`Cobalt não retornou stream: ${JSON.stringify(data).slice(0, 100)}`);
+async function downloadViaCobalt(url, outputDir) {
+  const outputPath = path.join(outputDir, 'source.mp4');
+  let streamUrl = null;
+
+  for (const instance of COBALT_INSTANCES) {
+    try {
+      console.log(`Tentando Cobalt: ${instance}`);
+      streamUrl = await tryCobaltInstance(instance, url);
+      console.log(`Cobalt ${instance} ok`);
+      break;
+    } catch (e) {
+      console.log(`Cobalt ${instance} falhou: ${e.message}`);
+    }
   }
 
-  console.log(`Cobalt retornou stream, baixando...`);
+  if (!streamUrl) throw new Error('Cobalt: todas instâncias falharam');
+
+  console.log('Cobalt retornou stream, baixando...');
   const ffmpeg = require('fluent-ffmpeg');
 
   await new Promise((resolve, reject) => {
-    ffmpeg(data.url)
+    ffmpeg(streamUrl)
       .inputOptions(['-timeout', '120000000'])
       .outputOptions(['-c', 'copy', '-movflags', '+faststart'])
       .output(outputPath)
