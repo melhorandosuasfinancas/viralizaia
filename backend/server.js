@@ -74,6 +74,23 @@ app.get('/debug/formats', async (req, res) => {
   }
 });
 
+app.get('/debug/env', async (req, res) => {
+  if (req.query.secret !== 'vrlz_dbg_2026') return res.status(403).json({ error: 'forbidden' });
+  try {
+    const { stdout } = await execAsync(
+      'echo "PATH=$PATH" && ' +
+      '(which bun && bun --version || echo "bun: NOT FOUND") && ' +
+      '(which node && node --version || echo "node: NOT FOUND") && ' +
+      '(ls -la /root/.bun/bin/ 2>/dev/null || echo "/root/.bun/bin: missing") && ' +
+      '(ls -la /usr/local/bin/bun 2>/dev/null || echo "/usr/local/bin/bun: missing")',
+      { timeout: 15000 }
+    );
+    res.type('text').send(stdout);
+  } catch (err) {
+    res.type('text').send('ERROR:\n' + (err.stdout || '') + '\n' + err.message);
+  }
+});
+
 // Limpeza automática a cada 2 horas
 setInterval(cleanupOldFiles, 2 * 60 * 60 * 1000);
 
