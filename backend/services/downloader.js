@@ -81,16 +81,15 @@ function fetchJson(url, redirects = 0) {
 function buildYtDlpCmd(url, outputPath, playerClient, sections = null) {
   const args = [
     'yt-dlp',
-    '--format', '"bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/bestvideo+bestaudio/best[height<=720]/best"',
+    '--format', '"bestvideo[height<=720]+bestaudio/bestvideo+bestaudio/best[height<=720]/best"',
     '--merge-output-format', 'mp4',
     '--output', `"${outputPath}"`,
     '--no-playlist',
     '--quiet',
-    '--extractor-args', `"youtube:player_client=${playerClient},skip=sabr"`,
+    '--extractor-args', `"youtube:player_client=${playerClient}"`,
     '--no-check-certificate',
     '--concurrent-fragments', '1',
     '--no-warnings',
-    '--no-check-formats',
     '--js-runtimes', 'node:/usr/local/bin/node',
     cookiesArg(),
   ];
