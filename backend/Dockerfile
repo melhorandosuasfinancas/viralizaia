@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     curl \
+    unzip \
     git \
     libcairo2 \
     libpango-1.0-0 \
@@ -20,8 +21,9 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Instala Bun via npm (runtime JS para yt-dlp resolver n-challenge / JSC)
-RUN npm install -g bun && ln -sf /root/.bun/bin/bun /usr/local/bin/bun
+# Instala Bun (runtime JS para yt-dlp resolver n-challenge / JSC)
+RUN curl -fsSL https://bun.sh/install | bash && \
+    ln -sf /root/.bun/bin/bun /usr/local/bin/bun
 ENV PATH="/root/.bun/bin:/usr/local/bin:$PATH"
 
 # Clona e builda o servidor bgutil (gerador de PO tokens para yt-dlp)
