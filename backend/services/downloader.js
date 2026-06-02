@@ -123,6 +123,33 @@ async function downloadSection(url, start, end, outputDir, index = 0) {
       console.log(`downloadSection client=${client} failed: ${(err.stderr || err.message || '').slice(0, 200)}`);
     }
   }
+
+  // Fallback: Cobalt + ffmpeg trim
+  console.log(`downloadSection ${index}: yt-dlp falhou, tentando Cobalt + trim...`);
+  const cobaltTempDir = path.join(outputDir, `cobalt_${index}`);
+  try {
+    await fs.ensureDir(cobaltTempDir);
+    const fullPath = await downloadViaCobalt(url, cobaltTempDir);
+    const segOutputPath = path.join(outputDir, `segment_${index}.mp4`);
+    const ffmpeg = require('fluent-ffmpeg');
+    await new Promise((resolve, reject) => {
+      ffmpeg(fullPath)
+        .setStartTime(start)
+        .setDuration(end - start)
+        .outputOptions(['-c', 'copy'])
+        .output(segOutputPath)
+        .on('end', resolve)
+        .on('error', reject)
+        .run();
+    });
+    await fs.remove(cobaltTempDir).catch(() => {});
+    console.log(`downloadSection ${index} ok via Cobalt+trim`);
+    return segOutputPath;
+  } catch (cobaltErr) {
+    console.log(`downloadSection ${index} Cobalt+trim falhou: ${cobaltErr.message}`);
+    await fs.remove(cobaltTempDir).catch(() => {});
+  }
+
   return null;
 }
 
@@ -383,15 +410,23 @@ async function download(url, outputDir) {
   const ytdlpResult = await tryYtDlp(url, outputDir);
   if (ytdlpResult) return ytdlpResult;
 
-  // 2. Fallback: Piped (proxy que não depende do IP do Render)
-  console.log('yt-dlp falhou, tentando Piped...');
+  // 2. Fallback: Cobalt (servidor terceiro, bypass bot detection)
+  console.log('yt-dlp falhou, tentando Cobalt...');
+  try {
+    return await downloadViaCobalt(url, outputDir);
+  } catch (cobaltErr) {
+    console.error('Cobalt falhou:', cobaltErr.message);
+  }
+
+  // 3. Fallback: Piped
+  console.log('Cobalt falhou, tentando Piped...');
   try {
     return await downloadViaPiped(url, outputDir);
   } catch (pipedErr) {
     console.error('Piped falhou:', pipedErr.message);
   }
 
-  // 3. Fallback: Invidious
+  // 4. Fallback: Invidious
   console.log('Piped falhou, tentando Invidious...');
   return downloadViaInvidious(url, outputDir);
 }
