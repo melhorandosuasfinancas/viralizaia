@@ -85,8 +85,11 @@ app.get('/debug/env', async (req, res) => {
       '(ls -la /usr/local/bin/bun 2>/dev/null || echo "/usr/local/bin/bun: missing") && ' +
       'echo "--- exec test ---" && ' +
       '(bun -e "process.stdout.write(String(1+2))" 2>&1 || echo "bun exec FAILED") && ' +
-      '(node -e "process.stdout.write(String(1+2))" 2>&1 || echo "node exec FAILED")',
-      { timeout: 15000 }
+      '(node -e "process.stdout.write(String(1+2))" 2>&1 || echo "node exec FAILED") && ' +
+      'echo "--- yt-dlp jsc options ---" && ' +
+      '(yt-dlp --help 2>&1 | grep -i "jsc\\|runtime\\|challenge" || echo "no jsc opts") && ' +
+      'echo "--- bun version ---" && (bun --version 2>&1)',
+      { timeout: 20000 }
     );
     res.type('text').send(stdout);
   } catch (err) {
