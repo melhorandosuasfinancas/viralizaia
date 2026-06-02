@@ -81,7 +81,7 @@ function fetchJson(url, redirects = 0) {
 function buildYtDlpCmd(url, outputPath, playerClient, sections = null) {
   const args = [
     'yt-dlp',
-    '--format', '"bestvideo[height<=720]+bestaudio/bestvideo+bestaudio/best[height<=720]/best"',
+    '--format', '"bv*[height<=720]+ba/b[height<=720]/bv*+ba/b"',
     '--merge-output-format', 'mp4',
     '--output', `"${outputPath}"`,
     '--no-playlist',
@@ -457,7 +457,7 @@ async function getVideoInfo(url) {
   const videoId = extractVideoId(url);
 
   // Tenta yt-dlp com web client + bgutil PO token
-  const cmd = `yt-dlp --print duration --print title --no-playlist --quiet --extractor-args "youtube:player_client=web" --no-check-certificate --js-runtimes node:/usr/local/bin/node ${cookiesArg()} "${url}"`;
+  const cmd = `yt-dlp --print duration --print title --skip-download --no-playlist --quiet --extractor-args "youtube:player_client=web" --no-check-certificate --js-runtimes node:/usr/local/bin/node ${cookiesArg()} "${url}"`;
   try {
     const { stdout } = await execAsync(cmd, { timeout: 30000 });
     const lines = stdout.trim().split('\n');
