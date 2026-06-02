@@ -82,7 +82,10 @@ app.get('/debug/env', async (req, res) => {
       '(which bun && bun --version || echo "bun: NOT FOUND") && ' +
       '(which node && node --version || echo "node: NOT FOUND") && ' +
       '(ls -la /root/.bun/bin/ 2>/dev/null || echo "/root/.bun/bin: missing") && ' +
-      '(ls -la /usr/local/bin/bun 2>/dev/null || echo "/usr/local/bin/bun: missing")',
+      '(ls -la /usr/local/bin/bun 2>/dev/null || echo "/usr/local/bin/bun: missing") && ' +
+      'echo "--- exec test ---" && ' +
+      '(bun -e "process.stdout.write(String(1+2))" 2>&1 || echo "bun exec FAILED") && ' +
+      '(node -e "process.stdout.write(String(1+2))" 2>&1 || echo "node exec FAILED")',
       { timeout: 15000 }
     );
     res.type('text').send(stdout);
