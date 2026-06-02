@@ -86,10 +86,11 @@ function buildYtDlpCmd(url, outputPath, playerClient, sections = null) {
     '--output', `"${outputPath}"`,
     '--no-playlist',
     '--quiet',
-    '--extractor-args', `"youtube:player_client=${playerClient}"`,
+    '--extractor-args', `"youtube:player_client=${playerClient},skip=sabr"`,
     '--no-check-certificate',
     '--concurrent-fragments', '1',
     '--no-warnings',
+    '--no-check-formats',
     '--js-runtimes', 'node:/usr/local/bin/node',
     cookiesArg(),
   ];
