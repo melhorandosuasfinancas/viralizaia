@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     libfontconfig1 \
     fonts-liberation \
     fonts-dejavu-core \
-    && pip3 install -U yt-dlp bgutil-ytdlp-pot-provider --break-system-packages \
+    && pip3 install -U yt-dlp bgutil-ytdlp-pot-provider yt-dlp-quickjs --break-system-packages \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
