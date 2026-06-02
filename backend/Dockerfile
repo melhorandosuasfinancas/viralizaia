@@ -20,9 +20,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Instala Bun (runtime JS para yt-dlp resolver n-challenge / JSC)
-RUN curl -fsSL https://bun.sh/install | bash
-ENV PATH="/root/.bun/bin:$PATH"
+# Instala Bun via npm (runtime JS para yt-dlp resolver n-challenge / JSC)
+RUN npm install -g bun
 
 # Clona e builda o servidor bgutil (gerador de PO tokens para yt-dlp)
 RUN git clone --depth 1 --branch 1.3.1 \
