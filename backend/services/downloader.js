@@ -81,7 +81,7 @@ function fetchJson(url, redirects = 0) {
 function buildYtDlpCmd(url, outputPath, playerClient, sections = null) {
   const args = [
     'yt-dlp',
-    '--format', '"bestvideo[height<=720]+bestaudio/best[height<=720]/bestvideo+bestaudio/best"',
+    '--format', '"bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/bestvideo+bestaudio/best[height<=720]/best"',
     '--merge-output-format', 'mp4',
     '--output', `"${outputPath}"`,
     '--no-playlist',
