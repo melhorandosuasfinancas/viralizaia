@@ -66,7 +66,7 @@ app.get('/debug/formats', async (req, res) => {
   }
 
   try {
-    const cmd = `yt-dlp --list-formats --extractor-args "youtube:player_client=${client}" --no-check-certificate --verbose --js-runtimes bun:/root/.bun/bin/bun ${cookiesArg} "${url}"`;
+    const cmd = `yt-dlp --list-formats --extractor-args "youtube:player_client=${client}" --no-check-certificate --verbose --js-runtimes bun:/root/.bun/bin/bun --remote-components ejs:github ${cookiesArg} "${url}"`;
     const { stdout, stderr } = await execAsync(cmd, { timeout: 60000 });
     res.type('text').send('STDOUT:\n' + stdout + '\nSTDERR:\n' + stderr);
   } catch (err) {
