@@ -29,7 +29,7 @@ const PIPED_INSTANCES = [
 
 // Player clients do yt-dlp para tentar em sequência
 // tv_embedded foi removido no yt-dlp v2026.03.17
-const PLAYER_CLIENTS = ['web', 'mweb', 'android', 'ios', 'android_embedded', 'web_creator'];
+const PLAYER_CLIENTS = ['android', 'ios', 'web', 'mweb', 'android_embedded', 'web_creator'];
 
 let cookiesReady = false;
 

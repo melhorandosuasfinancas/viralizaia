@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://viralizaia.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://viralizaia.duckdns.org";
 
 export type Platform = "tiktok" | "instagram" | "facebook" | "youtube";
 export type ProcessMode = "ai" | "manual";
