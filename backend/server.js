@@ -30,12 +30,13 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 
+// Limiter geral — exclui status polling (frontend faz ~40 req durante processamento)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 60,
+  skip: (req) => req.path.startsWith('/video/status/'),
   message: { error: 'Muitas requisições. Aguarde alguns minutos.' }
 });
-// Status polling precisa de limite mais generoso (frontend faz poll a cada 3s por ~2min = ~40 req)
 const statusLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 500,
