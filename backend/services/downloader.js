@@ -28,6 +28,7 @@ const PIPED_INSTANCES = [
 
 // Player clients do yt-dlp para tentar em sequência
 const PLAYER_CLIENTS = ['android', 'ios', 'web', 'mweb', 'android_embedded', 'web_creator'];
+const WARP_PROXY = 'socks5://127.0.0.1:40000';
 
 let cookiesReady = false;
 
@@ -75,7 +76,7 @@ function fetchJson(url, redirects = 0) {
   });
 }
 
-function buildYtDlpCmd(url, outputPath, playerClient, sections = null) {
+function buildYtDlpCmd(url, outputPath, playerClient, sections = null, proxy = null) {
   const args = [
     'yt-dlp',
     '--format', '"bv*[height<=720]+ba/b[height<=720]/bv*+ba/b"',
@@ -91,6 +92,10 @@ function buildYtDlpCmd(url, outputPath, playerClient, sections = null) {
     '--remote-components', 'ejs:github',
     cookiesArg(),
   ];
+
+  if (proxy) {
+    args.push('--proxy', proxy);
+  }
 
   if (sections) {
     args.push('--download-sections', `"${sections}"`);
@@ -118,6 +123,24 @@ async function downloadSection(url, start, end, outputDir, index = 0) {
       }
     } catch (err) {
       console.log(`downloadSection client=${client} failed: ${(err.stderr || err.message || '').slice(0, 200)}`);
+    }
+  }
+
+  // WARP proxy fallback
+  console.log(`downloadSection ${index}: direto falhou, tentando via WARP proxy...`);
+  for (const warpClient of PLAYER_CLIENTS) {
+    console.log(`yt-dlp WARP tentando player_client=${warpClient}...`);
+    const cmdWarp = buildYtDlpCmd(url, outputPath, warpClient, sections, WARP_PROXY);
+    try {
+      await execAsync(cmdWarp, { timeout: 120000 });
+      const wFiles = await fs.readdir(outputDir);
+      const wSeg = wFiles.find(f => f.startsWith(`segment_${index}.`) && f.endsWith('.mp4'));
+      if (wSeg) {
+        console.log(`downloadSection ${index} WARP sucesso, client=${warpClient}`);
+        return path.join(outputDir, wSeg);
+      }
+    } catch (warpErr) {
+      console.log(`downloadSection WARP ${warpClient} falhou: ${(warpErr.stderr || warpErr.message || '').slice(0, 150)}`);
     }
   }
 
@@ -181,6 +204,26 @@ async function tryYtDlp(url, outputDir) {
       console.log(`yt-dlp cliente ${client} falhou (blocked=${isBlocked}): ${errShort}`);
     }
   }
+
+  // WARP proxy fallback
+  console.log('yt-dlp direto falhou, tentando via WARP proxy...');
+  for (const warpClient of PLAYER_CLIENTS) {
+    console.log(`yt-dlp WARP tentando player_client=${warpClient}...`);
+    const cmdWarp = buildYtDlpCmd(url, outputPath, warpClient, null, WARP_PROXY);
+    try {
+      await execAsync(cmdWarp, { timeout: 180000 });
+      const files = await fs.readdir(outputDir);
+      const videoFile = files.find(f => f.startsWith('source.') && f.endsWith('.mp4'));
+      if (videoFile) {
+        console.log(`yt-dlp WARP sucesso com cliente: ${warpClient}`);
+        return path.join(outputDir, videoFile);
+      }
+    } catch (warpErr) {
+      const wErrShort = (warpErr.stderr || warpErr.message || '').slice(0, 300);
+      console.log(`yt-dlp WARP cliente ${warpClient} falhou: ${wErrShort}`);
+    }
+  }
+
   return null;
 }
 
