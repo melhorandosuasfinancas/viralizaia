@@ -74,7 +74,7 @@ app.get('/debug/formats', async (req, res) => {
   }
 
   try {
-    const cmd = `yt-dlp --list-formats --extractor-args "youtube:player_client=${client}" --no-check-certificate --verbose --js-runtimes bun:/root/.bun/bin/bun --remote-components ejs:github ${cookiesArg} "${url}"`;
+    const cmd = `yt-dlp --list-formats --extractor-args "youtube:player_client=${client}" --no-check-certificate --verbose --js-runtimes bun:/home/ubuntu/.bun/bin/bun --remote-components ejs:github ${cookiesArg} "${url}"`;
     const { stdout, stderr } = await execAsync(cmd, { timeout: 60000 });
     res.type('text').send('STDOUT:\n' + stdout + '\nSTDERR:\n' + stderr);
   } catch (err) {
@@ -89,7 +89,7 @@ app.get('/debug/env', async (req, res) => {
       'echo "PATH=$PATH" && ' +
       '(which bun && bun --version || echo "bun: NOT FOUND") && ' +
       '(which node && node --version || echo "node: NOT FOUND") && ' +
-      '(ls -la /root/.bun/bin/ 2>/dev/null || echo "/root/.bun/bin: missing") && ' +
+      '(ls -la /home/ubuntu/.bun/bin/ 2>/dev/null || echo "/root/.bun/bin: missing") && ' +
       '(ls -la /usr/local/bin/bun 2>/dev/null || echo "/usr/local/bin/bun: missing") && ' +
       'echo "--- exec test ---" && ' +
       '(bun -e "process.stdout.write(String(1+2))" 2>&1 || echo "bun exec FAILED") && ' +
