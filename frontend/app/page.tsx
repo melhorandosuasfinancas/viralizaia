@@ -2,302 +2,385 @@
 
 import Link from "next/link";
 
-const FEATURES = [
+const STEPS = [
   {
-    icon: "🤖",
-    title: "IA Escolhe os Melhores Momentos",
-    desc: "Nossa IA analisa o vídeo e identifica automaticamente os trechos mais virais — sem você precisar assistir tudo.",
+    num: "01",
+    title: "Cole o link do vídeo",
+    desc: "YouTube, MP4 ou Google Drive. Suportamos até 20 minutos de vídeo.",
   },
   {
-    icon: "🎬",
-    title: "Legendas Estilizadas Automáticas",
-    desc: "4 estilos de legenda (TikTok, Hormozi, Dark Box, Clean) gravados diretamente no vídeo — prontos para publicar.",
+    num: "02",
+    title: "IA analisa os melhores momentos",
+    desc: "A IA identifica humor, tensão, engajamento e escolhe os trechos mais virais.",
   },
   {
-    icon: "📱",
-    title: "Todos os Formatos de Uma Vez",
-    desc: "TikTok 9:16, Instagram Reels, Feed 4:5, Quadrado 1:1 e Facebook — tudo gerado em uma única ação.",
+    num: "03",
+    title: "Receba seus cortes prontos",
+    desc: "Clips no formato certo, com legenda gravada — prontos para TikTok, Reels e Shorts.",
   },
-  {
-    icon: "⬇️",
-    title: "Download Imediato Sem Marca D'água",
-    desc: "Baixe todos os clips em segundos, prontos para postar — sem marcas de outros apps, sem custo extra.",
-  },
+];
+
+const PLATFORMS = [
+  { icon: "🎵", name: "TikTok", desc: "Formato 9:16 otimizado para o FYP. A IA sabe o que funciona no TikTok." },
+  { icon: "📸", name: "Instagram Reels", desc: "Transforme podcasts e vídeos longos em Reels que capturam atenção." },
+  { icon: "▶️", name: "YouTube Shorts", desc: "Extraia os melhores momentos e transforme em Shorts virais." },
+  { icon: "👥", name: "Facebook Reels", desc: "Alcance novo público com Reels criados a partir do seu melhor conteúdo." },
+  { icon: "🎬", name: "Legendas Automáticas", desc: "4 estilos: TikTok, Hormozi, Dark Box e Clean — gravados no vídeo." },
+  { icon: "⚡", name: "Download Imediato", desc: "Baixe todos os clips em segundos. Sem marca d'água, sem espera." },
 ];
 
 const PLANS = [
   {
-    name: "Starter",
-    price: "R$29,90",
-    period: "/mês",
-    desc: "Para quem está começando",
-    features: [
-      "Vídeos ilimitados",
-      "Até 5 cortes por vídeo",
-      "TikTok + Instagram + Facebook",
-      "Legendas automáticas estilizadas",
-      "Download em HD sem marca d'água",
-      "Upload de arquivo ou link YouTube",
-    ],
-    cta: "Assinar Starter",
-    href: "https://pay.kiwify.com.br/Ft2LPkC",
+    emoji: "✨",
+    name: "Grátis",
+    price: "R$0",
+    period: "",
+    badge: null,
+    desc: "Teste antes de pagar",
     highlight: false,
+    features: [
+      "1 clip grátis para testar",
+      "TikTok + Instagram",
+      "Legenda automática",
+      "Com marca d'água",
+      "Sem cartão de crédito",
+    ],
+    cta: "Começar Grátis →",
+    href: "/app",
+    isLink: true,
   },
   {
-    name: "Pro",
-    price: "R$59,90",
+    emoji: "🚀",
+    name: "Starter",
+    price: "R$19,90",
     period: "/mês",
-    desc: "Para criadores sérios — 4x mais cortes",
+    badge: "MAIS POPULAR",
+    desc: "Para criadores que publicam todo dia",
+    highlight: true,
+    features: [
+      "Vídeos ilimitados",
+      "Até 10 cortes por vídeo",
+      "TikTok + Instagram + Facebook",
+      "Legendas automáticas estilizadas",
+      "Sem marca d'água",
+      "Download em HD",
+      "Suporte por chat",
+    ],
+    cta: "Assinar Starter →",
+    href: "https://pay.kiwify.com.br/Ft2LPkC",
+    isLink: false,
+  },
+  {
+    emoji: "💎",
+    name: "Pro",
+    price: "R$39,90",
+    period: "/mês",
+    badge: null,
+    desc: "Para criadores sérios — máximo resultado",
+    highlight: false,
     features: [
       "Vídeos ilimitados",
       "Até 20 cortes por vídeo",
-      "Todos os formatos + YouTube Shorts",
+      "Todos formatos + YouTube Shorts",
       "IA avançada de viralização",
       "4 estilos de legenda premium",
       "Prioridade no processamento",
-      "Download em HD sem marca d'água",
+      "Sem marca d'água",
+      "Suporte prioritário",
     ],
-    cta: "Quero o Pro",
+    cta: "Assinar Pro →",
     href: "https://pay.kiwify.com.br/4Z0jIcC",
-    highlight: true,
+    isLink: false,
   },
-];
-
-const CAPTION_STYLES = [
-  { name: "TikTok", desc: "Branco, fonte grande, centralizado" },
-  { name: "Hormozi", desc: "Branco + amarelo, bold, impacto" },
-  { name: "Dark Box", desc: "Texto branco em caixa preta" },
-  { name: "Clean", desc: "Minimalista, discreto" },
 ];
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#080808]">
+    <div className="min-h-screen" style={{ background: "#000000", color: "#ffffff" }}>
+
       {/* NAV */}
-      <nav className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
-        <div className="text-xl font-bold gradient-text">ViralizaIA</div>
-        <div className="flex items-center gap-4">
-          <Link href="#plans" className="text-sm text-gray-400 hover:text-white transition-colors">
-            Planos
-          </Link>
-          <Link href="/app" className="btn-primary px-4 py-2 rounded-full text-sm font-semibold">
-            Entrar
-          </Link>
+      <nav style={{
+        position: "sticky", top: 0, zIndex: 50,
+        background: "rgba(0,0,0,0.85)", backdropFilter: "blur(16px)",
+        borderBottom: "1px solid rgba(255,255,255,0.06)"
+      }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: 8,
+              background: "linear-gradient(135deg, #7c3aed, #ec4899)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 14, fontWeight: 900
+            }}>V</div>
+            <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.5px" }}>ViralizaIA</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+            <Link href="#como-funciona" style={{ color: "#aaa", fontSize: 14, textDecoration: "none" }}>Como funciona</Link>
+            <Link href="#planos" style={{ color: "#aaa", fontSize: 14, textDecoration: "none" }}>Preços</Link>
+            <Link href="/app" style={{ color: "#aaa", fontSize: 14, textDecoration: "none" }}>Entrar</Link>
+            <Link href="/app" style={{
+              background: "linear-gradient(135deg, #7c3aed, #ec4899)",
+              color: "white", fontSize: 13, fontWeight: 700,
+              padding: "8px 20px", borderRadius: 100, textDecoration: "none",
+              transition: "opacity 0.2s"
+            }}>Começar grátis</Link>
+          </div>
         </div>
       </nav>
 
       {/* HERO */}
-      <section className="text-center px-6 pt-16 pb-24 max-w-4xl mx-auto">
-        <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-1.5 text-green-300 text-sm mb-6">
-          <span>🎁</span>
-          <span>1 clip grátis para testar — sem cartão de crédito</span>
+      <section style={{ textAlign: "center", padding: "80px 24px 64px", maxWidth: 800, margin: "0 auto" }}>
+        {/* Badge */}
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.3)",
+          borderRadius: 100, padding: "6px 16px", fontSize: 12, color: "#a78bfa",
+          marginBottom: 28, fontWeight: 600, letterSpacing: "0.05em"
+        }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#a78bfa", display: "inline-block" }} />
+          IA 100% BRASILEIRA
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6">
-          Transforme qualquer{" "}
-          <span className="gradient-text">vídeo do YouTube</span>
-          <br />
-          em cortes virais para{" "}
-          <span className="gradient-text">TikTok e Instagram</span>
+        <h1 style={{ fontSize: "clamp(2.4rem, 6vw, 4rem)", fontWeight: 900, lineHeight: 1.1, marginBottom: 20, letterSpacing: "-1.5px" }}>
+          Crie conteúdo viral{" "}
+          <span style={{
+            background: "linear-gradient(135deg, #a855f7, #ec4899, #f59e0b)",
+            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
+          }}>100x mais rápido</span>
         </h1>
 
-        <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10">
-          Cole o link, a IA analisa e gera automaticamente os melhores cortes —
-          já no formato certo, com legenda gravada. Sem editar, sem assistir o vídeo inteiro.
+        <p style={{ color: "#888", fontSize: "1.1rem", lineHeight: 1.7, marginBottom: 40, maxWidth: 560, margin: "0 auto 40px" }}>
+          Cole o link do YouTube, a IA analisa e gera automaticamente os melhores cortes —
+          já no formato certo, com legenda gravada. Sem editar. Sem assistir tudo.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link
-            href="/app"
-            className="btn-primary px-8 py-4 rounded-full text-base font-bold whitespace-nowrap inline-block"
-          >
-            🎬 Testar 1 Clip Grátis →
-          </Link>
-          <Link
-            href="#plans"
-            className="px-8 py-4 rounded-full text-base font-semibold border border-white/10 bg-white/5 hover:bg-white/10 transition-colors inline-block"
-          >
-            Ver Planos a partir de R$29,90
-          </Link>
+        {/* Input CTA */}
+        <div style={{
+          display: "flex", alignItems: "center",
+          background: "#0f0f0f", border: "1px solid rgba(124,58,237,0.5)",
+          borderRadius: 16, padding: "6px 6px 6px 20px",
+          boxShadow: "0 0 30px rgba(124,58,237,0.2)",
+          maxWidth: 580, margin: "0 auto 16px",
+          gap: 8
+        }}>
+          <span style={{ color: "#555", fontSize: 18 }}>🔗</span>
+          <span style={{ flex: 1, color: "#555", fontSize: 14, textAlign: "left" }}>
+            Cole o link do seu vídeo aqui...
+          </span>
+          <Link href="/app" style={{
+            background: "linear-gradient(135deg, #7c3aed, #ec4899, #f59e0b)",
+            color: "white", fontWeight: 800, fontSize: 14,
+            padding: "12px 28px", borderRadius: 12, textDecoration: "none",
+            whiteSpace: "nowrap"
+          }}>Viralizar</Link>
         </div>
 
-        <p className="text-gray-600 text-xs mt-4">
-          Sem cartão de crédito • Sem cadastro complicado • Resultado em minutos
+        <p style={{ color: "#444", fontSize: 12 }}>
+          Sem cartão de crédito · 1 clip grátis para testar · Resultado em minutos
         </p>
       </section>
 
-      {/* DEMO VISUAL */}
-      <section className="px-6 pb-24 max-w-5xl mx-auto">
-        <div className="card-glow rounded-2xl overflow-hidden bg-[#0f0f0f]" style={{ minHeight: 300 }}>
-          <div className="bg-[#1a1a1a] px-4 py-3 flex items-center gap-2 border-b border-white/5">
-            <div className="w-3 h-3 rounded-full bg-red-500/60" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-            <div className="w-3 h-3 rounded-full bg-green-500/60" />
-            <div className="flex-1 bg-white/5 rounded-full px-4 py-1 text-xs text-gray-500 ml-4 max-w-xs">
-              viralizaia.com.br/app
-            </div>
-          </div>
-          <div className="p-6 md:p-10">
-            <div className="grid md:grid-cols-2 gap-6 items-center">
-              <div>
-                <p className="text-xs text-gray-500 mb-2">Cole o link do YouTube</p>
-                <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-gray-300 mb-4 flex items-center gap-2">
-                  <span className="text-red-400">▶</span>
-                  youtube.com/watch?v=xK3p2mN...
-                </div>
-                <div className="flex gap-2 mb-4 flex-wrap">
-                  {["TikTok", "Reels", "Feed", "Facebook"].map((p) => (
-                    <span key={p} className="text-xs px-3 py-1 rounded-full border border-purple-500/30 text-purple-300 bg-purple-500/10">
-                      {p}
-                    </span>
-                  ))}
-                </div>
-                <div className="grid grid-cols-2 gap-2 mb-4">
-                  {CAPTION_STYLES.map((s) => (
-                    <div key={s.name} className="bg-white/5 border border-white/10 rounded-lg px-3 py-2">
-                      <p className="text-xs font-semibold text-white">{s.name}</p>
-                      <p className="text-xs text-gray-500">{s.desc}</p>
-                    </div>
-                  ))}
-                </div>
-                <button className="btn-primary w-full py-3 rounded-xl text-sm font-bold">
-                  🤖 Gerar Cortes com IA
-                </button>
-              </div>
-              <div className="space-y-3">
-                {[
-                  { num: 1, time: "0:15 – 1:12", score: 9, label: "TikTok" },
-                  { num: 2, time: "3:40 – 4:28", score: 8, label: "Reels" },
-                  { num: 3, time: "7:02 – 7:55", score: 7, label: "Feed" },
-                ].map((clip) => (
-                  <div key={clip.num} className="bg-white/5 border border-white/8 rounded-xl p-3 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center text-purple-300 font-bold text-sm flex-shrink-0">
-                      #{clip.num}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-400">{clip.time}</p>
-                      <div className="flex items-center gap-1 mt-1">
-                        <div className="h-1.5 rounded-full progress-animated" style={{ width: `${clip.score * 10}%` }} />
-                        <span className="text-xs text-gray-500">{clip.score}/10</span>
-                      </div>
-                    </div>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/20">
-                      {clip.label}
-                    </span>
-                    <button className="text-xs text-blue-400 hover:text-blue-300">⬇️</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURES */}
-      <section className="px-6 pb-24 max-w-5xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-12">
-          Tudo que você precisa para{" "}
-          <span className="gradient-text">viralizar mais rápido</span>
-        </h2>
-        <div className="grid md:grid-cols-2 gap-6">
-          {FEATURES.map((f) => (
-            <div key={f.title} className="bg-[#0f0f0f] border border-white/8 rounded-2xl p-6">
-              <div className="text-3xl mb-3">{f.icon}</div>
-              <h3 className="font-semibold text-lg mb-2">{f.title}</h3>
-              <p className="text-gray-400 text-sm leading-relaxed">{f.desc}</p>
+      {/* STATS */}
+      <section style={{ maxWidth: 700, margin: "0 auto 72px", padding: "0 24px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "rgba(255,255,255,0.06)", borderRadius: 16, overflow: "hidden" }}>
+          {[
+            { num: "10.000+", label: "cortes gerados" },
+            { num: "4", label: "plataformas suportadas" },
+            { num: "< 3 min", label: "tempo de resultado" },
+          ].map((s) => (
+            <div key={s.label} style={{ background: "#0a0a0a", padding: "28px 16px", textAlign: "center" }}>
+              <div style={{
+                fontSize: "1.8rem", fontWeight: 900,
+                background: "linear-gradient(135deg, #a855f7, #ec4899)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+                marginBottom: 4
+              }}>{s.num}</div>
+              <div style={{ color: "#666", fontSize: 12 }}>{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* FREE TRIAL BANNER */}
-      <section className="px-6 pb-16 max-w-3xl mx-auto">
-        <div className="bg-gradient-to-r from-green-900/30 to-emerald-900/20 border border-green-500/20 rounded-2xl p-8 text-center">
-          <div className="text-4xl mb-3">🎁</div>
-          <h3 className="text-2xl font-bold mb-2">Experimente grátis agora</h3>
-          <p className="text-gray-400 mb-6">
-            Gere 1 clip viral gratuito para ver o resultado com seus próprios olhos.
-            Sem cartão de crédito, sem compromisso.
-          </p>
-          <Link
-            href="/app"
-            className="btn-primary px-8 py-4 rounded-full text-base font-bold inline-block"
-          >
-            🎬 Criar Meu Clip Grátis
-          </Link>
-          <p className="text-gray-600 text-xs mt-3">Já com legenda gravada no vídeo</p>
+      {/* COMO FUNCIONA */}
+      <section id="como-funciona" style={{ maxWidth: 900, margin: "0 auto 80px", padding: "0 24px" }}>
+        <p style={{ textAlign: "center", color: "#7c3aed", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 12 }}>COMO FUNCIONA</p>
+        <h2 style={{ textAlign: "center", fontSize: "clamp(1.8rem, 4vw, 2.4rem)", fontWeight: 800, marginBottom: 48, letterSpacing: "-0.5px" }}>
+          Simples assim. Sem complicação.
+        </h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 24 }}>
+          {STEPS.map((s) => (
+            <div key={s.num} style={{
+              background: "#0a0a0a", border: "1px solid #1a1a1a",
+              borderRadius: 16, padding: "28px 24px"
+            }}>
+              <div style={{
+                fontSize: "2.2rem", fontWeight: 900, lineHeight: 1,
+                background: "linear-gradient(135deg, #7c3aed, #ec4899)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+                marginBottom: 12
+              }}>{s.num}</div>
+              <h3 style={{ fontWeight: 700, fontSize: "1rem", marginBottom: 8 }}>{s.title}</h3>
+              <p style={{ color: "#666", fontSize: 13, lineHeight: 1.6 }}>{s.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* PLANS */}
-      <section id="plans" className="px-6 pb-24 max-w-3xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-4">
-          Planos simples, resultado{" "}
-          <span className="gradient-text">garantido</span>
+      {/* PLATAFORMAS */}
+      <section style={{ maxWidth: 900, margin: "0 auto 80px", padding: "0 24px" }}>
+        <h2 style={{ textAlign: "center", fontSize: "clamp(1.8rem, 4vw, 2.4rem)", fontWeight: 800, marginBottom: 48, letterSpacing: "-0.5px" }}>
+          Otimizado para{" "}
+          <span style={{
+            background: "linear-gradient(135deg, #a855f7, #ec4899)",
+            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
+          }}>todas as plataformas</span>
         </h2>
-        <p className="text-gray-400 text-center mb-12">
-          Cancele quando quiser. Sem fidelidade. Comece grátis.
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
+          {PLATFORMS.map((p) => (
+            <div key={p.name} style={{
+              background: "#0a0a0a", border: "1px solid #1a1a1a",
+              borderRadius: 16, padding: "24px",
+              transition: "border-color 0.2s",
+              cursor: "default"
+            }}>
+              <div style={{ fontSize: 28, marginBottom: 12 }}>{p.icon}</div>
+              <h3 style={{ fontWeight: 700, fontSize: "0.95rem", marginBottom: 6 }}>{p.name}</h3>
+              <p style={{ color: "#666", fontSize: 12, lineHeight: 1.6 }}>{p.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* PLANOS */}
+      <section id="planos" style={{ maxWidth: 1000, margin: "0 auto 80px", padding: "0 24px" }}>
+        <p style={{ textAlign: "center", color: "#7c3aed", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 12 }}>PREÇOS</p>
+        <h2 style={{ textAlign: "center", fontSize: "clamp(1.8rem, 4vw, 2.4rem)", fontWeight: 800, marginBottom: 8, letterSpacing: "-0.5px" }}>
+          Planos que cabem no seu bolso
+        </h2>
+        <p style={{ textAlign: "center", color: "#666", fontSize: 14, marginBottom: 16 }}>
+          Comece grátis. Faça upgrade quando precisar. Cancele quando quiser.
         </p>
-        <div className="grid md:grid-cols-2 gap-6">
-          {PLANS.map((plan) => (
-            <div
-              key={plan.name}
-              className={`rounded-2xl p-6 relative ${
-                plan.highlight
-                  ? "card-glow bg-gradient-to-b from-purple-900/20 to-[#0f0f0f]"
-                  : "bg-[#0f0f0f] border border-white/8"
-              }`}
-            >
-              {plan.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
-                  MELHOR CUSTO-BENEFÍCIO
-                </div>
+
+        {/* Free banner */}
+        <div style={{
+          background: "#0a0a0a", border: "1px solid #1a1a1a",
+          borderRadius: 12, padding: "14px 24px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          flexWrap: "wrap", gap: 12, marginBottom: 24
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{
+              background: "linear-gradient(135deg, #7c3aed, #ec4899)",
+              color: "white", fontSize: 11, fontWeight: 800,
+              padding: "4px 12px", borderRadius: 100
+            }}>GRÁTIS PARA SEMPRE</span>
+            <span style={{ fontWeight: 600, fontSize: 14 }}>Teste antes de pagar</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 20, color: "#888", fontSize: 13 }}>
+            <span>✓ <strong style={{ color: "#fff" }}>1 clip grátis</strong></span>
+            <span>✓ Sem cartão de crédito</span>
+            <span>✓ Resultado imediato</span>
+          </div>
+          <Link href="/app" style={{
+            background: "linear-gradient(135deg, #7c3aed, #ec4899)",
+            color: "white", fontWeight: 700, fontSize: 13,
+            padding: "10px 24px", borderRadius: 100, textDecoration: "none",
+            whiteSpace: "nowrap"
+          }}>Criar conta grátis →</Link>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}>
+          {PLANS.slice(1).map((plan) => (
+            <div key={plan.name} style={{
+              background: plan.highlight ? "linear-gradient(180deg, rgba(124,58,237,0.12) 0%, #0a0a0a 100%)" : "#0a0a0a",
+              border: plan.highlight ? "1px solid rgba(124,58,237,0.4)" : "1px solid #1a1a1a",
+              borderRadius: 20, padding: "28px 24px",
+              position: "relative",
+              boxShadow: plan.highlight ? "0 0 40px rgba(124,58,237,0.15)" : "none"
+            }}>
+              {plan.badge && (
+                <div style={{
+                  position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)",
+                  background: "linear-gradient(135deg, #7c3aed, #ec4899)",
+                  color: "white", fontSize: 11, fontWeight: 800,
+                  padding: "4px 16px", borderRadius: 100, whiteSpace: "nowrap"
+                }}>+ {plan.badge}</div>
               )}
-              <p className="text-gray-400 text-sm mb-1">{plan.name}</p>
-              <div className="flex items-end gap-1 mb-1">
-                <span className="text-4xl font-extrabold">{plan.price}</span>
-                <span className="text-gray-400 pb-1">{plan.period}</span>
+
+              <div style={{ marginBottom: 4, fontSize: 20 }}>{plan.emoji}</div>
+              <p style={{ color: "#888", fontSize: 13, marginBottom: 4 }}>{plan.name}</p>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 4, marginBottom: 4 }}>
+                <span style={{ fontSize: "2.4rem", fontWeight: 900, lineHeight: 1 }}>{plan.price}</span>
+                <span style={{ color: "#666", paddingBottom: 4 }}>{plan.period}</span>
               </div>
-              <p className="text-gray-500 text-xs mb-6">{plan.desc}</p>
-              <ul className="space-y-2 mb-6">
+              <p style={{ color: "#555", fontSize: 12, marginBottom: 20 }}>{plan.desc}</p>
+
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", display: "flex", flexDirection: "column", gap: 10 }}>
                 {plan.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
-                    <span className="text-green-400">✓</span>
+                  <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, color: "#ccc" }}>
+                    <span style={{ color: "#7c3aed", fontWeight: 700, marginTop: 1 }}>✓</span>
                     {f}
                   </li>
                 ))}
               </ul>
-              <a
-                href={plan.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`block text-center py-3 rounded-xl font-bold text-sm transition-all ${
-                  plan.highlight
-                    ? "btn-primary"
-                    : "bg-white/5 border border-white/10 hover:bg-white/10"
-                }`}
-              >
-                {plan.cta}
-              </a>
+
+              {plan.isLink ? (
+                <Link href={plan.href} style={{
+                  display: "block", textAlign: "center",
+                  background: plan.highlight ? "linear-gradient(135deg, #7c3aed, #ec4899)" : "rgba(255,255,255,0.05)",
+                  border: plan.highlight ? "none" : "1px solid rgba(255,255,255,0.1)",
+                  color: "white", fontWeight: 700, fontSize: 13,
+                  padding: "14px", borderRadius: 12, textDecoration: "none"
+                }}>{plan.cta}</Link>
+              ) : (
+                <a href={plan.href} target="_blank" rel="noopener noreferrer" style={{
+                  display: "block", textAlign: "center",
+                  background: plan.highlight ? "linear-gradient(135deg, #7c3aed, #ec4899)" : "rgba(255,255,255,0.05)",
+                  border: plan.highlight ? "none" : "1px solid rgba(255,255,255,0.1)",
+                  color: "white", fontWeight: 700, fontSize: 13,
+                  padding: "14px", borderRadius: 12, textDecoration: "none"
+                }}>{plan.cta}</a>
+              )}
             </div>
           ))}
         </div>
+      </section>
 
-        <div className="mt-6 text-center">
-          <p className="text-gray-500 text-sm">
-            Ainda na dúvida?{" "}
-            <Link href="/app" className="text-purple-400 hover:text-purple-300 underline">
-              Teste grátis primeiro →
-            </Link>
+      {/* CTA FINAL */}
+      <section style={{ maxWidth: 700, margin: "0 auto 80px", padding: "0 24px" }}>
+        <div style={{
+          background: "linear-gradient(135deg, rgba(124,58,237,0.15), rgba(236,72,153,0.1))",
+          border: "1px solid rgba(124,58,237,0.25)",
+          borderRadius: 24, padding: "48px 32px", textAlign: "center"
+        }}>
+          <h2 style={{ fontSize: "clamp(1.5rem, 4vw, 2rem)", fontWeight: 800, marginBottom: 12, letterSpacing: "-0.5px" }}>
+            Comece a viralizar hoje
+          </h2>
+          <p style={{ color: "#888", fontSize: 14, marginBottom: 28 }}>
+            Sem cartão de crédito. 1 clip grátis para testar. Resultado em menos de 3 minutos.
           </p>
+          <Link href="/app" style={{
+            background: "linear-gradient(135deg, #7c3aed, #ec4899, #f59e0b)",
+            color: "white", fontWeight: 800, fontSize: 15,
+            padding: "16px 40px", borderRadius: 100, textDecoration: "none",
+            display: "inline-block"
+          }}>🎬 Criar meu primeiro clip grátis</Link>
+          <p style={{ color: "#444", fontSize: 11, marginTop: 16 }}>Já com legenda gravada no vídeo</p>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-white/5 px-6 py-8 text-center">
-        <p className="gradient-text font-bold text-lg mb-2">ViralizaIA</p>
-        <p className="text-gray-600 text-xs">
-          © 2026 ViralizaIA • Feito no Brasil para criadores brasileiros
+      <footer style={{
+        borderTop: "1px solid #111", padding: "32px 24px",
+        textAlign: "center"
+      }}>
+        <div style={{
+          fontWeight: 800, fontSize: 16, marginBottom: 4,
+          background: "linear-gradient(135deg, #a855f7, #ec4899)",
+          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
+        }}>ViralizaIA</div>
+        <p style={{ color: "#444", fontSize: 12 }}>
+          © 2026 ViralizaIA · Feito no Brasil para criadores brasileiros
         </p>
       </footer>
     </div>
