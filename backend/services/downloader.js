@@ -31,7 +31,7 @@ const PIPED_INSTANCES = [
 // tv_embedded foi removido no yt-dlp v2026.03.17
 const PLAYER_CLIENTS = ['android', 'ios', 'web', 'mweb', 'android_embedded', 'web_creator'];
 
-const WARP_PROXY = 'socks5://127.0.0.1:40000';
+const WARP_PROXY = 'proxychains4'; // usa proxychains4 como wrapper (ffmpeg nao suporta socks5)
 
 let cookiesReady = false;
 
@@ -97,7 +97,8 @@ function buildYtDlpCmd(url, outputPath, playerClient, sections = null, proxy = n
     cookiesArg(),
   ];
 
-  if (proxy) {
+  const cmdPrefix = (proxy === 'proxychains4') ? 'proxychains4 ' : '';
+  if (proxy && proxy !== 'proxychains4') {
     args.push('--proxy', proxy);
   }
 
@@ -108,7 +109,7 @@ function buildYtDlpCmd(url, outputPath, playerClient, sections = null, proxy = n
   }
 
   args.push(`"${url}"`);
-  return args.filter(Boolean).join(' ');
+  return cmdPrefix + args.filter(Boolean).join(' ');
 }
 
 // Download only a specific segment of the video (start/end in seconds)
