@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -64,56 +65,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "SoftwareApplication",
-              "name": "Viraliza Cortes",
-              "applicationCategory": "MultimediaApplication",
-              "operatingSystem": "Web",
-              "description": "Ferramenta de IA que transforma vídeos longos em cortes virais para TikTok, Instagram Reels e YouTube Shorts automaticamente.",
-              "url": "https://viralizacortes.com.br",
-              "inLanguage": "pt-BR",
-              "offers": [
-                {
-                  "@type": "Offer",
-                  "name": "Grátis",
-                  "price": "0",
-                  "priceCurrency": "BRL",
-                  "description": "1 corte grátis sem cartão de crédito"
-                },
-                {
-                  "@type": "Offer",
-                  "name": "Starter",
-                  "price": "19.90",
-                  "priceCurrency": "BRL",
-                  "billingIncrement": "P1M",
-                  "description": "Vídeos ilimitados, até 10 cortes por vídeo"
-                },
-                {
-                  "@type": "Offer",
-                  "name": "Pro",
-                  "price": "39.90",
-                  "priceCurrency": "BRL",
-                  "billingIncrement": "P1M",
-                  "description": "Vídeos ilimitados, até 20 cortes por vídeo, todos os formatos"
-                }
+              name: "Viraliza Cortes",
+              applicationCategory: "MultimediaApplication",
+              operatingSystem: "Web",
+              url: "https://viralizacortes.com.br",
+              inLanguage: "pt-BR",
+              offers: [
+                { "@type": "Offer", name: "Grátis", price: "0", priceCurrency: "BRL" },
+                { "@type": "Offer", name: "Starter", price: "19.90", priceCurrency: "BRL", billingIncrement: "P1M", description: "Até 15 cortes por vídeo" },
+                { "@type": "Offer", name: "Pro", price: "39.90", priceCurrency: "BRL", billingIncrement: "P1M", description: "Até 40 cortes por vídeo" },
               ],
-              "featureList": [
-                "Cortes virais automáticos com IA",
-                "Formato 9:16 para TikTok e Reels",
-                "Legenda automática gravada no vídeo",
-                "YouTube Shorts automático",
-                "Download imediato em HD"
-              ],
-              "aggregateRating": {
-                "@type": "AggregateRating",
-                "ratingValue": "4.9",
-                "ratingCount": "847",
-                "bestRating": "5"
-              }
+              aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", ratingCount: "847", bestRating: "5" },
             })
           }}
         />
       </head>
       <body className={`${inter.className} min-h-full bg-[#080808] text-[#f9f9f9]`}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
