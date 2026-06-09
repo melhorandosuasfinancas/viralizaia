@@ -1,63 +1,144 @@
 @import "tailwindcss";
 
 :root {
-  --background: #080808;
+  --background: #050507;
   --foreground: #f9f9f9;
+  --purple: #7c3aed;
+  --purple-light: #a78bfa;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
-  background: #080808;
+  background: #050507;
   color: #f9f9f9;
-  font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
+/* Gradient text — roxo da logo (#8B2BE2) → violeta */
 .gradient-text {
-  background: linear-gradient(135deg, #a855f7, #3b82f6, #10b981);
+  background: linear-gradient(135deg, #8B2BE2, #b44ff7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-orange {
+  background: linear-gradient(135deg, #f97316, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-cyan {
+  background: linear-gradient(135deg, #22d3ee, #3b82f6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
+/* Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, #7c3aed, #3b82f6);
-  transition: all 0.2s ease;
+  background: linear-gradient(135deg, #8B2BE2, #6d1eb8);
   color: white;
   border: none;
   cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-block;
 }
-
 .btn-primary:hover {
-  opacity: 0.92;
+  opacity: 0.9;
   transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 8px 30px rgba(139, 43, 226, 0.5);
 }
 
+/* Cards */
 .card-glow {
-  box-shadow: 0 0 40px rgba(124, 58, 237, 0.12);
-  border: 1px solid rgba(124, 58, 237, 0.18);
+  border: 1px solid rgba(139, 43, 226, 0.35);
+  box-shadow: 0 0 40px rgba(139, 43, 226, 0.12);
+}
+.card-border {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(#0d0d1f, #0d0d1f) padding-box,
+    linear-gradient(135deg, rgba(139,43,226,0.4), rgba(180,79,247,0.2)) border-box;
+}
+.card-border-hover {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(#0d0d1f, #0d0d1f) padding-box,
+    linear-gradient(135deg, rgba(139,43,226,0.18), rgba(180,79,247,0.1)) border-box;
+  transition: all 0.3s ease;
+}
+.card-border-hover:hover {
+  background:
+    linear-gradient(#0f0f22, #0f0f22) padding-box,
+    linear-gradient(135deg, rgba(139,43,226,0.65), rgba(180,79,247,0.4)) border-box;
+  box-shadow: 0 0 30px rgba(139, 43, 226, 0.18);
+  transform: translateY(-2px);
 }
 
+/* Progress bar */
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
-
 .progress-animated {
-  background: linear-gradient(90deg, #7c3aed, #3b82f6, #10b981, #7c3aed);
+  background: linear-gradient(90deg, #7c3aed, #3b82f6, #22d3ee, #7c3aed);
   background-size: 300% 100%;
   animation: shimmer 2.5s infinite linear;
 }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(124, 58, 237, 0.6); }
+/* Nav pill */
+.nav-pill {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
 }
 
-.pulse-glow {
-  animation: pulse-glow 2s infinite;
+/* Glow rings */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.glow-ring {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Section badge */
+.section-badge {
+  background: rgba(139, 43, 226, 0.15);
+  border: 1px solid rgba(139, 43, 226, 0.35);
+  color: #b44ff7;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Input premium */
+.input-premium {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-premium:focus {
+  border-color: rgba(139, 43, 226, 0.7);
+  box-shadow: 0 0 0 3px rgba(139, 43, 226, 0.15);
+}
+
+/* FAQ */
+.faq-item {
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  transition: all 0.2s ease;
+}
+.faq-item:hover {
+  border-color: rgba(139,43,226,0.35);
+  background: rgba(139,43,226,0.05);
 }

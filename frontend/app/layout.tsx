@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const inter = Inter({ subsets: ["latin"] });
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
 
 export const metadata: Metadata = {
   title: "Viraliza Cortes — Cortes Virais Automáticos para TikTok, Reels e Shorts",
@@ -80,7 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className={`${inter.className} min-h-full bg-[#080808] text-[#f9f9f9]`}>
+      <body className={`${montserrat.className} min-h-full bg-[#050507] text-[#f9f9f9]`}>
         <Providers>{children}</Providers>
       </body>
     </html>
