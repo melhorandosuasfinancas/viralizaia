@@ -374,17 +374,17 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO */}
-      <section className="relative z-10 px-6 md:px-10 pt-16 pb-20 max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row items-center gap-14">
+      <section className="relative z-10 px-4 sm:px-6 md:px-10 pt-12 pb-16 max-w-7xl mx-auto overflow-x-hidden w-full">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-10 lg:gap-14">
 
           {/* Left */}
-          <div className="flex-1 text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
+          <div className="w-full lg:flex-1 text-center lg:text-left lg:max-w-2xl">
             <div className="section-badge mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
               IA 100% Brasileira
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-black leading-[1.05] mb-6 tracking-tight">
+            <h1 className="text-[1.9rem] leading-tight sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black mb-6 tracking-tight">
               Transforme vídeos longos em{" "}
               <span style={{ background: "linear-gradient(135deg, #f97316, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                 cortes virais
@@ -395,13 +395,13 @@ export default function LandingPage() {
               </span>
             </h1>
 
-            <p className="text-gray-400 text-lg md:text-xl max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed font-medium">
+            <p className="text-gray-400 text-base md:text-xl w-full lg:max-w-xl lg:mx-0 mb-10 leading-relaxed font-medium">
               A IA encontra os melhores momentos, corta, adiciona legendas e
               deixa tudo pronto para viralizar nas redes sociais.
             </p>
 
             {/* URL Input */}
-            <div className="flex gap-2 mb-8 max-w-xl mx-auto lg:mx-0">
+            <div className="flex gap-2 mb-8 w-full lg:max-w-xl lg:mx-0">
               <div className="flex-1 flex items-center gap-3 input-premium rounded-full px-5 py-3.5">
                 <span className="text-gray-500 flex-shrink-0"><LinkIcon /></span>
                 <input
@@ -443,8 +443,8 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Right — Mockup (escondido no mobile, aparece a partir de md) */}
-          <div className="hidden md:flex flex-1 w-full max-w-xl">
+          {/* Right — Mockup (escondido no mobile, aparece a partir de lg) */}
+          <div className="hidden lg:flex lg:flex-1 w-full max-w-xl overflow-hidden">
             <div className="card-glow rounded-3xl bg-[#0a0a14] p-6">
               <div className="flex items-center gap-3 mb-5">
                 <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">1 Vídeo Longo</span>

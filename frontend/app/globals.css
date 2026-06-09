@@ -9,10 +9,18 @@
 
 * { box-sizing: border-box; }
 
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   background: #050507;
   color: #f9f9f9;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
 }
 
 /* Gradient text — roxo da logo (#8B2BE2) → violeta */
