@@ -59,7 +59,7 @@ export default function AppPage() {
   const [step, setStep] = useState<"login" | "register" | "app">("login");
   const [email, setEmail] = useState("");
   const [token, setToken] = useState<string | null>(null);
-  const [plan, setPlan] = useState<Plan>("starter");
+  const [plan, setPlan] = useState<Plan>("trial");
   const [loginError, setLoginError] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
   const [isTrial, setIsTrial] = useState(false);
