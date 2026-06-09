@@ -3,104 +3,107 @@ const router = express.Router();
 const fs = require('fs-extra');
 const path = require('path');
 
-// Arquivo persistente para não perder dados no restart do Render
 const DATA_FILE = path.join(__dirname, '../data/users.json');
 
-// Limite de clips por plano
-const PLAN_MAX_CLIPS = { trial: 1, starter: 5, pro: 20 };
+const PLAN_MAX_CLIPS = { trial: 1, starter: 15, pro: 40 };
 
-// Carrega dados do disco ao iniciar
 let store = { users: {}, trials: {} };
 fs.ensureDirSync(path.dirname(DATA_FILE));
-try { store = fs.readJsonSync(DATA_FILE); } catch { /* arquivo não existe ainda */ }
+try { store = fs.readJsonSync(DATA_FILE); } catch { /* arquivo nao existe ainda */ }
 
 function saveStore() {
   fs.writeJsonSync(DATA_FILE, store, { spaces: 2 });
 }
 
-// Webhook da Kiwify para ativar/cancelar assinaturas
+// Webhook Kiwify
 router.post('/webhook/kiwify', express.json(), (req, res) => {
   const { event, data } = req.body;
   const secret = req.headers['x-kiwify-token'];
-
-  if (secret !== process.env.KIWIFY_WEBHOOK_SECRET) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
+  if (secret !== process.env.KIWIFY_WEBHOOK_SECRET) return res.status(401).json({ error: 'Unauthorized' });
   const email = data?.customer?.email;
-  if (!email) return res.status(400).json({ error: 'Email não encontrado.' });
-
+  if (!email) return res.status(400).json({ error: 'Email nao encontrado.' });
   switch (event) {
     case 'order.approved':
     case 'subscription.active':
-      activateUser(email, data?.product?.id);
-      break;
+      activateUser(email, data?.product?.id); break;
     case 'subscription.canceled':
     case 'subscription.overdue':
-      deactivateUser(email);
-      break;
+      deactivateUser(email); break;
   }
-
   res.json({ received: true });
 });
 
-// Verifica se email tem assinatura ativa
+// Verificar email
 router.get('/check/:email', (req, res) => {
   const email = req.params.email;
-  const active = isUserActive(email);
-  const plan = getUserPlan(email);
-  const trialUsed = isTrialUsed(email);
-  res.json({ active, plan, trialAvailable: !trialUsed && !active });
+  res.json({ active: isUserActive(email), plan: getUserPlan(email), trialAvailable: !isTrialUsed(email) && !isUserActive(email) });
 });
 
-// Gera token para assinantes (login normal)
+// Login normal (assinatura)
 router.post('/token', (req, res) => {
   const { email } = req.body;
-  if (!isUserActive(email)) {
-    return res.status(403).json({ error: 'Assinatura inativa ou não encontrada.' });
-  }
-  const token = generateToken(email, getUserPlan(email));
-  res.json({ token, plan: getUserPlan(email), maxClips: PLAN_MAX_CLIPS[getUserPlan(email)] });
+  if (!isUserActive(email)) return res.status(403).json({ error: 'Assinatura inativa ou nao encontrada.' });
+  res.json({ token: generateToken(email, getUserPlan(email)), plan: getUserPlan(email), maxClips: PLAN_MAX_CLIPS[getUserPlan(email)] });
 });
 
-// Token de teste gratuito — 1 clip por email, sem assinatura
+// Login trial
 router.post('/trial', (req, res) => {
   const { email } = req.body;
-  if (!email || !email.includes('@')) {
-    return res.status(400).json({ error: 'E-mail inválido.' });
-  }
+  if (!email || !email.includes('@')) return res.status(400).json({ error: 'E-mail invalido.' });
   if (isUserActive(email)) {
-    // Já assinante, retorna token normal
-    const token = generateToken(email, getUserPlan(email));
-    return res.json({ token, plan: getUserPlan(email), maxClips: PLAN_MAX_CLIPS[getUserPlan(email)] });
+    const plan = getUserPlan(email);
+    return res.json({ token: generateToken(email, plan), plan, maxClips: PLAN_MAX_CLIPS[plan] });
   }
-  if (isTrialUsed(email)) {
-    return res.status(403).json({ error: 'Você já usou seu clip gratuito. Assine para continuar.' });
-  }
-  const token = generateToken(email, 'trial');
-  res.json({ token, plan: 'trial', maxClips: 1, isTrial: true });
+  if (isTrialUsed(email)) return res.status(403).json({ error: 'Voce ja usou seu clip gratuito. Assine para continuar.' });
+  res.json({ token: generateToken(email, 'trial'), plan: 'trial', maxClips: 1, isTrial: true });
 });
 
-// Marca trial como usado (chamado pelo backend ao processar job de trial)
+// Login via OAuth (Google/Facebook) — cria conta trial se nao existir
+router.post('/oauth-login', express.json(), (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.includes('@')) return res.status(400).json({ error: 'E-mail invalido.' });
+  if (isUserActive(email)) {
+    const plan = getUserPlan(email);
+    return res.json({ token: generateToken(email, plan), plan, maxClips: PLAN_MAX_CLIPS[plan] });
+  }
+  // Novo usuario OAuth: cria entrada no store (nao usa trial ainda — clip gratis ao processar)
+  if (!store.users[email.toLowerCase()]) {
+    store.users[email.toLowerCase()] = { active: false, plan: 'trial', createdAt: new Date().toISOString(), provider: 'oauth' };
+    saveStore();
+  }
+  const trialUsed = isTrialUsed(email);
+  res.json({ token: generateToken(email, 'trial'), plan: 'trial', maxClips: 1, isTrial: !trialUsed });
+});
+
+// Salvar numero WhatsApp
+router.post('/whatsapp', express.json(), (req, res) => {
+  const { email, phone } = req.body;
+  if (!email || !phone) return res.status(400).json({ error: 'Email e telefone obrigatorios.' });
+  const key = email.toLowerCase();
+  if (!store.users[key]) store.users[key] = { active: false, plan: 'trial', createdAt: new Date().toISOString() };
+  store.users[key].whatsapp = phone.replace(/\D/g, '');
+  store.users[key].whatsappUpdatedAt = new Date().toISOString();
+  saveStore();
+  console.log('WhatsApp registrado:', email, phone);
+  res.json({ ok: true });
+});
+
+// Marcar trial como usado
 router.post('/trial/use', express.json(), (req, res) => {
   const { email } = req.body;
   if (email) markTrialUsed(email);
   res.json({ ok: true });
 });
 
-// Ativação via admin (para testes internos)
+// Admin activate
 router.post('/admin/activate', express.json(), (req, res) => {
   const { email, plan, secret } = req.body;
-  if (secret !== process.env.ADMIN_SECRET) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+  if (secret !== process.env.ADMIN_SECRET) return res.status(401).json({ error: 'Unauthorized' });
   activateUser(email, plan === 'pro' ? process.env.KIWIFY_PRO_ID : process.env.KIWIFY_STARTER_ID);
-  const token = generateToken(email, plan || 'starter');
-  res.json({ ok: true, token });
+  res.json({ ok: true, token: generateToken(email, plan || 'starter') });
 });
 
 // --- Helpers ---
-
 function isUserActive(email) {
   const testEmails = (process.env.TEST_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
   if (testEmails.includes(email?.toLowerCase())) return true;
@@ -113,9 +116,7 @@ function getUserPlan(email) {
   return store.users[email?.toLowerCase()]?.plan || 'starter';
 }
 
-function isTrialUsed(email) {
-  return !!store.trials[email?.toLowerCase()];
-}
+function isTrialUsed(email) { return !!store.trials[email?.toLowerCase()]; }
 
 function markTrialUsed(email) {
   store.trials[email.toLowerCase()] = { usedAt: new Date().toISOString() };
@@ -124,16 +125,16 @@ function markTrialUsed(email) {
 
 function activateUser(email, productId) {
   const plan = getPlanFromProduct(productId);
-  store.users[email.toLowerCase()] = { active: true, plan, activatedAt: new Date().toISOString() };
+  store.users[email.toLowerCase()] = { ...store.users[email.toLowerCase()], active: true, plan, activatedAt: new Date().toISOString() };
   saveStore();
-  console.log(`Usuário ativado: ${email} (${plan})`);
+  console.log('Usuario ativado:', email, plan);
 }
 
 function deactivateUser(email) {
   if (store.users[email.toLowerCase()]) {
     store.users[email.toLowerCase()].active = false;
     saveStore();
-    console.log(`Usuário desativado: ${email}`);
+    console.log('Usuario desativado:', email);
   }
 }
 
@@ -144,7 +145,7 @@ function getPlanFromProduct(productId) {
 }
 
 function generateToken(email, plan) {
-  const maxClips = PLAN_MAX_CLIPS[plan] || 5;
+  const maxClips = PLAN_MAX_CLIPS[plan] || 15;
   const payload = { email, plan, maxClips, exp: Date.now() + 24 * 60 * 60 * 1000 };
   return Buffer.from(JSON.stringify(payload)).toString('base64');
 }
