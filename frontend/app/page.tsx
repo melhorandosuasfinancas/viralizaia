@@ -59,7 +59,7 @@ const PLATFORMS = [
 ];
 
 const TESTIMONIALS = [
-  { name: "Lucas M.", role: "Criador · 280k seguidores", text: "Antes eu levava 4 horas editando cada vídeo. Com ViralizaIA tenho 10 clips prontos em 5 minutos. Minha produção triplicou.", avatar: "L", color: "#7c3aed" },
+  { name: "Lucas M.", role: "Criador · 280k seguidores", text: "Antes eu levava 4 horas editando cada vídeo. Com Viraliza Cortes tenho 10 clips prontos em 5 minutos. Minha produção triplicou.", avatar: "L", color: "#7c3aed" },
   { name: "Ana P.", role: "Coach de vendas · TikTok", text: "A qualidade das legendas é impressionante. Parecem feitas à mão. Meus views aumentaram 340% no primeiro mês.", avatar: "A", color: "#ec4899" },
   { name: "Rafael S.", role: "Podcast Financeiro · 95k ouvintes", text: "A IA escolhe exatamente os momentos que viralizam. Ela sabe o que o público quer. Melhor investimento para meu canal.", avatar: "R", color: "#06b6d4" },
 ];
@@ -139,7 +139,7 @@ export default function Page() {
             <div style={{ maxWidth:1180, margin:"0 auto", padding:"0 24px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
               <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                 <div style={{ width:34, height:34, borderRadius:9, background:"linear-gradient(135deg,#7c3aed,#ec4899)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, fontWeight:900, boxShadow:"0 0 14px rgba(124,58,237,0.55)" }}>V</div>
-                <span style={{ fontWeight:800, fontSize:18, letterSpacing:"-0.5px" }}>ViralizaIA</span>
+                <span style={{ fontWeight:800, fontSize:18, letterSpacing:"-0.5px" }}>Viraliza Cortes</span>
               </div>
               <div style={{ display:"flex", alignItems:"center", gap:28 }}>
                 <Link href="#como-funciona" className="nl" style={{ color:"#666", fontSize:14, textDecoration:"none", fontWeight:500 }}>Como funciona</Link>
@@ -161,12 +161,11 @@ export default function Page() {
                   IA 100% BRASILEIRA
                 </div>
                 <h1 style={{ fontSize:"clamp(2.5rem,5vw,3.8rem)", fontWeight:900, lineHeight:1.07, letterSpacing:"-2px", marginBottom:22 }}>
-                  Vídeo longo vira{" "}
-                  <span style={{ background:"linear-gradient(135deg,#a855f7,#ec4899,#f97316)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>clip viral</span>
-                  {" "}em minutos
+                  Cortes virais automáticos{" "}
+                  <span style={{ background:"linear-gradient(135deg,#a855f7,#ec4899,#f97316)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>para TikTok e Reels</span>
                 </h1>
                 <p style={{ color:"#777", fontSize:"1.05rem", lineHeight:1.8, marginBottom:36, maxWidth:460 }}>
-                  Cole o link do YouTube. A IA analisa, encontra os melhores momentos e entrega clips no formato certo — com legenda gravada. Sem editar. Sem assistir tudo.
+                  Cole o link do YouTube e receba cortes virais prontos para TikTok, Instagram Reels e YouTube Shorts em menos de 3 minutos. Legenda gravada automaticamente. Sem editar. Sem assistir tudo.
                 </p>
 
                 <div style={{ display:"flex", alignItems:"center", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(124,58,237,0.4)", borderRadius:16, padding:"6px 6px 6px 18px", boxShadow:"0 0 32px rgba(124,58,237,0.15)", maxWidth:520, marginBottom:14, gap:8 }}>
@@ -286,7 +285,7 @@ export default function Page() {
           {/* ── COMO FUNCIONA ── */}
           <section id="como-funciona" style={{ maxWidth:980, margin:"0 auto 92px", padding:"0 24px" }}>
             <p style={{ textAlign:"center", color:"#7c3aed", fontSize:11, fontWeight:700, letterSpacing:"0.12em", marginBottom:12, textTransform:"uppercase" }}>COMO FUNCIONA</p>
-            <h2 style={{ textAlign:"center", fontSize:"clamp(1.8rem,4vw,2.6rem)", fontWeight:900, marginBottom:60, letterSpacing:"-1px" }}>Simples assim. Sem complicação.</h2>
+            <h2 style={{ textAlign:"center", fontSize:"clamp(1.8rem,4vw,2.6rem)", fontWeight:900, marginBottom:60, letterSpacing:"-1px" }}>Como criar cortes virais automáticos</h2>
             <div className="sgrid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:0, position:"relative" }}>
               <div style={{ position:"absolute", top:35, left:"17%", right:"17%", height:1, background:"linear-gradient(90deg,#7c3aed,#ec4899)", opacity:0.35 }}/>
               {STEPS.map((s) => (
@@ -321,7 +320,7 @@ export default function Page() {
           <section style={{ maxWidth:980, margin:"0 auto 92px", padding:"0 24px" }}>
             <p style={{ textAlign:"center", color:"#7c3aed", fontSize:11, fontWeight:700, letterSpacing:"0.12em", marginBottom:12, textTransform:"uppercase" }}>DEPOIMENTOS</p>
             <h2 style={{ textAlign:"center", fontSize:"clamp(1.6rem,4vw,2.2rem)", fontWeight:900, marginBottom:8, letterSpacing:"-1px" }}>Criadores que já viralizaram</h2>
-            <p style={{ textAlign:"center", color:"#555", fontSize:14, marginBottom:48 }}>Resultados reais de quem usa ViralizaIA todos os dias</p>
+            <p style={{ textAlign:"center", color:"#555", fontSize:14, marginBottom:48 }}>Resultados reais de quem usa Viraliza Cortes todos os dias</p>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(270px,1fr))", gap:20 }}>
               {TESTIMONIALS.map((t) => (
                 <div key={t.name} className="card" style={{ background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:20, padding:"28px 24px", backdropFilter:"blur(8px)" }}>
@@ -427,7 +426,7 @@ export default function Page() {
                 <div>
                   <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
                     <div style={{ width:32, height:32, borderRadius:8, background:"linear-gradient(135deg,#7c3aed,#ec4899)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:900 }}>V</div>
-                    <span style={{ fontWeight:800, fontSize:17, letterSpacing:"-0.5px" }}>ViralizaIA</span>
+                    <span style={{ fontWeight:800, fontSize:17, letterSpacing:"-0.5px" }}>Viraliza Cortes</span>
                   </div>
                   <p style={{ color:"#333", fontSize:13, lineHeight:1.7, maxWidth:220 }}>Transforme vídeos longos em clips virais com IA 100% brasileira.</p>
                 </div>
@@ -451,7 +450,7 @@ export default function Page() {
                 </div>
               </div>
               <div style={{ borderTop:"1px solid rgba(255,255,255,0.04)", paddingTop:24, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:12 }}>
-                <p style={{ color:"#222", fontSize:12 }}>© 2026 ViralizaIA · Feito no Brasil 🇧🇷</p>
+                <p style={{ color:"#222", fontSize:12 }}>© 2026 Viraliza Cortes · Feito no Brasil 🇧🇷</p>
                 <div style={{ display:"flex", alignItems:"center", gap:16, opacity:0.35 }}>
                   <TTIcon size={16}/><IGIcon size={18}/><YTIcon size={20}/><FBIcon size={18}/>
                 </div>

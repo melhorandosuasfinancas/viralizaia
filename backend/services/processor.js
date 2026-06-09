@@ -77,7 +77,7 @@ const CAPTION_PRESETS = {
   }
 };
 
-async function createClips(videoPath, segments, platforms, outputDir, jobId, onProgress, transcriptSegs, captionStyle) {
+async function createClips(videoPath, segments, platforms, outputDir, jobId, onProgress, transcriptSegs, captionStyle, addWatermark = false) {
   const clips = [];
   const configs = getConfigs(platforms);
   const total = segments.length * configs.length;
@@ -102,7 +102,7 @@ async function createClips(videoPath, segments, platforms, outputDir, jobId, onP
       }
 
       try {
-        await renderClip(videoPath, segment, config, outputPath, assPath);
+        await renderClip(videoPath, segment, config, outputPath, assPath, addWatermark);
 
         clips.push({
           clipNumber: i + 1,
@@ -130,7 +130,7 @@ async function createClips(videoPath, segments, platforms, outputDir, jobId, onP
   return clips;
 }
 
-function renderClip(videoPath, segment, config, outputPath, assPath) {
+function renderClip(videoPath, segment, config, outputPath, assPath, addWatermark = false) {
   const { width, height } = config;
 
   const filters = [
@@ -141,6 +141,12 @@ function renderClip(videoPath, segment, config, outputPath, assPath) {
   if (assPath) {
     const safePath = assPath.replace(/\\/g, '/').replace(/'/g, "\\'");
     filters.push(`ass='${safePath}'`);
+  }
+
+  if (addWatermark) {
+    const wFontSize = Math.max(20, Math.round(height / 42));
+    const wY = Math.max(10, Math.round(height / 30));
+    filters.push(`drawtext=text='Viraliza Cortes':x=(w-text_w)/2:y=h-th-${wY}:fontsize=${wFontSize}:fontcolor=white@0.65:shadowcolor=black@0.75:shadowx=2:shadowy=2`);
   }
 
   return new Promise((resolve, reject) => {

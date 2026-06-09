@@ -151,7 +151,8 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
             jobId,
             (done, total) => updateJob({ progress: Math.round(50 + ((i * total + done) / (segments.length * total)) * 45) }),
             adjustedTranscript,
-            captionStyle
+            captionStyle,
+            userPlan === 'trial'
           );
           clips.push(...clipsResult);
         } else {
@@ -215,7 +216,8 @@ async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, 
     jobId,
     (done, total) => updateJob({ progress: Math.round(70 + (done / total) * 25) }),
     transcriptSegs,
-    captionStyle
+    captionStyle,
+    userPlan === 'trial'
   );
 
   markTrialIfNeeded(userEmail, userPlan);
