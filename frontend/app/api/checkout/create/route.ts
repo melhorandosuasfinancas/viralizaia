@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const APPMAX_API_URL = "https://sandbox.appmax.com.br/api/v3";
+const APPMAX_API_URL = "https://backend.appmax.com.br/api/v3";
 const APPMAX_ACCESS_TOKEN = process.env.APPMAX_ACCESS_TOKEN || "";
 
 const PLAN_PRODUCT_IDS: Record<string, string> = {
@@ -8,6 +8,13 @@ const PLAN_PRODUCT_IDS: Record<string, string> = {
   pro:     process.env.APPMAX_PRO_ID     || "",
   full:    process.env.APPMAX_FULL_ID    || "",
   agencia: process.env.APPMAX_AGENCIA_ID || "",
+};
+
+const PLAN_PAYMENT_LINKS: Record<string, string> = {
+  basico:  process.env.APPMAX_BASICO_LINK  || "https://pay.finaliza.shop/pl/cf81361a6d",
+  pro:     process.env.APPMAX_PRO_LINK     || "https://pay.finaliza.shop/pl/9391b0d5c5",
+  full:    process.env.APPMAX_FULL_LINK    || "https://pay.finaliza.shop/pl/1fac0eef10",
+  agencia: process.env.APPMAX_AGENCIA_LINK || "https://pay.finaliza.shop/pl/71a2cf32b6",
 };
 
 export async function POST(req: NextRequest) {
@@ -20,7 +27,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Plano inválido." }, { status: 400 });
     }
     if (!APPMAX_ACCESS_TOKEN) {
-      return NextResponse.json({ error: "Checkout não configurado. Entre em contato." }, { status: 503 });
+      const paymentLink = PLAN_PAYMENT_LINKS[plan];
+      return NextResponse.json({ redirectUrl: paymentLink }, { status: 200 });
     }
 
     // Mapeia método de pagamento para formato APPMAX
