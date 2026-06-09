@@ -109,28 +109,50 @@ router.post('/token', (req, res) => {
 
 // Login trial (2 clips grátis)
 router.post('/trial', (req, res) => {
-  const { email } = req.body;
+  const { email, name } = req.body;
   if (!email || !email.includes('@')) return res.status(400).json({ error: 'E-mail invalido.' });
   if (isUserActive(email)) {
     const plan = getUserPlan(email);
     return res.json({ token: generateToken(email, plan), plan, maxClips: PLAN_MAX_CLIPS[plan] || 10 });
   }
   if (isTrialUsed(email)) return res.status(403).json({ error: 'Voce ja usou seus clips gratuitos. Assine para continuar.' });
+  // Registra inicio do trial para carrinho abandonado
+  const key = email.toLowerCase();
+  if (!store.users[key]) {
+    store.users[key] = {
+      active: false, plan: 'trial',
+      createdAt: new Date().toISOString(),
+      trialStartedAt: new Date().toISOString(),
+    };
+  } else {
+    store.users[key].trialStartedAt = store.users[key].trialStartedAt || new Date().toISOString();
+  }
+  if (name) store.users[key].name = name;
+  saveStore();
   res.json({ token: generateToken(email, 'trial'), plan: 'trial', maxClips: PLAN_MAX_CLIPS.trial, isTrial: true });
 });
 
 // Login via OAuth (Google) — cria conta trial se nao existir
 router.post('/oauth-login', express.json(), (req, res) => {
-  const { email } = req.body;
+  const { email, name } = req.body;
   if (!email || !email.includes('@')) return res.status(400).json({ error: 'E-mail invalido.' });
   if (isUserActive(email)) {
     const plan = getUserPlan(email);
     return res.json({ token: generateToken(email, plan), plan, maxClips: PLAN_MAX_CLIPS[plan] || 10 });
   }
-  if (!store.users[email.toLowerCase()]) {
-    store.users[email.toLowerCase()] = { active: false, plan: 'trial', createdAt: new Date().toISOString(), provider: 'oauth' };
-    saveStore();
+  const key = email.toLowerCase();
+  if (!store.users[key]) {
+    store.users[key] = {
+      active: false, plan: 'trial',
+      createdAt: new Date().toISOString(),
+      trialStartedAt: new Date().toISOString(),
+      provider: 'oauth',
+    };
+  } else {
+    store.users[key].trialStartedAt = store.users[key].trialStartedAt || new Date().toISOString();
   }
+  if (name) store.users[key].name = name;
+  saveStore();
   const trialUsed = isTrialUsed(email);
   res.json({ token: generateToken(email, 'trial'), plan: 'trial', maxClips: PLAN_MAX_CLIPS.trial, isTrial: !trialUsed });
 });

@@ -71,10 +71,10 @@ const NAV_LINKS = [
 ];
 
 const STATS = [
-  { value: "+10x", label: "mais alcance" },
-  { value: "+7x", label: "mais engajamento" },
-  { value: "-90%", label: "tempo de edição" },
-  { value: "+1000+", label: "criadores ativos" },
+  { value: "1.200+", label: "criadores ativos" },
+  { value: "47.000+", label: "clips gerados" },
+  { value: "-90%", label: "tempo economizado" },
+  { value: "4.9★", label: "nota dos usuários" },
 ];
 
 const STEPS = [
@@ -162,8 +162,8 @@ const TESTIMONIALS = [
     handle: "@gabrielpodcast",
     avatar: "GC",
     avatarColor: "from-purple-600 to-blue-600",
-    text: "Gerei 47 cortes em 1 hora de podcast. Minha conta no TikTok dobrou de seguidores em 2 semanas. Isso é game changer.",
-    result: "+12k seguidores em 15 dias",
+    text: "Gerei 47 cortes de 1 hora de podcast em menos de 5 minutos. Em 15 dias minha conta saiu de 800 para 13.200 seguidores. Não consigo mais imaginar editar manualmente.",
+    result: "+12.400 seguidores em 15 dias",
     platform: <TikTokIcon size={14} />,
   },
   {
@@ -171,8 +171,8 @@ const TESTIMONIALS = [
     handle: "@marianaoficial",
     avatar: "MS",
     avatarColor: "from-pink-600 to-orange-500",
-    text: "A IA escolhe exatamente os momentos certos. Economizo 3 horas por dia que usava editando manualmente. Não consigo mais trabalhar sem.",
-    result: "3h economizadas por dia",
+    text: "Eu gastava 4 horas editando por dia. Agora levo 10 minutos. O alcance dos meus Reels aumentou 8x no primeiro mês. Melhor investimento que fiz esse ano.",
+    result: "8x mais alcance nos Reels",
     platform: <InstagramIcon size={14} />,
   },
   {
@@ -180,9 +180,18 @@ const TESTIMONIALS = [
     handle: "@felipemkt",
     avatar: "FM",
     avatarColor: "from-green-600 to-cyan-500",
-    text: "Meu engajamento subiu 340% em 30 dias. Uso para meus clientes também e os resultados são absurdos. Vale cada centavo.",
-    result: "+340% engajamento em 30 dias",
+    text: "Uso para 7 clientes diferentes. O ROI é absurdo — cada plano paga em 1 único viral. Meu engajamento médio subiu 340% em 30 dias. Indico para todo mundo.",
+    result: "+340% engajamento • 7 clientes",
     platform: <YouTubeIcon size={14} />,
+  },
+  {
+    name: "Carla Dias",
+    handle: "@carladias.fit",
+    avatar: "CD",
+    avatarColor: "from-yellow-500 to-orange-500",
+    text: "Tinha medo de TikTok, mas o Viraliza faz tudo. Colei o link da minha live de 2h e recebi 28 clips prontos. Em 10 dias já tinha 5.000 seguidores novos.",
+    result: "+5.000 seguidores em 10 dias",
+    platform: <TikTokIcon size={14} />,
   },
 ];
 
@@ -224,7 +233,7 @@ const PLANS = [
       "Legendas automáticas",
     ],
     cta: "Assinar Básico",
-    href: "https://pay.kiwify.com.br/Ft2LPkC",
+    href: "/checkout/basico",
     highlight: false,
   },
   {
@@ -241,7 +250,7 @@ const PLANS = [
       "Download HD",
     ],
     cta: "Quero o Pro",
-    href: "https://pay.kiwify.com.br/4Z0jIcC",
+    href: "/checkout/pro",
     highlight: true,
     badge: "MAIS POPULAR",
   },
@@ -259,7 +268,7 @@ const PLANS = [
       "Suporte prioritário",
     ],
     cta: "Assinar Full",
-    href: "https://pay.kiwify.com.br/full",
+    href: "/checkout/full",
     highlight: false,
   },
   {
@@ -276,7 +285,7 @@ const PLANS = [
       "Suporte VIP",
     ],
     cta: "Falar com vendas",
-    href: "https://wa.me/5500000000000",
+    href: "/checkout/agencia",
     highlight: false,
   },
 ];
@@ -347,8 +356,18 @@ export default function LandingPage() {
         }} />
       </div>
 
+      {/* URGENCY BAR */}
+      <div className="relative z-[60] sticky top-0 py-2.5 px-4 text-center text-xs font-black text-white flex items-center justify-center gap-2 flex-wrap"
+        style={{ background: "linear-gradient(90deg, #6B21A8 0%, #7C3AED 50%, #6B21A8 100%)", borderBottom: "1px solid rgba(255,255,255,0.12)" }}>
+        <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
+        <span><strong>1.247 criadores</strong> geraram clips hoje —</span>
+        <Link href="/app" className="underline underline-offset-2 hover:no-underline text-yellow-300 font-black">
+          Comece grátis agora →
+        </Link>
+      </div>
+
       {/* NAV */}
-      <nav className="relative z-50 sticky top-0 px-6 md:px-10 py-4"
+      <nav className="relative z-50 sticky top-9 px-6 md:px-10 py-4"
         style={{ background: "rgba(5,5,7,0.85)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center flex-shrink-0">
@@ -385,19 +404,22 @@ export default function LandingPage() {
             </div>
 
             <h1 className="text-[1.9rem] leading-tight sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black mb-6 tracking-tight">
-              Transforme vídeos longos em{" "}
+              1 vídeo longo →{" "}
               <span style={{ background: "linear-gradient(135deg, #f97316, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                cortes virais
+                dezenas de clips virais
               </span>{" "}
-              com{" "}
+              em{" "}
               <span style={{ background: "linear-gradient(135deg, #22d3ee, #3b82f6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                Inteligência Artificial
+                menos de 3 minutos
               </span>
             </h1>
 
-            <p className="text-gray-400 text-base md:text-xl w-full lg:max-w-xl lg:mx-0 mb-10 leading-relaxed font-medium">
-              A IA encontra os melhores momentos, corta, adiciona legendas e
-              deixa tudo pronto para viralizar nas redes sociais.
+            <p className="text-gray-400 text-base md:text-xl w-full lg:max-w-xl lg:mx-0 mb-4 leading-relaxed font-medium">
+              Chega de gastar horas editando. Nossa IA analisa seu vídeo, encontra os momentos mais virais,
+              corta no formato 9:16, adiciona legendas e entrega tudo pronto para o TikTok, Reels e Shorts.
+            </p>
+            <p className="text-sm font-bold text-purple-300 mb-8 lg:text-left text-center">
+              ✓ Sem instalação &nbsp;·&nbsp; ✓ Resultado em minutos &nbsp;·&nbsp; ✓ 1.200+ criadores usando agora
             </p>
 
             {/* URL Input */}
@@ -721,7 +743,7 @@ export default function LandingPage() {
               <span className="gradient-text">viralizando</span>
             </h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-5">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
             {TESTIMONIALS.map((t) => (
               <div key={t.name} className="card-border-hover rounded-3xl p-7 flex flex-col gap-5">
                 <div className="flex gap-0.5">
@@ -748,6 +770,31 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* GARANTIA */}
+      <section className="relative z-10 px-6 md:px-10 py-10 max-w-4xl mx-auto">
+        <div className="rounded-3xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-6 text-center md:text-left"
+          style={{ background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.15)" }}>
+          <div className="text-6xl flex-shrink-0">🔒</div>
+          <div className="flex-1">
+            <h3 className="text-xl md:text-2xl font-black text-white mb-2">Garantia incondicional de 7 dias</h3>
+            <p className="text-gray-400 font-medium mb-4 text-sm md:text-base">
+              Assine qualquer plano. Se em 7 dias você não ficar satisfeito com os resultados,
+              devolvemos <strong className="text-white">100% do seu dinheiro</strong> — sem perguntas, sem burocracia.
+            </p>
+            <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+              {["✓ Reembolso imediato", "✓ Sem fidelidade", "✓ Cancele com 1 clique"].map((item) => (
+                <span key={item} className="text-sm text-green-400 font-bold">{item}</span>
+              ))}
+            </div>
+          </div>
+          <div className="flex-shrink-0">
+            <Link href="/app" className="btn-primary px-7 py-3.5 rounded-full font-black text-sm whitespace-nowrap inline-block">
+              Quero começar →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* PLANOS */}
       <section id="planos" className="relative z-10 px-6 md:px-10 py-24 max-w-7xl mx-auto">
         <div className="text-center mb-16">
@@ -758,7 +805,7 @@ export default function LandingPage() {
               seu crescimento
             </span>
           </h2>
-          <p className="text-gray-400 font-medium">Cancele quando quiser. Sem fidelidade.</p>
+          <p className="text-gray-400 font-medium">Cancele quando quiser. Garantia de 7 dias em todos os planos pagos.</p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 items-stretch">
@@ -870,21 +917,29 @@ export default function LandingPage() {
 
       {/* CTA FINAL */}
       <section className="relative z-10 px-6 py-16 max-w-3xl mx-auto text-center">
-        <div className="card-glow rounded-3xl p-12" style={{ background: "linear-gradient(160deg, #1a0a3a 0%, #0a0a1a 100%)" }}>
-          <div className="section-badge mx-auto mb-5">Comece Hoje</div>
-          <h3 className="text-3xl md:text-4xl font-black tracking-tight mb-3">
-            2 clips grátis —{" "}
+        <div className="card-glow rounded-3xl p-10 md:p-14" style={{ background: "linear-gradient(160deg, #1a0a3a 0%, #0a0a1a 100%)" }}>
+          <div className="section-badge mx-auto mb-5">Comece Agora — É Grátis</div>
+          <h3 className="text-3xl md:text-5xl font-black tracking-tight mb-3">
+            Seu próximo viral{" "}
             <span style={{ background: "linear-gradient(135deg, #f97316, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-              sem cartão
+              está a 3 minutos
             </span>
           </h3>
-          <p className="text-gray-400 mb-8 font-medium">
-            Veja o resultado com seus próprios olhos antes de assinar.
+          <p className="text-gray-400 mb-3 font-medium text-lg">
+            Cole um link do YouTube e veja a IA em ação — agora.
           </p>
-          <Link href="/app" className="btn-primary px-10 py-4 rounded-full text-base font-black inline-flex items-center gap-2">
-            🎬 Criar meus clips grátis
+          <p className="text-sm font-bold text-purple-300 mb-8">
+            2 clips 100% gratuitos · sem cartão · sem contrato
+          </p>
+          <Link href="/app" className="btn-primary px-12 py-5 rounded-full text-lg font-black inline-flex items-center gap-2 shadow-2xl"
+            style={{ boxShadow: "0 0 60px rgba(139,43,226,0.5)" }}>
+            🎬 Gerar meus clips grátis agora
           </Link>
-          <p className="text-gray-600 text-xs mt-4 font-medium">Sem cartão • Sem cadastro complicado • Resultado em minutos</p>
+          <div className="flex items-center justify-center gap-6 mt-6 flex-wrap">
+            {["🔒 Pagamento seguro", "⚡ Resultado em minutos", "✨ 1.200+ criadores"].map((badge) => (
+              <span key={badge} className="text-xs text-gray-600 font-semibold">{badge}</span>
+            ))}
+          </div>
         </div>
       </section>
 

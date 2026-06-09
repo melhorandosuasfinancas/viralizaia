@@ -11,6 +11,7 @@ const execAsync = promisify(exec);
 const videoRoutes = require('./routes/video');
 const authRoutes = require('./routes/auth');
 const { cleanupOldFiles } = require('./services/cleanup');
+const { startAbandonedCartJob } = require('./jobs/abandonedCart');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -107,6 +108,9 @@ app.get('/debug/env', async (req, res) => {
 
 // Limpeza automática a cada 2 horas
 setInterval(cleanupOldFiles, 2 * 60 * 60 * 1000);
+
+// Carrinho abandonado — dispara WhatsApp após 8 horas sem conversão
+startAbandonedCartJob();
 
 app.listen(PORT, () => {
   console.log(`ViralizaIA Backend rodando na porta ${PORT}`);
