@@ -188,7 +188,7 @@ export default function AppPage() {
       <div className="min-h-screen bg-[#080808] flex items-center justify-center px-4">
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
-            <p className="gradient-text font-extrabold text-2xl mb-1">ViralizaIA</p>
+            <p className="gradient-text font-extrabold text-2xl mb-1">Viraliza Cortes</p>
             <p className="text-gray-400 text-sm">Cortes virais com IA em segundos</p>
           </div>
 
@@ -243,7 +243,7 @@ export default function AppPage() {
     <div className="min-h-screen bg-[#080808] px-4 py-6 max-w-3xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <span className="gradient-text font-extrabold text-xl">ViralizaIA</span>
+        <span className="gradient-text font-extrabold text-xl">Viraliza Cortes</span>
         <div className="flex items-center gap-3">
           {isTrial && (
             <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-300 border border-yellow-500/20">
