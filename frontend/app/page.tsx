@@ -352,7 +352,7 @@ export default function LandingPage() {
         style={{ background: "rgba(5,5,7,0.85)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center flex-shrink-0">
-            <Image src="/logo-viraliza-cortes.png" alt="Viraliza Cortes — cortes virais automáticos com IA" width={160} height={160} className="rounded-xl" />
+            <Image src="/logo-viraliza-cortes.png" alt="Viraliza Cortes — cortes virais automáticos com IA" width={160} height={160} className="w-14 h-14 sm:w-20 sm:h-20 md:w-28 md:h-28 lg:w-40 lg:h-40 rounded-xl" />
           </Link>
           <div className="hidden lg:flex items-center gap-1 nav-pill rounded-full px-2 py-1.5">
             {NAV_LINKS.map((l) => (
@@ -366,7 +366,7 @@ export default function LandingPage() {
             <Link href="/app" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block font-medium">
               Entrar
             </Link>
-            <Link href="/app" className="btn-primary text-sm font-bold px-5 py-2.5 rounded-full whitespace-nowrap">
+            <Link href="/app" className="btn-primary text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5 rounded-full whitespace-nowrap">
               Começar grátis →
             </Link>
           </div>
@@ -413,7 +413,7 @@ export default function LandingPage() {
                   aria-label="Link do YouTube"
                 />
               </div>
-              <Link href="/app" className="btn-primary px-6 py-3.5 rounded-full font-black text-sm whitespace-nowrap flex items-center gap-2">
+              <Link href="/app" className="btn-primary px-4 sm:px-6 py-3.5 rounded-full font-black text-sm whitespace-nowrap flex items-center gap-1.5">
                 <PlayIcon /> Viralizar
               </Link>
             </div>
@@ -425,10 +425,26 @@ export default function LandingPage() {
                 </span>
               ))}
             </div>
+
+            {/* Plataformas — visível só no mobile abaixo do CTA */}
+            <div className="flex md:hidden items-center gap-3 mt-8 justify-center flex-wrap">
+              <span className="text-xs text-gray-600 font-medium">Exporta para:</span>
+              {[
+                { Icon: TikTokIcon, color: "#fff", label: "TikTok" },
+                { Icon: InstagramIcon, color: "#f77737", label: "Reels" },
+                { Icon: YouTubeIcon, color: "#ff4444", label: "Shorts" },
+                { Icon: FacebookIcon, color: "#1877f2", label: "Facebook" },
+              ].map(({ Icon, color, label }) => (
+                <div key={label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+                  style={{ background: color + "15", color, border: `1px solid ${color}30` }}>
+                  <Icon size={13} /> {label}
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Right — Mockup */}
-          <div className="flex-1 w-full max-w-xl">
+          {/* Right — Mockup (escondido no mobile, aparece a partir de md) */}
+          <div className="hidden md:flex flex-1 w-full max-w-xl">
             <div className="card-glow rounded-3xl bg-[#0a0a14] p-6">
               <div className="flex items-center gap-3 mb-5">
                 <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">1 Vídeo Longo</span>
