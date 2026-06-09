@@ -401,20 +401,20 @@ export default function LandingPage() {
             </p>
 
             {/* URL Input */}
-            <div className="flex gap-2 mb-8 w-full lg:max-w-xl lg:mx-0">
-              <div className="flex-1 flex items-center gap-3 input-premium rounded-full px-5 py-3.5">
+            <div className="flex flex-col sm:flex-row gap-2 mb-8 w-full lg:max-w-xl lg:mx-0">
+              <div className="flex items-center gap-3 input-premium rounded-full px-5 py-3.5 w-full">
                 <span className="text-gray-500 flex-shrink-0"><LinkIcon /></span>
                 <input
                   type="text"
                   placeholder="Cole o link do YouTube aqui..."
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  className="flex-1 bg-transparent text-sm text-white placeholder-gray-500 outline-none font-medium"
+                  className="flex-1 bg-transparent text-sm text-white placeholder-gray-500 outline-none font-medium min-w-0"
                   aria-label="Link do YouTube"
                 />
               </div>
-              <Link href="/app" className="btn-primary px-4 sm:px-6 py-3.5 rounded-full font-black text-sm whitespace-nowrap flex items-center gap-1.5">
-                <PlayIcon /> Viralizar
+              <Link href="/app" className="btn-primary w-full sm:w-auto px-6 py-3.5 rounded-full font-black text-sm flex items-center justify-center gap-2">
+                <PlayIcon /> Viralizar agora
               </Link>
             </div>
 
@@ -775,12 +775,12 @@ export default function LandingPage() {
               )}
 
               <div className="mb-6">
-                <p className="text-xs font-black tracking-widest text-gray-500 uppercase mb-3">{plan.name}</p>
-                <div className="flex items-end gap-1 mb-1">
-                  <span className="text-3xl font-black tracking-tight">{plan.price}</span>
-                  <span className="text-gray-500 pb-1 font-semibold text-sm">{plan.period}</span>
+                <p className="text-sm font-black tracking-widest text-purple-400 uppercase mb-3">{plan.name}</p>
+                <div className="flex items-end gap-1 mb-2">
+                  <span className="text-4xl font-black tracking-tight text-white">{plan.price}</span>
+                  <span className="text-gray-400 pb-1.5 font-bold text-base">{plan.period}</span>
                 </div>
-                <p className="text-gray-500 text-xs font-medium">{plan.desc}</p>
+                <p className="text-gray-400 text-sm font-medium">{plan.desc}</p>
               </div>
 
               <ul className="space-y-2.5 mb-7 flex-1">
