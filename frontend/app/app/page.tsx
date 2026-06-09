@@ -28,7 +28,17 @@ const CAPTION_OPTIONS: { id: CaptionStyle; label: string; desc: string; badge?: 
   { id: "tiktok",  label: "TikTok",  desc: "Branco + contorno preto — estilo viral" },
   { id: "hormozi", label: "Hormozi", desc: "Branco + contorno amarelo — impacto máximo", badge: "🔥" },
   { id: "dark",    label: "Dark Box", desc: "Caixa escura semi-transparente — legível" },
-  { id: "clean",   label: "Clean",   desc: "Texto limpo com sombra sutil" },
+  { id: "clean",      label: "Clean",        desc: "Texto limpo com sombra sutil" },
+  { id: "opensans",   label: "Open Sans",    desc: "Moderno e legível — destaque garantido" },
+  { id: "ubuntu",     label: "Ubuntu Bold",  desc: "Arredondado e vibrante — muito lido" },
+  { id: "montserrat", label: "Montserrat",   desc: "Premium — usado por grandes canais", badge: "⭐" },
+  { id: "neon",       label: "Neon Azul",    desc: "Texto ciano com brilho — destaque máximo" },
+];
+
+const DURATION_OPTIONS = [
+  { value: 30, label: "30 seg", desc: "Clips rápidos • TikTok viral" },
+  { value: 60, label: "1 min",  desc: "Duração padrão • completo" },
+  { value: 90, label: "1:30",   desc: "Clips extensos • podcasts" },
 ];
 
 const PLAN_MAX_CLIPS: Record<Plan, number> = { trial: 1, starter: 5, pro: 20 };
@@ -56,6 +66,8 @@ export default function AppPage() {
   const [mode, setMode] = useState<"ai" | "manual">("ai");
   const [maxClips, setMaxClips] = useState(3);
   const [captionStyle, setCaptionStyle] = useState<CaptionStyle>("tiktok");
+
+  const [targetDuration, setTargetDuration] = useState(60);
 
   const [jobId, setJobId] = useState<string | null>(null);
   const [job, setJob] = useState<Job | null>(null);
@@ -145,9 +157,9 @@ export default function AppPage() {
       const clipsToRequest = Math.min(maxClips, planMaxClips);
       let id: string;
       if (inputMode === "url") {
-        ({ jobId: id } = await startProcessing(url, platforms, mode, token, clipsToRequest, captionStyle));
+        ({ jobId: id } = await startProcessing(url, platforms, mode, token, clipsToRequest, captionStyle, targetDuration));
       } else {
-        ({ jobId: id } = await uploadAndProcess(selectedFile!, platforms, mode, token, clipsToRequest, captionStyle));
+        ({ jobId: id } = await uploadAndProcess(selectedFile!, platforms, mode, token, clipsToRequest, captionStyle, targetDuration));
       }
       setJobId(id);
       setJob({ status: "queued", progress: 0, clips: [], error: null });
@@ -309,6 +321,20 @@ export default function AppPage() {
                   className={`flex flex-col px-3 py-2.5 rounded-xl text-left text-sm border transition-all ${captionStyle === c.id ? "border-purple-500/50 bg-purple-500/15 text-white" : "border-white/10 bg-white/5 text-gray-400"}`}>
                   <span className="font-semibold">{c.badge} {c.label}</span>
                   <span className="text-xs text-gray-500 mt-0.5">{c.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Duração dos cortes */}
+          <div>
+            <label className="text-xs text-gray-400 mb-3 block">Duração de cada corte</label>
+            <div className="flex gap-2">
+              {DURATION_OPTIONS.map(d => (
+                <button key={d.value} type="button" onClick={() => setTargetDuration(d.value)}
+                  className={`flex-1 flex flex-col items-center py-3 rounded-xl text-sm font-medium border transition-all ${targetDuration === d.value ? "border-purple-500/50 bg-purple-500/15 text-white" : "border-white/10 bg-white/5 text-gray-400"}`}>
+                  <span className="font-bold text-base">{d.label}</span>
+                  <span className="text-xs text-gray-500 mt-0.5 text-center">{d.desc}</span>
                 </button>
               ))}
             </div>

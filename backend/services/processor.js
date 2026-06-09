@@ -74,6 +74,58 @@ const CAPTION_PRESETS = {
     borderStyle: 1,
     alignment: 2,
     marginV: 130
+  },
+  opensans: {
+    fontName: 'Open Sans',
+    fontSize: 56,
+    primaryColour: '&H00FFFFFF',
+    outlineColour: '&H00000000',
+    backColour: '&H00000000',
+    bold: true,
+    outline: 3,
+    shadow: 0,
+    borderStyle: 1,
+    alignment: 2,
+    marginV: 125
+  },
+  ubuntu: {
+    fontName: 'Ubuntu',
+    fontSize: 56,
+    primaryColour: '&H00FFFFFF',
+    outlineColour: '&H007C3AED',
+    backColour: '&H00000000',
+    bold: true,
+    outline: 3,
+    shadow: 0,
+    borderStyle: 1,
+    alignment: 2,
+    marginV: 120
+  },
+  montserrat: {
+    fontName: 'Montserrat',
+    fontSize: 60,
+    primaryColour: '&H00FFFFFF',
+    outlineColour: '&H00000000',
+    backColour: '&H00000000',
+    bold: true,
+    outline: 3,
+    shadow: 1,
+    borderStyle: 1,
+    alignment: 2,
+    marginV: 115
+  },
+  neon: {
+    fontName: 'DejaVu Sans',
+    fontSize: 54,
+    primaryColour: '&H00FFFF00',
+    outlineColour: '&H00000000',
+    backColour: '&H00000000',
+    bold: true,
+    outline: 3,
+    shadow: 1,
+    borderStyle: 1,
+    alignment: 2,
+    marginV: 120
   }
 };
 

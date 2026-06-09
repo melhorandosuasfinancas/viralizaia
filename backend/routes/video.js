@@ -31,7 +31,7 @@ const jobs = new Map();
 router.post('/upload', verifySubscription, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Arquivo de vídeo é obrigatório.' });
 
-  const { platforms = '["tiktok","instagram"]', mode = 'ai', maxClips, captionStyle = 'tiktok' } = req.body;
+  const { platforms = '["tiktok","instagram"]', mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60 } = req.body;
 
   let parsedPlatforms;
   try { parsedPlatforms = JSON.parse(platforms); } catch { parsedPlatforms = ['tiktok', 'instagram']; }
@@ -48,13 +48,13 @@ router.post('/upload', verifySubscription, upload.single('file'), async (req, re
   const destPath = path.join(tempDir, 'source.mp4');
   await fs.move(req.file.path, destPath);
 
-  processVideoFromFile(jobId, destPath, tempDir, parsedPlatforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan)
+  processVideoFromFile(jobId, destPath, tempDir, parsedPlatforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60)
     .catch(err => jobs.set(jobId, { status: 'error', progress: 0, clips: [], error: err.message }));
 });
 
 // POST /api/video/process
 router.post('/process', verifySubscription, async (req, res) => {
-  const { url, platforms = ['tiktok', 'instagram'], mode = 'ai', maxClips, captionStyle = 'tiktok' } = req.body;
+  const { url, platforms = ['tiktok', 'instagram'], mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60 } = req.body;
 
   if (!url) return res.status(400).json({ error: 'URL do YouTube é obrigatória.' });
 
@@ -65,7 +65,7 @@ router.post('/process', verifySubscription, async (req, res) => {
   jobs.set(jobId, { status: 'queued', progress: 0, clips: [], error: null });
   res.json({ jobId, message: 'Processamento iniciado.' });
 
-  processVideo(jobId, url, platforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan)
+  processVideo(jobId, url, platforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60)
     .catch(err => jobs.set(jobId, { status: 'error', progress: 0, clips: [], error: err.message }));
 });
 
@@ -86,7 +86,7 @@ router.delete('/job/:jobId', async (req, res) => {
 });
 
 // --- Processamento via URL do YouTube ---
-async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle, userEmail, userPlan) {
+async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle, userEmail, userPlan, targetDuration = 60) {
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
   const tempDir = path.join(__dirname, '../temp', jobId);
   const outputDir = path.join(__dirname, '../output', jobId);
@@ -181,7 +181,7 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
 }
 
 // --- Processamento via upload de arquivo ---
-async function processVideoFromFile(jobId, videoPath, tempDir, platforms, mode, maxClips, captionStyle, userEmail, userPlan) {
+async function processVideoFromFile(jobId, videoPath, tempDir, platforms, mode, maxClips, captionStyle, userEmail, userPlan, targetDuration = 60) {
   const outputDir = path.join(__dirname, '../output', jobId);
   await fs.ensureDir(outputDir);
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
@@ -204,8 +204,8 @@ async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, 
 
   updateJob({ status: 'analyzing', progress: 50 });
   const segments = mode === 'ai'
-    ? await analyzer.findBestSegments(transcriptSegs, url || 'upload', maxClips)
-    : analyzer.splitEqually(transcriptSegs, maxClips);
+    ? await analyzer.findBestSegments(transcriptSegs, url || 'upload', maxClips, targetDuration)
+    : analyzer.splitEqually(transcriptSegs, maxClips, targetDuration);
 
   updateJob({ status: 'processing', progress: 70 });
   const clips = await processor.createClips(

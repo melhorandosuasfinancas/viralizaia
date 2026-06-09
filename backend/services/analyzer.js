@@ -5,12 +5,12 @@ const openai = new OpenAI({
   baseURL: 'https://api.groq.com/openai/v1'
 });
 
-const CLIP_MIN_SECONDS = 30;
-const CLIP_MAX_SECONDS = 90;
+const CLIP_MIN_SECONDS = 20;
+const CLIP_MAX_SECONDS = 120;
 
-async function findBestSegments(transcript, originalUrl = '', maxClips = 3) {
+async function findBestSegments(transcript, originalUrl = '', maxClips = 3, targetDuration = 60) {
   if (!transcript || transcript.length === 0) {
-    return splitEqually(transcript, maxClips);
+    return splitEqually(transcript, maxClips, targetDuration);
   }
 
   const fullText = transcript.map(s => `[${s.start.toFixed(1)}s] ${s.text}`).join('\n');
@@ -25,7 +25,7 @@ Critérios para selecionar os melhores momentos:
 - Piadas, histórias emocionantes ou revelações
 - Pontos de virada, dicas práticas
 - Trechos que gerem curiosidade ou engajamento
-- Cada corte deve ter entre ${CLIP_MIN_SECONDS} e ${CLIP_MAX_SECONDS} segundos
+- Cada corte deve ter APROXIMADAMENTE ${targetDuration} segundos (tolerancia: ${Math.round(targetDuration * 0.3)}s)
 
 Transcrição:
 ${fullText}
@@ -64,22 +64,22 @@ Responda SOMENTE com JSON válido neste formato (sem explicações):
         end: Math.min(videoDuration, s.end),
         duration: s.end - s.start
       }))
-      .filter(s => s.duration >= CLIP_MIN_SECONDS)
+      .filter(s => s.duration >= Math.round(targetDuration * 0.5))
       .slice(0, maxClips);
 
-    return segments.length > 0 ? segments : splitEqually(transcript, maxClips);
+    return segments.length > 0 ? segments : splitEqually(transcript, maxClips, targetDuration);
 
   } catch (err) {
     console.error('GPT analysis failed, using equal split:', err.message);
-    return splitEqually(transcript);
+    return splitEqually(transcript, maxClips, targetDuration);
   }
 }
 
-function splitEqually(transcript, maxClips = 3) {
+function splitEqually(transcript, maxClips = 3, targetDuration = 60) {
   if (!transcript || transcript.length === 0) return [];
 
   const videoDuration = transcript[transcript.length - 1]?.end || 60;
-  const clipDuration = 60;
+  const clipDuration = targetDuration;
   const segments = [];
 
   for (let start = 0; start < videoDuration && segments.length < maxClips; start += clipDuration) {

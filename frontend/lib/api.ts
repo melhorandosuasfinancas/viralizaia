@@ -2,7 +2,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://viralizaia.duckdns.o
 
 export type Platform = "tiktok" | "instagram" | "facebook" | "youtube";
 export type ProcessMode = "ai" | "manual";
-export type CaptionStyle = "tiktok" | "hormozi" | "dark" | "clean";
+export type CaptionStyle = "tiktok" | "hormozi" | "dark" | "clean" | "opensans" | "ubuntu" | "montserrat" | "neon";
 export type Plan = "trial" | "starter" | "pro";
 
 export interface Clip {
@@ -74,7 +74,8 @@ export async function startProcessing(
   mode: ProcessMode = "ai",
   token: string,
   maxClips: number = 3,
-  captionStyle: CaptionStyle = "tiktok"
+  captionStyle: CaptionStyle = "tiktok",
+  targetDuration: number = 60
 ): Promise<{ jobId: string }> {
   const res = await fetch(`${API_URL}/api/video/process`, {
     method: "POST",
@@ -82,7 +83,7 @@ export async function startProcessing(
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ url, platforms, mode, maxClips, captionStyle }),
+    body: JSON.stringify({ url, platforms, mode, maxClips, captionStyle, targetDuration }),
   });
 
   if (!res.ok) {
@@ -99,7 +100,8 @@ export async function uploadAndProcess(
   mode: ProcessMode = "ai",
   token: string,
   maxClips: number = 3,
-  captionStyle: CaptionStyle = "tiktok"
+  captionStyle: CaptionStyle = "tiktok",
+  targetDuration: number = 60
 ): Promise<{ jobId: string }> {
   const formData = new FormData();
   formData.append("file", file);
@@ -107,6 +109,7 @@ export async function uploadAndProcess(
   formData.append("mode", mode);
   formData.append("maxClips", String(maxClips));
   formData.append("captionStyle", captionStyle);
+  formData.append("targetDuration", String(targetDuration));
 
   const res = await fetch(`${API_URL}/api/video/upload`, {
     method: "POST",
