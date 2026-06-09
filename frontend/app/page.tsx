@@ -797,6 +797,26 @@ export default function LandingPage() {
             Teste grátis sem cartão →
           </Link>
         </p>
+
+        {/* Créditos extras */}
+        <div className="mt-14 text-center">
+          <p className="text-sm font-black text-gray-400 uppercase tracking-widest mb-2">⚡ Acabaram os cortes antes do mês?</p>
+          <p className="text-gray-600 text-sm font-medium mb-6">Compre créditos extras a qualquer momento, sem trocar de plano</p>
+          <div className="flex gap-4 justify-center flex-wrap">
+            {[
+              { clips: "10 cortes", price: "R$15", icon: "🔋" },
+              { clips: "25 cortes", price: "R$30", icon: "⚡" },
+              { clips: "50 cortes", price: "R$50", icon: "🚀" },
+            ].map((pack) => (
+              <div key={pack.clips} className="card-border-hover rounded-2xl px-8 py-5 flex flex-col items-center gap-2 min-w-[130px] cursor-pointer">
+                <span className="text-3xl">{pack.icon}</span>
+                <span className="text-xl font-black gradient-text">{pack.price}</span>
+                <span className="text-gray-500 text-sm font-medium">{pack.clips} extras</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-gray-700 text-xs mt-4 font-medium">Créditos disponíveis para compra dentro da plataforma após o login</p>
+        </div>
       </section>
 
       {/* FAQ */}
