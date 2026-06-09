@@ -38,12 +38,10 @@ export async function getAuthToken(email: string): Promise<AuthResult> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
   });
-
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: "Assinatura não encontrada" }));
     throw new Error(err.error);
   }
-
   return res.json();
 }
 
@@ -53,13 +51,33 @@ export async function getTrialToken(email: string): Promise<AuthResult> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
   });
-
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: "Erro ao iniciar teste gratuito" }));
     throw new Error(err.error);
   }
-
   return res.json();
+}
+
+export async function getOAuthToken(email: string): Promise<AuthResult> {
+  const res = await fetch(`${API_URL}/api/auth/oauth-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Erro ao fazer login" }));
+    throw new Error(err.error);
+  }
+  return res.json();
+}
+
+export async function saveWhatsapp(email: string, phone: string, token: string): Promise<void> {
+  const res = await fetch(`${API_URL}/api/auth/whatsapp`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ email, phone }),
+  });
+  if (!res.ok) throw new Error("Erro ao salvar WhatsApp");
 }
 
 export async function checkEmail(email: string): Promise<{ active: boolean; plan: Plan; trialAvailable: boolean }> {
@@ -79,18 +97,13 @@ export async function startProcessing(
 ): Promise<{ jobId: string }> {
   const res = await fetch(`${API_URL}/api/video/process`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ url, platforms, mode, maxClips, captionStyle, targetDuration }),
   });
-
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Erro desconhecido" }));
-    throw new Error(err.error || "Erro ao iniciar processamento");
+    const err = await res.json().catch(() => ({ error: "Erro ao processar" }));
+    throw new Error(err.error);
   }
-
   return res.json();
 }
 
@@ -104,50 +117,48 @@ export async function uploadAndProcess(
   targetDuration: number = 60
 ): Promise<{ jobId: string }> {
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("video", file);
   formData.append("platforms", JSON.stringify(platforms));
   formData.append("mode", mode);
   formData.append("maxClips", String(maxClips));
   formData.append("captionStyle", captionStyle);
   formData.append("targetDuration", String(targetDuration));
-
   const res = await fetch(`${API_URL}/api/video/upload`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: formData,
   });
-
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Erro desconhecido" }));
-    throw new Error(err.error || "Erro ao fazer upload");
+    const err = await res.json().catch(() => ({ error: "Erro no upload" }));
+    throw new Error(err.error);
   }
-
   return res.json();
 }
 
 export async function getJobStatus(jobId: string): Promise<Job> {
   const res = await fetch(`${API_URL}/api/video/status/${jobId}`);
-  if (!res.ok) throw new Error("Job não encontrado");
+  if (!res.ok) throw new Error("Erro ao verificar status");
   return res.json();
+}
+
+export function getDownloadUrl(downloadUrl: string): string {
+  if (downloadUrl.startsWith("http")) return downloadUrl;
+  return `${API_URL}${downloadUrl}`;
 }
 
 export async function deleteJob(jobId: string): Promise<void> {
   await fetch(`${API_URL}/api/video/job/${jobId}`, { method: "DELETE" });
 }
 
-export function getDownloadUrl(downloadUrl: string): string {
-  return `${API_URL}${downloadUrl}`;
-}
-
-export function getStatusLabel(status: Job["status"]): string {
-  const labels: Record<Job["status"], string> = {
-    queued:      "Na fila...",
+export function getStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    queued: "Na fila...",
     downloading: "Baixando vídeo...",
-    transcribing:"Transcrevendo áudio...",
-    analyzing:   "IA analisando melhores momentos...",
-    processing:  "Gerando cortes com legendas...",
-    done:        "Pronto!",
-    error:       "Erro no processamento",
+    transcribing: "Transcrevendo áudio...",
+    analyzing: "IA analisando momentos virais...",
+    processing: "Gerando cortes...",
+    done: "Pronto!",
+    error: "Erro",
   };
   return labels[status] || status;
 }
