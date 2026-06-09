@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Montserrat } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -14,6 +14,13 @@ const BASE_URL = "https://viralizacortes.com.br";
 // ID do Google Analytics 4 — configure em: Vercel → Settings → Environment Variables
 // Nome da variável: NEXT_PUBLIC_GA_ID   Valor: G-XXXXXXXXXX
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#050507",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),

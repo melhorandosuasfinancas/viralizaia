@@ -288,8 +288,8 @@ function ClipMockup({ label, score, color, timeStart, bg }: {
   return (
     <div className="flex flex-col items-center">
       <div
-        className="relative rounded-2xl overflow-hidden border border-white/10 shadow-lg"
-        style={{ width: 90, aspectRatio: "9/16", background: bg }}
+        className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 shadow-lg"
+        style={{ width: "clamp(56px, 10vw, 90px)", aspectRatio: "9/16", background: bg }}
       >
         <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, ${color}22 0%, #00000080 100%)` }} />
         <div
@@ -384,7 +384,7 @@ export default function LandingPage() {
               IA 100% Brasileira
             </div>
 
-            <h1 className="text-5xl md:text-6xl xl:text-7xl font-black leading-[1.05] mb-6 tracking-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-black leading-[1.05] mb-6 tracking-tight">
               Transforme vídeos longos em{" "}
               <span style={{ background: "linear-gradient(135deg, #f97316, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                 cortes virais
@@ -438,9 +438,9 @@ export default function LandingPage() {
                 <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Múltiplos Cortes Virais</span>
               </div>
 
-              <div className="flex gap-4 items-start">
+              <div className="flex gap-2 sm:gap-4 items-start">
                 {/* YouTube window */}
-                <div className="flex-none w-52">
+                <div className="flex-none w-40 sm:w-52">
                   <div className="rounded-xl overflow-hidden border border-white/10" style={{ background: "#0f0f0f" }}>
                     <div className="flex items-center gap-1.5 px-2.5 py-2" style={{ background: "#212121" }}>
                       <div className="w-2 h-2 rounded-full bg-red-500/80" />
@@ -495,8 +495,8 @@ export default function LandingPage() {
                   <p className="text-xs text-gray-500 text-center mt-2 font-medium">1 vídeo longo</p>
                 </div>
 
-                {/* Generated clips */}
-                <div className="flex-1 flex justify-around gap-2">
+                {/* Clips gerados */}
+                <div className="flex-1 flex justify-around gap-1 sm:gap-2">
                   <ClipMockup label="TikTok" score={9} color="#69C9D0" timeStart="0:32" timeEnd="1:14" bg="linear-gradient(160deg, #0a0a14, #1a0a2e)" />
                   <ClipMockup label="Reels" score={8} color="#f77737" timeStart="3:41" timeEnd="4:28" bg="linear-gradient(160deg, #0a0a14, #2a0a1a)" />
                   <ClipMockup label="Shorts" score={9} color="#ff4444" timeStart="7:02" timeEnd="7:55" bg="linear-gradient(160deg, #0a0a14, #2a0a0a)" />
@@ -540,7 +540,7 @@ export default function LandingPage() {
       <section id="como-funciona" className="relative z-10 px-6 md:px-10 py-24 max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <div className="section-badge mb-4">Como funciona</div>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-4">
             Do link ao clip em{" "}
             <span className="gradient-text">3 passos</span>
           </h2>
@@ -642,7 +642,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <div className="section-badge mb-4">Plataformas</div>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-4">
               Um clip,{" "}
               <span style={{ background: "linear-gradient(135deg, #f97316, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                 todas as redes
@@ -676,7 +676,7 @@ export default function LandingPage() {
       <section className="relative z-10 px-6 md:px-10 py-24 max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <div className="section-badge mb-4">Recursos</div>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-4">
             Tudo que você precisa para{" "}
             <span className="gradient-text">criar, crescer e viralizar</span>
           </h2>
@@ -700,7 +700,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <div className="section-badge mb-4">Depoimentos</div>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-4">
               Criadores que já estão{" "}
               <span className="gradient-text">viralizando</span>
             </h2>
@@ -736,7 +736,7 @@ export default function LandingPage() {
       <section id="planos" className="relative z-10 px-6 md:px-10 py-24 max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <div className="section-badge mb-4">Planos</div>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-4">
             Planos que cabem no{" "}
             <span style={{ background: "linear-gradient(135deg, #22d3ee, #3b82f6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
               seu crescimento
@@ -823,7 +823,7 @@ export default function LandingPage() {
       <section id="faq" className="relative z-10 px-6 md:px-10 py-24 max-w-3xl mx-auto">
         <div className="text-center mb-14">
           <div className="section-badge mb-4">FAQ</div>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight">
             Perguntas{" "}
             <span className="gradient-text">frequentes</span>
           </h2>
@@ -856,7 +856,7 @@ export default function LandingPage() {
       <section className="relative z-10 px-6 py-16 max-w-3xl mx-auto text-center">
         <div className="card-glow rounded-3xl p-12" style={{ background: "linear-gradient(160deg, #1a0a3a 0%, #0a0a1a 100%)" }}>
           <div className="section-badge mx-auto mb-5">Comece Hoje</div>
-          <h3 className="text-4xl font-black tracking-tight mb-3">
+          <h3 className="text-3xl md:text-4xl font-black tracking-tight mb-3">
             2 clips grátis —{" "}
             <span style={{ background: "linear-gradient(135deg, #f97316, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
               sem cartão
