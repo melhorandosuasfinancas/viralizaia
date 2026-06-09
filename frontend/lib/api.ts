@@ -3,7 +3,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://viralizaia.duckdns.o
 export type Platform = "tiktok" | "instagram" | "facebook" | "youtube";
 export type ProcessMode = "ai" | "manual";
 export type CaptionStyle = "tiktok" | "hormozi" | "dark" | "clean" | "opensans" | "ubuntu" | "montserrat" | "neon";
-export type Plan = "trial" | "starter" | "pro";
+export type Plan = "trial" | "gratis" | "basico" | "pro" | "full" | "agencia";
 
 export interface Clip {
   clipNumber: number;

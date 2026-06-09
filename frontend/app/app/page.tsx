@@ -44,7 +44,7 @@ const DURATION_OPTIONS = [
   { value: 90, label: "1:30",   desc: "Clips extensos • podcasts" },
 ];
 
-const PLAN_MAX_CLIPS: Record<Plan, number> = { trial: 1, starter: 15, pro: 40 };
+const PLAN_MAX_CLIPS: Record<Plan, number> = { trial: 2, gratis: 2, basico: 10, pro: 20, full: 50, agencia: 100 };
 
 const ASPECT_LABELS: Record<string, string> = {
   "9:16": "Vertical",
@@ -102,7 +102,7 @@ export default function AppPage() {
     }
   }, []);
 
-  // Auto-login after Google/Facebook OAuth
+  // Auto-login after Google OAuth
   useEffect(() => {
     if (sessionStatus === "authenticated" && session?.user?.email && step === "login" && !loggingIn) {
       handleOAuthLogin(session.user.email);
@@ -283,16 +283,6 @@ export default function AppPage() {
               </svg>
               Entrar com Google
             </button>
-            <button
-              onClick={() => signIn("facebook", { callbackUrl: "/app" })}
-              disabled={loggingIn}
-              className="w-full flex items-center justify-center gap-3 py-3 rounded-xl font-bold text-sm bg-[#1877F2] text-white hover:bg-[#1565D8] transition-all disabled:opacity-50"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-              </svg>
-              Entrar com Facebook
-            </button>
           </div>
 
           <div className="relative my-4">
@@ -336,7 +326,7 @@ export default function AppPage() {
             disabled={loggingIn}
             className="w-full py-3 rounded-xl font-bold text-sm border border-purple-500/40 text-purple-300 hover:bg-purple-500/10 transition-all disabled:opacity-50"
           >
-            🎁 Testar 1 clip grátis
+            🎁 Testar 2 clips grátis
           </button>
           <p className="text-center text-xs text-gray-600 mt-2">Sem cartão • Resultado em minutos</p>
 
