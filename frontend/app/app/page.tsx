@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
 import {
   startProcessing,
   uploadAndProcess,
@@ -10,6 +11,8 @@ import {
   getStatusLabel,
   getAuthToken,
   getTrialToken,
+  getOAuthToken,
+  saveWhatsapp,
   type Clip,
   type Job,
   type Platform,
@@ -25,14 +28,14 @@ const PLATFORM_OPTIONS: { id: Platform; label: string; icon: string }[] = [
 ];
 
 const CAPTION_OPTIONS: { id: CaptionStyle; label: string; desc: string; badge?: string }[] = [
-  { id: "tiktok",  label: "TikTok",  desc: "Branco + contorno preto — estilo viral" },
-  { id: "hormozi", label: "Hormozi", desc: "Branco + contorno amarelo — impacto máximo", badge: "🔥" },
-  { id: "dark",    label: "Dark Box", desc: "Caixa escura semi-transparente — legível" },
-  { id: "clean",      label: "Clean",        desc: "Texto limpo com sombra sutil" },
-  { id: "opensans",   label: "Open Sans",    desc: "Moderno e legível — destaque garantido" },
-  { id: "ubuntu",     label: "Ubuntu Bold",  desc: "Arredondado e vibrante — muito lido" },
-  { id: "montserrat", label: "Montserrat",   desc: "Premium — usado por grandes canais", badge: "⭐" },
-  { id: "neon",       label: "Neon Azul",    desc: "Texto ciano com brilho — destaque máximo" },
+  { id: "tiktok",     label: "TikTok",      desc: "Branco + contorno preto — estilo viral" },
+  { id: "hormozi",    label: "Hormozi",     desc: "Branco + contorno amarelo — impacto máximo", badge: "🔥" },
+  { id: "dark",       label: "Dark Box",    desc: "Caixa escura semi-transparente — legível" },
+  { id: "clean",      label: "Clean",       desc: "Texto limpo com sombra sutil" },
+  { id: "opensans",   label: "Open Sans",   desc: "Moderno e legível — destaque garantido" },
+  { id: "ubuntu",     label: "Ubuntu Bold", desc: "Arredondado e vibrante — muito lido" },
+  { id: "montserrat", label: "Montserrat",  desc: "Premium — usado por grandes canais", badge: "⭐" },
+  { id: "neon",       label: "Neon Azul",   desc: "Texto ciano com brilho — destaque máximo" },
 ];
 
 const DURATION_OPTIONS = [
@@ -41,7 +44,7 @@ const DURATION_OPTIONS = [
   { value: 90, label: "1:30",   desc: "Clips extensos • podcasts" },
 ];
 
-const PLAN_MAX_CLIPS: Record<Plan, number> = { trial: 1, starter: 5, pro: 20 };
+const PLAN_MAX_CLIPS: Record<Plan, number> = { trial: 1, starter: 15, pro: 40 };
 
 const ASPECT_LABELS: Record<string, string> = {
   "9:16": "Vertical",
@@ -51,13 +54,23 @@ const ASPECT_LABELS: Record<string, string> = {
 };
 
 export default function AppPage() {
-  const [step, setStep] = useState<"login" | "app">("login");
+  const { data: session, status: sessionStatus } = useSession();
+
+  const [step, setStep] = useState<"login" | "register" | "app">("login");
   const [email, setEmail] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [plan, setPlan] = useState<Plan>("starter");
   const [loginError, setLoginError] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
   const [isTrial, setIsTrial] = useState(false);
+
+  // WhatsApp registration
+  const [whatsapp, setWhatsapp] = useState("");
+  const [registerError, setRegisterError] = useState("");
+  const [registering, setRegistering] = useState(false);
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
+  const [pendingPlan, setPendingPlan] = useState<Plan>("trial");
+  const [pendingEmail, setPendingEmail] = useState("");
 
   const [inputMode, setInputMode] = useState<"url" | "upload">("url");
   const [url, setUrl] = useState("");
@@ -66,7 +79,6 @@ export default function AppPage() {
   const [mode, setMode] = useState<"ai" | "manual">("ai");
   const [maxClips, setMaxClips] = useState(3);
   const [captionStyle, setCaptionStyle] = useState<CaptionStyle>("tiktok");
-
   const [targetDuration, setTargetDuration] = useState(60);
 
   const [jobId, setJobId] = useState<string | null>(null);
@@ -75,8 +87,9 @@ export default function AppPage() {
   const [urlError, setUrlError] = useState("");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const planMaxClips = PLAN_MAX_CLIPS[plan] || 5;
+  const planMaxClips = PLAN_MAX_CLIPS[plan] || 15;
 
+  // Restore saved session from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("viralizaia_token");
     const savedPlan = localStorage.getItem("viralizaia_plan") as Plan | null;
@@ -89,6 +102,15 @@ export default function AppPage() {
     }
   }, []);
 
+  // Auto-login after Google/Facebook OAuth
+  useEffect(() => {
+    if (sessionStatus === "authenticated" && session?.user?.email && step === "login" && !loggingIn) {
+      handleOAuthLogin(session.user.email);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionStatus, session]);
+
+  // Poll job status
   useEffect(() => {
     if (!jobId) return;
     pollRef.current = setInterval(async () => {
@@ -108,24 +130,77 @@ export default function AppPage() {
     return () => clearInterval(pollRef.current!);
   }, [jobId]);
 
+  // ── OAuth auto-login ──
+  async function handleOAuthLogin(oauthEmail: string) {
+    setLoggingIn(true);
+    setLoginError("");
+    try {
+      const result = await getOAuthToken(oauthEmail);
+      const hasWhatsapp = localStorage.getItem("viralizaia_whatsapp");
+      if (!hasWhatsapp) {
+        setPendingToken(result.token);
+        setPendingPlan(result.plan);
+        setPendingEmail(oauthEmail);
+        setStep("register");
+      } else {
+        finishLogin(result.token, result.plan, oauthEmail, result.isTrial || false);
+      }
+    } catch (err: unknown) {
+      setLoginError(err instanceof Error ? err.message : "Erro ao fazer login com OAuth");
+    } finally {
+      setLoggingIn(false);
+    }
+  }
+
+  // ── Email login ──
   async function handleLogin(e: React.FormEvent, useTrial = false) {
     e.preventDefault();
     setLoggingIn(true);
     setLoginError("");
     try {
       const result = useTrial ? await getTrialToken(email) : await getAuthToken(email);
-      setToken(result.token);
-      setPlan(result.plan);
-      setIsTrial(result.isTrial || false);
-      localStorage.setItem("viralizaia_token", result.token);
-      localStorage.setItem("viralizaia_plan", result.plan);
-      localStorage.setItem("viralizaia_email", email);
-      setStep("app");
+      const hasWhatsapp = localStorage.getItem("viralizaia_whatsapp");
+      if (!hasWhatsapp) {
+        setPendingToken(result.token);
+        setPendingPlan(result.plan);
+        setPendingEmail(email);
+        setStep("register");
+      } else {
+        finishLogin(result.token, result.plan, email, result.isTrial || false);
+      }
     } catch (err: unknown) {
       setLoginError(err instanceof Error ? err.message : "Erro ao fazer login");
     } finally {
       setLoggingIn(false);
     }
+  }
+
+  // ── WhatsApp registration ──
+  async function handleRegisterWhatsapp() {
+    const digits = whatsapp.replace(/\D/g, "");
+    if (digits.length < 10) { setRegisterError("Digite um número válido com DDD"); return; }
+    setRegistering(true);
+    setRegisterError("");
+    try {
+      await saveWhatsapp(pendingEmail, digits, pendingToken!);
+      localStorage.setItem("viralizaia_whatsapp", digits);
+      finishLogin(pendingToken!, pendingPlan, pendingEmail, false);
+    } catch (err: unknown) {
+      setRegisterError(err instanceof Error ? err.message : "Erro ao salvar WhatsApp");
+    } finally {
+      setRegistering(false);
+    }
+  }
+
+  function finishLogin(tok: string, p: Plan, loginEmail: string, trial: boolean) {
+    setToken(tok);
+    setPlan(p);
+    setIsTrial(trial);
+    setEmail(loginEmail);
+    localStorage.setItem("viralizaia_token", tok);
+    localStorage.setItem("viralizaia_plan", p);
+    localStorage.setItem("viralizaia_email", loginEmail);
+    setStep("app");
   }
 
   function handleLogout() {
@@ -136,6 +211,7 @@ export default function AppPage() {
     setStep("login");
     setJob(null);
     setJobId(null);
+    if (sessionStatus === "authenticated") signOut({ redirect: false });
   }
 
   async function handleProcess(e: React.FormEvent) {
@@ -192,7 +268,43 @@ export default function AppPage() {
             <p className="text-gray-400 text-sm">Cortes virais com IA em segundos</p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          {/* Social Login */}
+          <div className="space-y-3 mb-5">
+            <button
+              onClick={() => signIn("google", { callbackUrl: "/app" })}
+              disabled={loggingIn}
+              className="w-full flex items-center justify-center gap-3 py-3 rounded-xl font-bold text-sm bg-white text-gray-900 hover:bg-gray-100 transition-all disabled:opacity-50"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              Entrar com Google
+            </button>
+            <button
+              onClick={() => signIn("facebook", { callbackUrl: "/app" })}
+              disabled={loggingIn}
+              className="w-full flex items-center justify-center gap-3 py-3 rounded-xl font-bold text-sm bg-[#1877F2] text-white hover:bg-[#1565D8] transition-all disabled:opacity-50"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              Entrar com Facebook
+            </button>
+          </div>
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-[#080808] px-3 text-xs text-gray-600">ou entre com e-mail</span>
+            </div>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-3">
             <input
               type="email"
               value={email}
@@ -212,27 +324,77 @@ export default function AppPage() {
           </form>
 
           <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10" />
-            </div>
-            <div className="relative flex justify-center">
-              <span className="bg-[#080808] px-3 text-xs text-gray-600">ou</span>
-            </div>
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
+            <div className="relative flex justify-center"><span className="bg-[#080808] px-3 text-xs text-gray-600">ou</span></div>
           </div>
 
           <button
-            onClick={(e) => { if (email.includes("@")) handleLogin(e as unknown as React.FormEvent, true); else setLoginError("Digite seu e-mail primeiro."); }}
+            onClick={(e) => {
+              if (email.includes("@")) handleLogin(e as unknown as React.FormEvent, true);
+              else setLoginError("Digite seu e-mail primeiro.");
+            }}
             disabled={loggingIn}
             className="w-full py-3 rounded-xl font-bold text-sm border border-purple-500/40 text-purple-300 hover:bg-purple-500/10 transition-all disabled:opacity-50"
           >
             🎁 Testar 1 clip grátis
           </button>
-          <p className="text-center text-xs text-gray-600 mt-2">Sem cartão • Sem cadastro</p>
+          <p className="text-center text-xs text-gray-600 mt-2">Sem cartão • Resultado em minutos</p>
 
           <p className="text-center text-xs text-gray-600 mt-6">
             Ainda não é assinante?{" "}
             <a href="/" className="text-purple-400 hover:underline">Ver planos</a>
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── TELA DE CADASTRO (WhatsApp) ────────────────────────────────────────────
+  if (step === "register") {
+    return (
+      <div className="min-h-screen bg-[#080808] flex items-center justify-center px-4">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-8">
+            <div className="text-5xl mb-4">📱</div>
+            <p className="font-extrabold text-xl mb-2">Quase pronto!</p>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              Adicione seu WhatsApp para receber uma mensagem quando seus clips ficarem prontos.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs text-gray-400 mb-2 block">WhatsApp (com DDD)</label>
+              <input
+                type="tel"
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+                placeholder="(11) 99999-9999"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition-colors"
+              />
+              <p className="text-xs text-gray-600 mt-1">Você vai receber aviso quando os cortes ficarem prontos ✅</p>
+            </div>
+
+            {registerError && <p className="text-red-400 text-xs">{registerError}</p>}
+
+            <button
+              onClick={handleRegisterWhatsapp}
+              disabled={registering}
+              className="btn-primary w-full py-3 rounded-xl font-bold text-sm disabled:opacity-50"
+            >
+              {registering ? "Salvando..." : "Confirmar e entrar →"}
+            </button>
+
+            <button
+              onClick={() => {
+                localStorage.setItem("viralizaia_whatsapp", "skip");
+                finishLogin(pendingToken!, pendingPlan, pendingEmail, false);
+              }}
+              className="w-full py-2 text-xs text-gray-600 hover:text-gray-400 transition-colors"
+            >
+              Pular por enquanto
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -421,9 +583,9 @@ export default function AppPage() {
 
           {isTrial && (
             <div className="rounded-xl bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/20 p-4 text-center">
-              <p className="text-sm font-semibold text-white mb-1">Gostou? Assine para gerar até 20 clips por vídeo 🚀</p>
-              <a href="/#plans" className="inline-block mt-2 btn-primary px-6 py-2 rounded-full text-sm font-bold">
-                Ver planos a partir de R$29,90
+              <p className="text-sm font-semibold text-white mb-1">Gostou? Assine para gerar até 40 clips por vídeo 🚀</p>
+              <a href="/#planos" className="inline-block mt-2 btn-primary px-6 py-2 rounded-full text-sm font-bold">
+                Ver planos a partir de R$19,90
               </a>
             </div>
           )}
