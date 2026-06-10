@@ -96,8 +96,7 @@ export const metadata: Metadata = {
   },
   category: "technology",
   verification: {
-    // Cole aqui o código do Google Search Console quando criar a propriedade
-    // google: "COLE_SEU_CODIGO_AQUI",
+    google: "6UAK2eJN8-fty95-xJa-2WItmoDHZd3RZQirZ-YX-sA",
   },
 };
 
