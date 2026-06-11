@@ -214,44 +214,21 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
       .on('error', (err) => reject(err));
 
     if (isVertical || isSquare) {
-      // Blur background: full blurred bg + letterboxed fg — no content cropped
-      const safePath = assPath ? assPath.replace(/\\/g, '/').replace(/'/g, "\\'") : null;
-
-      const fc = [
-        `[0:v]split=2[bg_in][fg_in]`,
-        `[bg_in]scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height},boxblur=25:3[bg]`,
-        `[fg_in]scale=${width}:${height}:force_original_aspect_ratio=decrease[fg]`,
+      // Center crop: scale to cover then crop center — fills full frame, no bars
+      const filters = [
+        `scale=${width}:${height}:force_original_aspect_ratio=increase`,
+        `crop=${width}:${height}`
       ];
-
-      // Chain: overlay → ass → watermark → [out]
-      let lastOut = 'ov0';
-      fc.push(`[bg][fg]overlay=(W-w)/2:(H-h)/2[${lastOut}]`);
-
-      if (safePath) {
-        const nextOut = (addWatermark) ? 'ov1' : 'out';
-        fc.push(`[${lastOut}]ass='${safePath}'[${nextOut}]`);
-        lastOut = nextOut;
+      if (assPath) {
+        const safePath = assPath.replace(/\\/g, '/').replace(/'/g, "\\'");
+        filters.push(`ass='${safePath}'`);
       }
-
       if (addWatermark) {
         const wFontSize = Math.max(20, Math.round(height / 42));
         const wY       = Math.max(10, Math.round(height / 30));
-        fc.push(`[${lastOut}]drawtext=text='Viraliza Cortes':x=(w-text_w)/2:y=h-th-${wY}:fontsize=${wFontSize}:fontcolor=white@0.65:shadowcolor=black@0.75:shadowx=2:shadowy=2[out]`);
-        lastOut = 'out';
+        filters.push(`drawtext=text='Viraliza Cortes':x=(w-text_w)/2:y=h-th-${wY}:fontsize=${wFontSize}:fontcolor=white@0.65:shadowcolor=black@0.75:shadowx=2:shadowy=2`);
       }
-
-      // If neither ass nor watermark added the [out] label, rename last label to out
-      if (lastOut !== 'out') {
-        // Replace last fc entry to use [out] instead
-        fc[fc.length - 1] = fc[fc.length - 1].replace(`[${lastOut}]`, '[out]');
-      }
-
-      cmd.outputOptions([
-        '-filter_complex', fc.join(';'),
-        '-map', '[out]',
-        '-map', '0:a?'
-      ]);
-
+      cmd.videoFilters(filters);
     } else {
       // Horizontal (16:9): scale to fit with black letterbox
       const filters = [
