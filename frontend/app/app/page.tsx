@@ -40,7 +40,7 @@ const CAPTION_OPTIONS: { id: CaptionStyle; label: string; desc: string; badge?: 
 
 const CAPTION_PREVIEW: Record<string, { text: string; color: string; textShadow: string; bg: string; fontFamily: string; anim: string }> = {
   tiktok:     { text: "palavra viral", color: "#fff", textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent", fontFamily: "sans-serif", anim: "cpop" },
-  hormozi:    { text: "IMPACTO!", color: "#fff", textShadow: "-2px -2px 0 #BFFF00,2px -2px 0 #BFFF00,-2px 2px 0 #BFFF00,2px 2px 0 #BFFF00", bg: "transparent", fontFamily: "sans-serif", anim: "czoom" },
+  hormozi:    { text: "IMPACTO!", color: "#FFBF00", textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent", fontFamily: "sans-serif", anim: "czoom" },
   dark:       { text: "fácil de ler", color: "#fff", textShadow: "none", bg: "rgba(0,0,0,0.65)", fontFamily: "sans-serif", anim: "cslide" },
   clean:      { text: "texto suave", color: "#f0f0f0", textShadow: "1px 1px 3px rgba(0,0,0,0.9)", bg: "transparent", fontFamily: "sans-serif", anim: "cfade" },
   opensans:   { text: "moderno", color: "#fff", textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent", fontFamily: "'Open Sans',sans-serif", anim: "cpop" },
