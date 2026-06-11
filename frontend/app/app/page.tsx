@@ -39,14 +39,14 @@ const CAPTION_OPTIONS: { id: CaptionStyle; label: string; desc: string; badge?: 
 ];
 
 const CAPTION_PREVIEW: Record<string, { text: string; color: string; textShadow: string; bg: string; fontFamily: string; anim: string }> = {
-  tiktok:     { text: "palavra viral", color: "#fff", textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent", fontFamily: "sans-serif", anim: "cpop" },
-  hormozi:    { text: "IMPACTO!", color: "#FFBF00", textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent", fontFamily: "sans-serif", anim: "czoom" },
-  dark:       { text: "fácil de ler", color: "#fff", textShadow: "none", bg: "rgba(0,0,0,0.65)", fontFamily: "sans-serif", anim: "cslide" },
-  clean:      { text: "texto suave", color: "#f0f0f0", textShadow: "1px 1px 3px rgba(0,0,0,0.9)", bg: "transparent", fontFamily: "sans-serif", anim: "cfade" },
-  opensans:   { text: "moderno", color: "#fff", textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent", fontFamily: "'Open Sans',sans-serif", anim: "cpop" },
-  ubuntu:     { text: "arredondado", color: "#fff", textShadow: "-2px -2px 0 #7C3AED,2px -2px 0 #7C3AED,-2px 2px 0 #7C3AED,2px 2px 0 #7C3AED", bg: "transparent", fontFamily: "'Ubuntu',sans-serif", anim: "czoom" },
-  montserrat: { text: "premium", color: "#fff", textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent", fontFamily: "Montserrat,sans-serif", anim: "cslide" },
-  neon:       { text: "brilho MAX!", color: "#00FFFF", textShadow: "0 0 8px #00FFFF,0 0 16px #00FFFF,-1px -1px 0 #000,1px 1px 0 #000", bg: "transparent", fontFamily: "sans-serif", anim: "cpop" },
+  tiktok:     { text: "palavra viral", color: "#fff",    textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent",        fontFamily: "sans-serif",            anim: "cpop"   },
+  hormozi:    { text: "IMPACTO!",      color: "#FFBF00", textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent",        fontFamily: "sans-serif",            anim: "czoom"  },
+  dark:       { text: "fácil de ler",  color: "#fff",    textShadow: "none",                                                              bg: "rgba(0,0,0,0.65)",   fontFamily: "sans-serif",            anim: "cslide" },
+  clean:      { text: "texto limpo",   color: "#B0C4DE", textShadow: "1px 1px 2px rgba(0,0,0,0.9)",                                       bg: "transparent",        fontFamily: "sans-serif",            anim: "cfade"  },
+  opensans:   { text: "destaque",      color: "#7DD3FC", textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent",        fontFamily: "'Open Sans',sans-serif", anim: "cpop"   },
+  ubuntu:     { text: "arredondado",   color: "#C084FC", textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent",        fontFamily: "'Ubuntu',sans-serif",   anim: "czoom"  },
+  montserrat: { text: "premium",       color: "#FDE68A", textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent",        fontFamily: "Montserrat,sans-serif", anim: "cslide" },
+  neon:       { text: "brilho MAX!",   color: "#00FFFF", textShadow: "0 0 8px #00FFFF,0 0 16px #00FFFF,-1px -1px 0 #000,1px 1px 0 #000", bg: "transparent",       fontFamily: "sans-serif",            anim: "cpop"   },
 };
 
 const DURATION_OPTIONS = [
