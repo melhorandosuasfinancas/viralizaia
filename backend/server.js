@@ -112,6 +112,26 @@ setInterval(cleanupOldFiles, 2 * 60 * 60 * 1000);
 // Carrinho abandonado — dispara WhatsApp após 8 horas sem conversão
 startAbandonedCartJob();
 
+
+// ─── Backup automático de users.json ─────────────────────────────────────────
+const cron = require('node-cron');
+const DATA_FILE_PATH = path.join(__dirname, 'data/users.json');
+const BACKUP_DIR     = path.join(__dirname, 'data/backups');
+fs.ensureDirSync(BACKUP_DIR);
+
+cron.schedule('0 3 * * *', () => {  // todo dia às 03:00
+  try {
+    if (fs.existsSync(DATA_FILE_PATH)) {
+      const date = new Date().toISOString().slice(0, 10);
+      fs.copySync(DATA_FILE_PATH, path.join(BACKUP_DIR, `users_${date}.json`));
+      // Manter apenas os últimos 30 backups
+      const backups = fs.readdirSync(BACKUP_DIR).sort();
+      if (backups.length > 30) backups.slice(0, backups.length - 30).forEach(f => fs.removeSync(path.join(BACKUP_DIR, f)));
+      console.log('[backup] users.json copiado para backups/users_' + date + '.json');
+    }
+  } catch (e) { console.error('[backup] Erro:', e.message); }
+});
+
 app.listen(PORT, () => {
   console.log(`ViralizaIA Backend rodando na porta ${PORT}`);
 });

@@ -1,4 +1,5 @@
 const express = require('express');
+const { sendWelcomeEmail, sendCancellationEmail } = require('../services/mailer');
 const router = express.Router();
 const fs = require('fs-extra');
 const path = require('path');
@@ -224,13 +225,16 @@ function activateUser(email, productId) {
   };
   saveStore();
   console.log('Usuario ativado:', email, plan);
+  sendWelcomeEmail(email, plan).catch(() => {});
 }
 
 function deactivateUser(email) {
   if (store.users[email.toLowerCase()]) {
     store.users[email.toLowerCase()].active = false;
+    store.users[email.toLowerCase()].deactivatedAt = new Date().toISOString();
     saveStore();
     console.log('Usuario desativado:', email);
+    sendCancellationEmail(email).catch(() => {});
   }
 }
 
@@ -254,6 +258,64 @@ function generateToken(email, plan) {
   const payload = { email, plan, maxClips, exp: Date.now() + 24 * 60 * 60 * 1000 };
   return Buffer.from(JSON.stringify(payload)).toString('base64');
 }
+
+
+// ─── Admin Routes ─────────────────────────────────────────────────────────────
+function adminAuth(req, res) {
+  const secret = req.headers['x-admin-secret'] || req.query.secret || req.body?.secret;
+  if (secret !== process.env.ADMIN_SECRET) { res.status(401).json({ error: 'Unauthorized' }); return false; }
+  return true;
+}
+
+router.get('/admin/stats', (req, res) => {
+  if (!adminAuth(req, res)) return;
+  const users = Object.entries(store.users).map(([email, d]) => ({ email, ...d }));
+  const active = users.filter(u => u.active);
+  const byPlan = {};
+  active.forEach(u => { byPlan[u.plan] = (byPlan[u.plan] || 0) + 1; });
+  const trialUsedCount = Object.keys(store.trials || {}).length;
+  res.json({ total: users.length, active: active.length, inactive: users.length - active.length, trialUsed: trialUsedCount, byPlan });
+});
+
+router.get('/admin/users', (req, res) => {
+  if (!adminAuth(req, res)) return;
+  const { plan, status, q, page = 1, limit = 100 } = req.query;
+  let users = Object.entries(store.users).map(([email, d]) => ({ email, ...d }));
+  if (plan)   users = users.filter(u => u.plan === plan);
+  if (status === 'active')   users = users.filter(u => u.active);
+  if (status === 'inactive') users = users.filter(u => !u.active);
+  if (q)      users = users.filter(u => u.email.toLowerCase().includes(q.toLowerCase()));
+  users.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  const start = (Number(page) - 1) * Number(limit);
+  res.json({ users: users.slice(start, start + Number(limit)), total: users.length });
+});
+
+router.patch('/admin/users/:email', express.json(), (req, res) => {
+  if (!adminAuth(req, res)) return;
+  const email = decodeURIComponent(req.params.email).toLowerCase();
+  const { plan, active } = req.body;
+  const validPlans = ['trial', 'gratis', 'basico', 'pro', 'full', 'agencia'];
+  if (!store.users[email]) store.users[email] = { createdAt: new Date().toISOString() };
+  if (plan !== undefined && validPlans.includes(plan)) store.users[email].plan = plan;
+  if (active !== undefined) {
+    const isActive = active === true || active === 'true';
+    store.users[email].active = isActive;
+    if (isActive) { store.users[email].activatedAt = new Date().toISOString(); store.users[email].activatedBy = 'admin'; }
+    else store.users[email].deactivatedAt = new Date().toISOString();
+  }
+  saveStore();
+  res.json({ ok: true, user: { email, ...store.users[email] } });
+});
+
+router.delete('/admin/users/:email', (req, res) => {
+  if (!adminAuth(req, res)) return;
+  const email = decodeURIComponent(req.params.email).toLowerCase();
+  delete store.users[email];
+  delete (store.trials || {})[email];
+  saveStore();
+  res.json({ ok: true });
+});
+
 
 module.exports = router;
 module.exports.PLAN_MAX_CLIPS = PLAN_MAX_CLIPS;

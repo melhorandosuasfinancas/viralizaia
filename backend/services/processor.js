@@ -97,7 +97,7 @@ const CAPTION_PRESETS = {
     fontName: 'Ubuntu',
     fontSize: 56,
     primaryColour: '&H00FFFFFF',
-    outlineColour: '&H007C3AED',
+    outlineColour: '&H00ED3A7C',
     backColour: '&H00000000',
     bold: true,
     outline: 3,
@@ -223,10 +223,9 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
       .videoCodec('libx264')
       .audioCodec('aac')
       .audioBitrate('128k')
-      .videoBitrate('1500k')
       .outputOptions([
-        '-preset ultrafast',
-        '-crf 23',
+        '-preset fast',
+        '-crf 20',
         '-movflags +faststart',
         '-pix_fmt yuv420p',
         '-threads 2'
@@ -294,9 +293,9 @@ function buildAssContent(transcriptSegs, clipStart, clipEnd, width, height, styl
   ];
 
   // Pop-in animation: fade in 80ms + quick scale bounce (105% → 100%)
-  const pop = '{\\fad(80,0)\\t(0,120,\\fscx105\\fscy105)\\t(120,220,\\fscx100\\fscy100)}';
-  const zoom = '{\\fad(60,0)\\fscx0\\fscy0\\t(0,180,\\fscx100\\fscy100)}';
-  const fadein = '{\\fad(150,80)}';
+  const pop = '{\\fad(60,0)\\t(0,100,\\fscx105\\fscy105)\\t(100,180,\\fscx100\\fscy100)}';
+  const zoom = '{\\fad(60,0)\\fscx30\\fscy30\\t(0,160,\\fscx100\\fscy100)}';
+  const fadein = '{\\fad(120,60)}';
 
   const animType = preset.animation || 'pop';
 
