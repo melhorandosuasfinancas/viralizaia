@@ -23,8 +23,12 @@ app.set('trust proxy', 1);
 const DIRS = ['./temp', './output', './uploads'];
 DIRS.forEach(dir => fs.ensureDirSync(dir));
 
+const _allowedOrigins = (process.env.FRONTEND_URL || '*').split(',').map(s => s.trim());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  origin: (origin, cb) => {
+    if (!origin || _allowedOrigins.includes('*') || _allowedOrigins.includes(origin)) return cb(null, true);
+    cb(new Error('Not allowed by CORS'));
+  },
   methods: ['GET', 'POST', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
