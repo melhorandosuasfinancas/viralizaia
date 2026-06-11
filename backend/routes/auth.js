@@ -61,12 +61,17 @@ router.post('/webhook/appmax', express.json(), (req, res) => {
 
   if (!email) return res.status(400).json({ error: 'Email nao encontrado.' });
 
-  // Extrai product_id
+  // Extrai product_id e product_name
   const productId =
     String(data?.products?.[0]?.id || '') ||
     String(data?.subscription?.plan_id || '') ||
     String(data?.product_id || '') ||
     String(body?.product_id || '');
+  const productName =
+    data?.products?.[0]?.name ||
+    data?.subscription?.plan_name ||
+    body?.products?.[0]?.name ||
+    '';
 
   switch (event) {
     case 'order_approved':
@@ -75,7 +80,7 @@ router.post('/webhook/appmax', express.json(), (req, res) => {
     case 'subscription_activated':
     case 'subscription_active':
     case 'subscription_new':
-      activateUser(email, productId);
+      activateUser(email, productId, productName);
       break;
     case 'subscription_canceled':
     case 'subscription_cancelled':
@@ -215,8 +220,8 @@ function markTrialUsed(email) {
   saveStore();
 }
 
-function activateUser(email, productId) {
-  const plan = getPlanFromProduct(productId);
+function activateUser(email, productId, productName) {
+  const plan = getPlanFromProduct(productId, productName);
   store.users[email.toLowerCase()] = {
     ...store.users[email.toLowerCase()],
     active: true,
@@ -238,18 +243,28 @@ function deactivateUser(email) {
   }
 }
 
-function getPlanFromProduct(productId) {
+function getPlanFromProduct(productId, productName) {
   const id = String(productId || '');
-  if (id && id === String(process.env.APPMAX_BASICO_ID  || '')) return 'basico';
-  if (id && id === String(process.env.APPMAX_PRO_ID     || '')) return 'pro';
-  if (id && id === String(process.env.APPMAX_FULL_ID    || '')) return 'full';
-  if (id && id === String(process.env.APPMAX_AGENCIA_ID || '')) return 'agencia';
-  // fallback: detecta por nome se ID não configurado
+  // Primeiro: tenta pelo ID configurado nas env vars
+  if (id && id !== 'placeholder') {
+    if (id === String(process.env.APPMAX_BASICO_ID  || '')) return 'basico';
+    if (id === String(process.env.APPMAX_PRO_ID     || '')) return 'pro';
+    if (id === String(process.env.APPMAX_FULL_ID    || '')) return 'full';
+    if (id === String(process.env.APPMAX_AGENCIA_ID || '')) return 'agencia';
+  }
+  // Fallback: detecta pelo nome do produto
+  const name = (productName || '').toLowerCase();
+  if (name.includes('agencia') || name.includes('agência') || name.includes('agenc')) return 'agencia';
+  if (name.includes('full'))    return 'full';
+  if (name.includes('pro'))     return 'pro';
+  if (name.includes('basico') || name.includes('básico') || name.includes('basic')) return 'basico';
+  // Fallback pelo ID numérico como string
   const lower = id.toLowerCase();
   if (lower.includes('agencia') || lower.includes('agência')) return 'agencia';
   if (lower.includes('full'))    return 'full';
   if (lower.includes('pro'))     return 'pro';
   if (lower.includes('basico') || lower.includes('básico')) return 'basico';
+  console.log('getPlanFromProduct: plano nao identificado, id=' + id + ', name=' + productName + '. Usando basico.');
   return 'basico';
 }
 

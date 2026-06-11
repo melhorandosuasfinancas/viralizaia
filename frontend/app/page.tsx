@@ -233,7 +233,7 @@ const PLANS = [
       "Legendas automáticas",
     ],
     cta: "Assinar Básico",
-    href: "/checkout/basico",
+    href: "https://pay.finaliza.shop/pl/cf81361a6d",
     highlight: false,
   },
   {
@@ -250,7 +250,7 @@ const PLANS = [
       "Download HD",
     ],
     cta: "Quero o Pro",
-    href: "/checkout/pro",
+    href: "https://pay.finaliza.shop/pl/9391b0d5c5",
     highlight: true,
     badge: "MAIS POPULAR",
   },
@@ -268,7 +268,7 @@ const PLANS = [
       "Suporte prioritário",
     ],
     cta: "Assinar Full",
-    href: "/checkout/full",
+    href: "https://pay.finaliza.shop/pl/1fac0eef10",
     highlight: false,
   },
   {
@@ -285,7 +285,7 @@ const PLANS = [
       "Suporte VIP",
     ],
     cta: "Falar com vendas",
-    href: "/checkout/agencia",
+    href: "https://pay.finaliza.shop/pl/71a2cf32b6",
     highlight: false,
   },
 ];
