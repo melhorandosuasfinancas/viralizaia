@@ -45,11 +45,11 @@ export async function getAuthToken(email: string): Promise<AuthResult> {
   return res.json();
 }
 
-export async function getTrialToken(email: string): Promise<AuthResult> {
+export async function getTrialToken(email: string, name?: string): Promise<AuthResult> {
   const res = await fetch(`${API_URL}/api/auth/trial`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, name }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: "Erro ao iniciar teste gratuito" }));

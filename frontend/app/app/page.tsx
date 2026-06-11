@@ -76,6 +76,11 @@ export default function AppPage() {
   const [isTrial, setIsTrial] = useState(false);
 
   // WhatsApp registration
+  const [trialName, setTrialName] = useState("");
+  const [trialEmail, setTrialEmail] = useState("");
+  const [trialWhatsapp, setTrialWhatsapp] = useState("");
+  const [trialError, setTrialError] = useState("");
+  const [trialLoading, setTrialLoading] = useState(false);
   const [whatsapp, setWhatsapp] = useState("");
   const [registerError, setRegisterError] = useState("");
   const [registering, setRegistering] = useState(false);
@@ -200,6 +205,25 @@ export default function AppPage() {
       setRegisterError(err instanceof Error ? err.message : "Erro ao salvar WhatsApp");
     } finally {
       setRegistering(false);
+    }
+  }
+
+  async function handleTrialRegister() {
+    if (!trialName.trim()) { setTrialError("Digite seu nome"); return; }
+    if (!trialEmail.includes("@")) { setTrialError("E-mail inválido"); return; }
+    const digits = trialWhatsapp.replace(/\D/g, "");
+    if (digits.length < 10) { setTrialError("WhatsApp inválido — inclua o DDD"); return; }
+    setTrialLoading(true);
+    setTrialError("");
+    try {
+      const result = await getTrialToken(trialEmail, trialName);
+      await saveWhatsapp(trialEmail, digits, result.token);
+      localStorage.setItem("viralizaia_whatsapp", digits);
+      finishLogin(result.token, result.plan, trialEmail, true);
+    } catch (err: unknown) {
+      setTrialError(err instanceof Error ? err.message : "Erro ao criar conta");
+    } finally {
+      setTrialLoading(false);
     }
   }
 
@@ -330,12 +354,8 @@ export default function AppPage() {
           </div>
 
           <button
-            onClick={(e) => {
-              if (email.includes("@")) handleLogin(e as unknown as React.FormEvent, true);
-              else setLoginError("Digite seu e-mail primeiro.");
-            }}
-            disabled={loggingIn}
-            className="w-full py-3 rounded-xl font-bold text-sm border border-purple-500/40 text-purple-300 hover:bg-purple-500/10 transition-all disabled:opacity-50"
+            onClick={() => setStep("trial-register")}
+            className="w-full py-3 rounded-xl font-bold text-sm border border-purple-500/40 text-purple-300 hover:bg-purple-500/10 transition-all"
           >
             🎁 Testar 2 clips grátis
           </button>
@@ -343,8 +363,64 @@ export default function AppPage() {
 
           <p className="text-center text-xs text-gray-600 mt-6">
             Ainda não é assinante?{" "}
-            <a href="/" className="text-purple-400 hover:underline">Ver planos</a>
+            <a href="/#planos" className="text-purple-400 hover:underline">Ver planos</a>
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── TELA DE CADASTRO TRIAL (nome + email + whatsapp) ─────────────────────
+  if (step === "trial-register") {
+    return (
+      <div className="min-h-screen bg-[#080808] flex items-center justify-center px-4">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-8">
+            <div className="text-5xl mb-4">🎬</div>
+            <p className="gradient-text font-extrabold text-2xl mb-1">Viraliza Cortes</p>
+            <p className="font-bold text-lg mt-2 mb-1">Criar conta grátis</p>
+            <p className="text-gray-400 text-sm">2 clips grátis · sem cartão de crédito</p>
+          </div>
+          <div className="space-y-3">
+            <input
+              type="text"
+              value={trialName}
+              onChange={(e) => setTrialName(e.target.value)}
+              placeholder="Seu nome completo"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition-colors"
+            />
+            <input
+              type="email"
+              value={trialEmail}
+              onChange={(e) => setTrialEmail(e.target.value)}
+              placeholder="seu@email.com"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition-colors"
+            />
+            <div>
+              <input
+                type="tel"
+                value={trialWhatsapp}
+                onChange={(e) => setTrialWhatsapp(e.target.value)}
+                placeholder="WhatsApp com DDD — (11) 99999-9999"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition-colors"
+              />
+              <p className="text-xs text-gray-600 mt-1">Para avisar quando os clips ficarem prontos e recuperar acesso se esquecer o e-mail</p>
+            </div>
+            {trialError && <p className="text-red-400 text-xs">{trialError}</p>}
+            <button
+              onClick={handleTrialRegister}
+              disabled={trialLoading}
+              className="btn-primary w-full py-3 rounded-xl font-bold text-sm disabled:opacity-50"
+            >
+              {trialLoading ? "Criando conta..." : "Criar conta e testar grátis →"}
+            </button>
+            <button
+              onClick={() => setStep("login")}
+              className="w-full py-2 text-xs text-gray-600 hover:text-gray-400 transition-colors"
+            >
+              ← Voltar
+            </button>
+          </div>
         </div>
       </div>
     );
