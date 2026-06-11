@@ -192,34 +192,13 @@ async function createClips(videoPath, segments, platforms, outputDir, jobId, onP
 
 function renderClip(videoPath, segment, config, outputPath, assPath, addWatermark = false) {
   const { width, height } = config;
-
-  // Vertical/square: scale up + center crop (no black bars — viral style)
-  // Horizontal: scale down + pad (letterbox)
-  const isVertical = height >= width;
-  const filters = isVertical ? [
-    `scale=${width}:${height}:force_original_aspect_ratio=increase`,
-    `crop=${width}:${height}`
-  ] : [
-    `scale=${width}:${height}:force_original_aspect_ratio=decrease`,
-    `pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:black`
-  ];
-
-  if (assPath) {
-    const safePath = assPath.replace(/\\/g, '/').replace(/'/g, "\\'");
-    filters.push(`ass='${safePath}'`);
-  }
-
-  if (addWatermark) {
-    const wFontSize = Math.max(20, Math.round(height / 42));
-    const wY = Math.max(10, Math.round(height / 30));
-    filters.push(`drawtext=text='Viraliza Cortes':x=(w-text_w)/2:y=h-th-${wY}:fontsize=${wFontSize}:fontcolor=white@0.65:shadowcolor=black@0.75:shadowx=2:shadowy=2`);
-  }
+  const isVertical = height > width;
+  const isSquare = width === height;
 
   return new Promise((resolve, reject) => {
-    ffmpeg(videoPath)
+    const cmd = ffmpeg(videoPath)
       .setStartTime(segment.start)
       .setDuration(segment.end - segment.start)
-      .videoFilters(filters)
       .videoCodec('libx264')
       .audioCodec('aac')
       .audioBitrate('128k')
@@ -232,8 +211,66 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
       ])
       .output(outputPath)
       .on('end', resolve)
-      .on('error', reject)
-      .run();
+      .on('error', (err) => reject(err));
+
+    if (isVertical || isSquare) {
+      // Blur background: full blurred bg + letterboxed fg — no content cropped
+      const safePath = assPath ? assPath.replace(/\\/g, '/').replace(/'/g, "\\'") : null;
+
+      const fc = [
+        `[0:v]split=2[bg_in][fg_in]`,
+        `[bg_in]scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height},boxblur=25:3[bg]`,
+        `[fg_in]scale=${width}:${height}:force_original_aspect_ratio=decrease[fg]`,
+      ];
+
+      // Chain: overlay → ass → watermark → [out]
+      let lastOut = 'ov0';
+      fc.push(`[bg][fg]overlay=(W-w)/2:(H-h)/2[${lastOut}]`);
+
+      if (safePath) {
+        const nextOut = (addWatermark) ? 'ov1' : 'out';
+        fc.push(`[${lastOut}]ass='${safePath}'[${nextOut}]`);
+        lastOut = nextOut;
+      }
+
+      if (addWatermark) {
+        const wFontSize = Math.max(20, Math.round(height / 42));
+        const wY       = Math.max(10, Math.round(height / 30));
+        fc.push(`[${lastOut}]drawtext=text='Viraliza Cortes':x=(w-text_w)/2:y=h-th-${wY}:fontsize=${wFontSize}:fontcolor=white@0.65:shadowcolor=black@0.75:shadowx=2:shadowy=2[out]`);
+        lastOut = 'out';
+      }
+
+      // If neither ass nor watermark added the [out] label, rename last label to out
+      if (lastOut !== 'out') {
+        // Replace last fc entry to use [out] instead
+        fc[fc.length - 1] = fc[fc.length - 1].replace(`[${lastOut}]`, '[out]');
+      }
+
+      cmd.outputOptions([
+        '-filter_complex', fc.join(';'),
+        '-map', '[out]',
+        '-map', '0:a?'
+      ]);
+
+    } else {
+      // Horizontal (16:9): scale to fit with black letterbox
+      const filters = [
+        `scale=${width}:${height}:force_original_aspect_ratio=decrease`,
+        `pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:black`
+      ];
+      if (assPath) {
+        const safePath = assPath.replace(/\\/g, '/').replace(/'/g, "\\'");
+        filters.push(`ass='${safePath}'`);
+      }
+      if (addWatermark) {
+        const wFontSize = Math.max(20, Math.round(height / 42));
+        const wY       = Math.max(10, Math.round(height / 30));
+        filters.push(`drawtext=text='Viraliza Cortes':x=(w-text_w)/2:y=h-th-${wY}:fontsize=${wFontSize}:fontcolor=white@0.65:shadowcolor=black@0.75:shadowx=2:shadowy=2`);
+      }
+      cmd.videoFilters(filters);
+    }
+
+    cmd.run();
   });
 }
 
