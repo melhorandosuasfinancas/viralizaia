@@ -478,31 +478,31 @@ export default function AppPage() {
           <style>{`
             @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&family=Ubuntu:wght@700&display=swap');
             @keyframes cpop {
-              0%,8% { opacity:0; transform:scale(0.7); }
-              18%,72% { opacity:1; transform:scale(1); }
-              82%,100% { opacity:0; transform:scale(1); }
+              0%,6% { opacity:0; transform:scale(0.7); }
+              14%,78% { opacity:1; transform:scale(1); }
+              88%,100% { opacity:0; transform:scale(1); }
             }
             @keyframes czoom {
-              0%,8% { opacity:0; transform:scale(0); }
-              18%,72% { opacity:1; transform:scale(1); }
-              82%,100% { opacity:0; transform:scale(1); }
+              0%,6% { opacity:0; transform:scale(0.3); }
+              16%,78% { opacity:1; transform:scale(1); }
+              88%,100% { opacity:0; transform:scale(1); }
             }
             @keyframes cslide {
-              0%,8% { opacity:0; transform:translateY(10px); }
-              18%,72% { opacity:1; transform:translateY(0); }
-              82%,100% { opacity:0; transform:translateY(0); }
+              0%,6% { opacity:0; transform:translateY(10px); }
+              14%,78% { opacity:1; transform:translateY(0); }
+              88%,100% { opacity:0; transform:translateY(0); }
             }
             @keyframes cfade {
-              0%,12% { opacity:0; }
-              22%,72% { opacity:1; }
-              82%,100% { opacity:0; }
+              0%,8% { opacity:0; }
+              16%,80% { opacity:1; }
+              90%,100% { opacity:0; }
             }
           `}</style>
           {/* Estilo de legenda */}
           <div>
             <label className="text-xs text-gray-400 mb-3 block">Estilo de legenda</label>
             <div className="grid grid-cols-2 gap-2">
-              {CAPTION_OPTIONS.map(c => {
+              {CAPTION_OPTIONS.map((c, index) => {
                 const p = CAPTION_PREVIEW[c.id];
                 return (
                   <button key={c.id} type="button" onClick={() => setCaptionStyle(c.id)}
@@ -518,7 +518,7 @@ export default function AppPage() {
                         background: p.bg,
                         padding: p.bg !== "transparent" ? "1px 7px" : "0",
                         borderRadius: p.bg !== "transparent" ? "3px" : "0",
-                        animation: `${p.anim} 2.8s ease-in-out infinite`,
+                        animation: `${p.anim} 2.8s ease-in-out ${index * 0.35}s infinite`,
                         display: "inline-block",
                       }}>
                         {p.text}
