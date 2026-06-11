@@ -35,6 +35,7 @@ function saveStore() {
 //   APPMAX_AGENCIA_ID     — ID do produto "Agência" no APPMAX
 router.post('/webhook/appmax', express.json(), (req, res) => {
   const body = req.body;
+  console.log('[APPMAX WEBHOOK] event:', body.event || body.type, '| email:', (body.data?.customer?.email || body.email || '?'));
 
   // Autenticação: token no header, query param ou body
   const receivedToken =

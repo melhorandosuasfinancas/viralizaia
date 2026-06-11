@@ -631,7 +631,7 @@ export default function AppPage() {
             <div className="rounded-xl bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/20 p-4 text-center">
               <p className="text-sm font-semibold text-white mb-1">Gostou? Assine para gerar até 40 clips por vídeo 🚀</p>
               <a href="/#planos" className="inline-block mt-2 btn-primary px-6 py-2 rounded-full text-sm font-bold">
-                Ver planos a partir de R$19,90
+                Ver planos a partir de R$29,90
               </a>
             </div>
           )}
