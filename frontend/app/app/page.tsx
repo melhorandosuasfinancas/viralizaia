@@ -38,6 +38,17 @@ const CAPTION_OPTIONS: { id: CaptionStyle; label: string; desc: string; badge?: 
   { id: "neon",       label: "Neon Azul",   desc: "Texto ciano com brilho — destaque máximo" },
 ];
 
+const CAPTION_PREVIEW: Record<string, { text: string; color: string; textShadow: string; bg: string; fontFamily: string; anim: string }> = {
+  tiktok:     { text: "palavra viral", color: "#fff", textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent", fontFamily: "sans-serif", anim: "cpop" },
+  hormozi:    { text: "IMPACTO!", color: "#fff", textShadow: "-2px -2px 0 #BFFF00,2px -2px 0 #BFFF00,-2px 2px 0 #BFFF00,2px 2px 0 #BFFF00", bg: "transparent", fontFamily: "sans-serif", anim: "czoom" },
+  dark:       { text: "fácil de ler", color: "#fff", textShadow: "none", bg: "rgba(0,0,0,0.65)", fontFamily: "sans-serif", anim: "cslide" },
+  clean:      { text: "texto suave", color: "#f0f0f0", textShadow: "1px 1px 3px rgba(0,0,0,0.9)", bg: "transparent", fontFamily: "sans-serif", anim: "cfade" },
+  opensans:   { text: "moderno", color: "#fff", textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent", fontFamily: "'Open Sans',sans-serif", anim: "cpop" },
+  ubuntu:     { text: "arredondado", color: "#fff", textShadow: "-2px -2px 0 #7C3AED,2px -2px 0 #7C3AED,-2px 2px 0 #7C3AED,2px 2px 0 #7C3AED", bg: "transparent", fontFamily: "'Ubuntu',sans-serif", anim: "czoom" },
+  montserrat: { text: "premium", color: "#fff", textShadow: "-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000", bg: "transparent", fontFamily: "Montserrat,sans-serif", anim: "cslide" },
+  neon:       { text: "brilho MAX!", color: "#00FFFF", textShadow: "0 0 8px #00FFFF,0 0 16px #00FFFF,-1px -1px 0 #000,1px 1px 0 #000", bg: "transparent", fontFamily: "sans-serif", anim: "cpop" },
+};
+
 const DURATION_OPTIONS = [
   { value: 30, label: "30 seg", desc: "Clips rápidos • TikTok viral" },
   { value: 60, label: "1 min",  desc: "Duração padrão • completo" },
@@ -464,17 +475,62 @@ export default function AppPage() {
             </div>
           </div>
 
+          <style>{`
+            @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&family=Ubuntu:wght@700&display=swap');
+            @keyframes cpop {
+              0%,8% { opacity:0; transform:scale(0.7); }
+              18%,72% { opacity:1; transform:scale(1); }
+              82%,100% { opacity:0; transform:scale(1); }
+            }
+            @keyframes czoom {
+              0%,8% { opacity:0; transform:scale(0); }
+              18%,72% { opacity:1; transform:scale(1); }
+              82%,100% { opacity:0; transform:scale(1); }
+            }
+            @keyframes cslide {
+              0%,8% { opacity:0; transform:translateY(10px); }
+              18%,72% { opacity:1; transform:translateY(0); }
+              82%,100% { opacity:0; transform:translateY(0); }
+            }
+            @keyframes cfade {
+              0%,12% { opacity:0; }
+              22%,72% { opacity:1; }
+              82%,100% { opacity:0; }
+            }
+          `}</style>
           {/* Estilo de legenda */}
           <div>
             <label className="text-xs text-gray-400 mb-3 block">Estilo de legenda</label>
             <div className="grid grid-cols-2 gap-2">
-              {CAPTION_OPTIONS.map(c => (
-                <button key={c.id} type="button" onClick={() => setCaptionStyle(c.id)}
-                  className={`flex flex-col px-3 py-2.5 rounded-xl text-left text-sm border transition-all ${captionStyle === c.id ? "border-purple-500/50 bg-purple-500/15 text-white" : "border-white/10 bg-white/5 text-gray-400"}`}>
-                  <span className="font-semibold">{c.badge} {c.label}</span>
-                  <span className="text-xs text-gray-500 mt-0.5">{c.desc}</span>
-                </button>
-              ))}
+              {CAPTION_OPTIONS.map(c => {
+                const p = CAPTION_PREVIEW[c.id];
+                return (
+                  <button key={c.id} type="button" onClick={() => setCaptionStyle(c.id)}
+                    className={`flex flex-col rounded-xl text-left text-sm border transition-all overflow-hidden ${captionStyle === c.id ? "border-purple-500/50 bg-purple-500/15 text-white" : "border-white/10 bg-white/5 text-gray-400"}`}>
+                    {/* Mini animated preview */}
+                    <div className="w-full h-10 flex items-center justify-center" style={{ background: "#080808" }}>
+                      <span style={{
+                        color: p.color,
+                        textShadow: p.textShadow,
+                        fontFamily: p.fontFamily,
+                        fontWeight: 700,
+                        fontSize: "11px",
+                        background: p.bg,
+                        padding: p.bg !== "transparent" ? "1px 7px" : "0",
+                        borderRadius: p.bg !== "transparent" ? "3px" : "0",
+                        animation: `${p.anim} 2.8s ease-in-out infinite`,
+                        display: "inline-block",
+                      }}>
+                        {p.text}
+                      </span>
+                    </div>
+                    <div className="px-3 py-2">
+                      <span className="font-semibold">{c.badge} {c.label}</span>
+                      <span className="text-xs text-gray-500 mt-0.5 block">{c.desc}</span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

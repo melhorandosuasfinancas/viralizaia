@@ -170,7 +170,7 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
     // Fallback: download completo
     updateJob({ status: 'downloading', progress: 20 });
     const videoPath = await downloader.download(url, tempDir);
-    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, null, userEmail, userPlan);
+    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, null, userEmail, userPlan, targetDuration);
 
   } catch (err) {
     updateJob({ status: 'error', error: err.message });
@@ -186,7 +186,7 @@ async function processVideoFromFile(jobId, videoPath, tempDir, platforms, mode, 
   await fs.ensureDir(outputDir);
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
   try {
-    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, null, null, userEmail, userPlan);
+    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, null, null, userEmail, userPlan, targetDuration);
   } catch (err) {
     updateJob({ status: 'error', error: err.message });
     throw err;
@@ -196,7 +196,7 @@ async function processVideoFromFile(jobId, videoPath, tempDir, platforms, mode, 
 }
 
 // --- Pipeline comum (transcrição Whisper + análise + cortes) ---
-async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, existingTranscript, userEmail, userPlan) {
+async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, existingTranscript, userEmail, userPlan, targetDuration = 60) {
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
 
   updateJob({ status: 'transcribing', progress: 30 });
