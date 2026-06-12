@@ -234,11 +234,8 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
         filterParts.push(`[${lastOut}]drawtext=text='Viraliza Cortes':x=(w-text_w)/2:y=h-th-${wY}:fontsize=${wFontSize}:fontcolor=white@0.65:shadowcolor=black@0.75:shadowx=2:shadowy=2[wm]`);
         lastOut = 'wm';
       }
-      cmd.outputOptions([
-        '-filter_complex', filterParts.join(';'),
-        '-map', `[${lastOut}]`,
-        '-map', '0:a:0?',
-      ]);
+      cmd.complexFilter(filterParts.join(';'));
+      cmd.outputOptions(['-map', `[${lastOut}]`, '-map', '0:a:0?']);
     } else {
       // Horizontal (16:9): scale to fit with black letterbox
       const filters = [
