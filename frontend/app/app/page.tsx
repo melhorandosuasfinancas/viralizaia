@@ -67,7 +67,7 @@ const ASPECT_LABELS: Record<string, string> = {
 export default function AppPage() {
   const { data: session, status: sessionStatus } = useSession();
 
-  const [step, setStep] = useState<"login" | "register" | "app">("login");
+  const [step, setStep] = useState<"login" | "register" | "app" | "trial-register">("login");
   const [email, setEmail] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [plan, setPlan] = useState<Plan>("trial");
