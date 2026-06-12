@@ -4,12 +4,12 @@ const fs = require('fs-extra');
 const os = require('os');
 
 const PLATFORM_CONFIGS = {
-  tiktok:           { width: 720,  height: 1280, aspectRatio: '9:16', label: 'TikTok' },
-  instagram_reels:  { width: 720,  height: 1280, aspectRatio: '9:16', label: 'Instagram Reels' },
-  instagram_feed:   { width: 720,  height: 900,  aspectRatio: '4:5',  label: 'Instagram Feed' },
-  instagram_square: { width: 720,  height: 720,  aspectRatio: '1:1',  label: 'Instagram Quadrado' },
-  facebook:         { width: 854,  height: 480,  aspectRatio: '16:9', label: 'Facebook' },
-  youtube_shorts:   { width: 720,  height: 1280, aspectRatio: '9:16', label: 'YouTube Shorts' }
+  tiktok:           { width: 1080, height: 1920, aspectRatio: '9:16', label: 'TikTok' },
+  instagram_reels:  { width: 1080, height: 1920, aspectRatio: '9:16', label: 'Instagram Reels' },
+  instagram_feed:   { width: 1080, height: 1350, aspectRatio: '4:5',  label: 'Instagram Feed' },
+  instagram_square: { width: 1080, height: 1080, aspectRatio: '1:1',  label: 'Instagram Quadrado' },
+  facebook:         { width: 1280, height: 720,  aspectRatio: '16:9', label: 'Facebook' },
+  youtube_shorts:   { width: 1080, height: 1920, aspectRatio: '9:16', label: 'YouTube Shorts' }
 };
 
 const PLATFORM_MAP = {
@@ -204,7 +204,7 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
       .audioBitrate('128k')
       .outputOptions([
         '-preset fast',
-        '-crf 20',
+        '-crf 19',
         '-movflags +faststart',
         '-pix_fmt yuv420p',
         '-threads 2'
@@ -214,21 +214,31 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
       .on('error', (err) => reject(err));
 
     if (isVertical || isSquare) {
-      // Center crop: scale to cover then crop center — fills full frame, no bars
-      const filters = [
-        `scale=${width}:${height}:force_original_aspect_ratio=increase`,
-        `crop=${width}:${height}`
+      // Blurred background: full content visible (no aggressive crop) + blurred fill
+      // Same technique used by Opus Clip, Klap, Submagic for 16:9 → 9:16 conversion
+      const filterParts = [
+        `[0:v]split=2[bg_in][fg_in]`,
+        `[bg_in]scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height},boxblur=20:5[bg]`,
+        `[fg_in]scale=${width}:${height}:force_original_aspect_ratio=decrease[fg]`,
+        `[bg][fg]overlay=(W-w)/2:(H-h)/2[base]`
       ];
+      let lastOut = 'base';
       if (assPath) {
         const safePath = assPath.replace(/\\/g, '/').replace(/'/g, "\\'");
-        filters.push(`ass='${safePath}'`);
+        filterParts.push(`[base]ass='${safePath}'[sub]`);
+        lastOut = 'sub';
       }
       if (addWatermark) {
         const wFontSize = Math.max(20, Math.round(height / 42));
         const wY       = Math.max(10, Math.round(height / 30));
-        filters.push(`drawtext=text='Viraliza Cortes':x=(w-text_w)/2:y=h-th-${wY}:fontsize=${wFontSize}:fontcolor=white@0.65:shadowcolor=black@0.75:shadowx=2:shadowy=2`);
+        filterParts.push(`[${lastOut}]drawtext=text='Viraliza Cortes':x=(w-text_w)/2:y=h-th-${wY}:fontsize=${wFontSize}:fontcolor=white@0.65:shadowcolor=black@0.75:shadowx=2:shadowy=2[wm]`);
+        lastOut = 'wm';
       }
-      cmd.videoFilters(filters);
+      cmd.outputOptions([
+        '-filter_complex', filterParts.join(';'),
+        '-map', `[${lastOut}]`,
+        '-map', '0:a:0?',
+      ]);
     } else {
       // Horizontal (16:9): scale to fit with black letterbox
       const filters = [
