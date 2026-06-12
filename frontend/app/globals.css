@@ -150,3 +150,50 @@ body {
   border-color: rgba(139,43,226,0.35);
   background: rgba(139,43,226,0.05);
 }
+
+
+/* Blog article prose styles */
+.prose-viraliza h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+.prose-viraliza h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #e5e7eb;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+.prose-viraliza p {
+  color: #9ca3af;
+  line-height: 1.8;
+  margin-bottom: 1.25rem;
+  font-size: 1.0625rem;
+}
+.prose-viraliza ul, .prose-viraliza ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+}
+.prose-viraliza ul { list-style-type: disc; }
+.prose-viraliza ol { list-style-type: decimal; }
+.prose-viraliza li {
+  color: #9ca3af;
+  line-height: 1.7;
+  margin-bottom: 0.4rem;
+}
+.prose-viraliza strong {
+  color: #e5e7eb;
+  font-weight: 700;
+}
+.prose-viraliza em { color: #c4b5fd; font-style: italic; }
+.prose-viraliza a {
+  color: #a78bfa;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-viraliza a:hover { color: #c4b5fd; }
+.prose-viraliza h2:first-child { margin-top: 0; }
