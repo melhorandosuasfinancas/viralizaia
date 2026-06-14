@@ -33,7 +33,7 @@ const jobs = new Map();
 router.post('/upload', verifySubscription, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Arquivo de video e obrigatorio.' });
 
-  const { platforms = '["tiktok","instagram"]', mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60 } = req.body;
+  const { platforms = '["tiktok","instagram"]', mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60, captionColor = '#FFFFFF' } = req.body;
 
   let parsedPlatforms;
   try { parsedPlatforms = JSON.parse(platforms); } catch { parsedPlatforms = ['tiktok', 'instagram']; }
@@ -56,13 +56,13 @@ router.post('/upload', verifySubscription, upload.single('file'), async (req, re
   const destPath = path.join(tempDir, 'source.mp4');
   await fs.move(req.file.path, destPath);
 
-  processVideoFromFile(jobId, destPath, tempDir, parsedPlatforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60)
+  processVideoFromFile(jobId, destPath, tempDir, parsedPlatforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60, captionColor)
     .catch(err => jobs.set(jobId, { status: 'error', progress: 0, clips: [], error: err.message }));
 });
 
 // POST /api/video/process
 router.post('/process', verifySubscription, async (req, res) => {
-  const { url, platforms = ['tiktok', 'instagram'], mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60 } = req.body;
+  const { url, platforms = ['tiktok', 'instagram'], mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60, captionColor = '#FFFFFF' } = req.body;
 
   if (!url) return res.status(400).json({ error: 'URL do YouTube e obrigatoria.' });
 
@@ -78,7 +78,7 @@ router.post('/process', verifySubscription, async (req, res) => {
   jobs.set(jobId, { status: 'queued', progress: 0, clips: [], error: null });
   res.json({ jobId, message: 'Processamento iniciado.' });
 
-  processVideo(jobId, url, platforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60)
+  processVideo(jobId, url, platforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60, captionColor)
     .catch(err => jobs.set(jobId, { status: 'error', progress: 0, clips: [], error: err.message }));
 });
 
@@ -99,7 +99,7 @@ router.delete('/job/:jobId', async (req, res) => {
 });
 
 // --- Processamento via URL do YouTube ---
-async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle, userEmail, userPlan, targetDuration = 60) {
+async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF') {
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
   const tempDir = path.join(__dirname, '../temp', jobId);
   const outputDir = path.join(__dirname, '../output', jobId);
@@ -165,7 +165,8 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
             (done, total) => updateJob({ progress: Math.round(50 + ((i * total + done) / (segments.length * total)) * 45) }),
             adjustedTranscript,
             captionStyle,
-            userPlan === 'trial'
+            userPlan === 'trial',
+            captionColor
           );
           clips.push(...clipsResult);
         } else {
@@ -183,7 +184,7 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
     // Fallback: download completo
     updateJob({ status: 'downloading', progress: 20 });
     const videoPath = await downloader.download(url, tempDir);
-    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, null, userEmail, userPlan, targetDuration);
+    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, null, userEmail, userPlan, targetDuration, captionColor);
 
   } catch (err) {
     updateJob({ status: 'error', error: err.message });
@@ -194,12 +195,12 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
 }
 
 // --- Processamento via upload de arquivo ---
-async function processVideoFromFile(jobId, videoPath, tempDir, platforms, mode, maxClips, captionStyle, userEmail, userPlan, targetDuration = 60) {
+async function processVideoFromFile(jobId, videoPath, tempDir, platforms, mode, maxClips, captionStyle, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF') {
   const outputDir = path.join(__dirname, '../output', jobId);
   await fs.ensureDir(outputDir);
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
   try {
-    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, null, null, userEmail, userPlan, targetDuration);
+    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, null, null, userEmail, userPlan, targetDuration, captionColor);
   } catch (err) {
     updateJob({ status: 'error', error: err.message });
     throw err;
@@ -209,7 +210,7 @@ async function processVideoFromFile(jobId, videoPath, tempDir, platforms, mode, 
 }
 
 // --- Pipeline comum (transcricao Whisper + analise + cortes) ---
-async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, existingTranscript, userEmail, userPlan, targetDuration = 60) {
+async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, existingTranscript, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF') {
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
 
   updateJob({ status: 'transcribing', progress: 30 });
@@ -230,7 +231,8 @@ async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, 
     (done, total) => updateJob({ progress: Math.round(70 + (done / total) * 25) }),
     transcriptSegs,
     captionStyle,
-    userPlan === 'trial'
+    userPlan === 'trial',
+    captionColor
   );
 
   finalizeJob(userEmail, userPlan, clips.length);

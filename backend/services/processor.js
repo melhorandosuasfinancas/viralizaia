@@ -137,7 +137,15 @@ const CAPTION_PRESETS = {
   }
 };
 
-async function createClips(videoPath, segments, platforms, outputDir, jobId, onProgress, transcriptSegs, captionStyle, addWatermark = false) {
+
+function hexToASS(hex) {
+  const r = hex.slice(1, 3);
+  const g = hex.slice(3, 5);
+  const b = hex.slice(5, 7);
+  return ('&H00' + b + g + r).toUpperCase();
+}
+
+async function createClips(videoPath, segments, platforms, outputDir, jobId, onProgress, transcriptSegs, captionStyle, addWatermark = false, captionColor = null) {
   const clips = [];
   const configs = getConfigs(platforms);
   const total = segments.length * configs.length;
@@ -154,7 +162,7 @@ async function createClips(videoPath, segments, platforms, outputDir, jobId, onP
       // Cria arquivo ASS de legenda para este clip se houver transcrição
       let assPath = null;
       if (transcriptSegs && transcriptSegs.length > 0) {
-        const assContent = buildAssContent(transcriptSegs, segment.start, segment.end, config.width, config.height, captionStyle || 'tiktok');
+        const assContent = buildAssContent(transcriptSegs, segment.start, segment.end, config.width, config.height, captionStyle || 'tiktok', captionColor);
         if (assContent) {
           assPath = path.join(os.tmpdir(), `sub_${jobId}_${i}_${configKey}.ass`);
           await fs.writeFile(assPath, assContent, 'utf8');
@@ -258,8 +266,11 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
   });
 }
 
-function buildAssContent(transcriptSegs, clipStart, clipEnd, width, height, style) {
-  const preset = CAPTION_PRESETS[style] || CAPTION_PRESETS.tiktok;
+function buildAssContent(transcriptSegs, clipStart, clipEnd, width, height, style, captionColor) {
+  const preset = Object.assign({}, CAPTION_PRESETS[style] || CAPTION_PRESETS.tiktok);
+  if (captionColor && /^#[0-9A-Fa-f]{6}$/.test(captionColor)) {
+    preset.primaryColour = hexToASS(captionColor);
+  }
 
   const scaledFontSize = Math.round(preset.fontSize * height / 1280);
   const scaledMarginV  = Math.round(preset.marginV  * height / 1280);

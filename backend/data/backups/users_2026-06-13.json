@@ -1,0 +1,55 @@
+{
+  "users": {
+    "iafinanceiro37@gmail.com": {
+      "active": false,
+      "plan": "trial",
+      "createdAt": "2026-06-12T01:24:59.187Z",
+      "trialStartedAt": "2026-06-12T01:24:59.187Z",
+      "provider": "oauth",
+      "whatsapp": "11950894975",
+      "whatsappUpdatedAt": "2026-06-12T01:25:11.488Z"
+    },
+    "danieleantunesg@gmail.com": {
+      "active": false,
+      "plan": "trial",
+      "createdAt": "2026-06-12T01:43:59.113Z",
+      "trialStartedAt": "2026-06-12T01:43:59.113Z",
+      "provider": "oauth",
+      "whatsapp": "38997489850",
+      "whatsappUpdatedAt": "2026-06-12T01:44:09.494Z"
+    },
+    "teste_qualidade@viralizaia.com": {
+      "active": false,
+      "plan": "trial",
+      "createdAt": "2026-06-12T02:44:41.392Z",
+      "trialStartedAt": "2026-06-12T02:44:41.392Z",
+      "name": "Teste"
+    },
+    "teste_1080p@viralizaia.com": {
+      "active": false,
+      "plan": "trial",
+      "createdAt": "2026-06-12T02:58:12.838Z",
+      "trialStartedAt": "2026-06-12T02:58:12.838Z",
+      "name": "Teste 1080p"
+    },
+    "teste_qualidade2@viralizaia.com": {
+      "active": false,
+      "plan": "trial",
+      "createdAt": "2026-06-12T03:15:08.746Z",
+      "trialStartedAt": "2026-06-12T03:15:08.746Z",
+      "name": "Teste"
+    },
+    "teste_q3@viralizaia.com": {
+      "active": false,
+      "plan": "trial",
+      "createdAt": "2026-06-12T03:15:41.424Z",
+      "trialStartedAt": "2026-06-12T03:15:41.424Z",
+      "name": "T"
+    }
+  },
+  "trials": {
+    "teste_1080p@viralizaia.com": {
+      "usedAt": "2026-06-12T02:58:43.722Z"
+    }
+  }
+}

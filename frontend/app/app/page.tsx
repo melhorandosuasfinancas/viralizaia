@@ -13,6 +13,8 @@ import {
   getTrialToken,
   getOAuthToken,
   saveWhatsapp,
+  fetchCredits,
+  type Credits,
   type Clip,
   type Job,
   type Platform,
@@ -64,6 +66,19 @@ const ASPECT_LABELS: Record<string, string> = {
   "16:9": "Horizontal",
 };
 
+const CAPTION_COLORS: { value: string; label: string }[] = [
+  { value: "#FFFFFF", label: "Branco" },
+  { value: "#FFD700", label: "Amarelo ouro" },
+  { value: "#FFBF00", label: "Âmbar" },
+  { value: "#00FFFF", label: "Ciano neon" },
+  { value: "#C084FC", label: "Roxo" },
+  { value: "#FF6B00", label: "Laranja" },
+  { value: "#FF69B4", label: "Rosa" },
+  { value: "#00FF7F", label: "Verde" },
+  { value: "#7DD3FC", label: "Azul" },
+  { value: "#FF3333", label: "Vermelho" },
+];
+
 export default function AppPage() {
   const { data: session, status: sessionStatus } = useSession();
 
@@ -74,6 +89,7 @@ export default function AppPage() {
   const [loginError, setLoginError] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
   const [isTrial, setIsTrial] = useState(false);
+  const [credits, setCredits] = useState<Credits>({ monthly: 0, avulso: 0, total: 0 });
 
   // WhatsApp registration
   const [trialName, setTrialName] = useState("");
@@ -87,6 +103,7 @@ export default function AppPage() {
   const [pendingToken, setPendingToken] = useState<string | null>(null);
   const [pendingPlan, setPendingPlan] = useState<Plan>("trial");
   const [pendingEmail, setPendingEmail] = useState("");
+  const [pendingCredits, setPendingCredits] = useState<Credits | undefined>(undefined);
 
   const [inputMode, setInputMode] = useState<"url" | "upload">("url");
   const [url, setUrl] = useState("");
@@ -95,6 +112,7 @@ export default function AppPage() {
   const [mode, setMode] = useState<"ai" | "manual">("ai");
   const [maxClips, setMaxClips] = useState(3);
   const [captionStyle, setCaptionStyle] = useState<CaptionStyle>("tiktok");
+  const [captionColor, setCaptionColor] = useState("#FFFFFF");
   const [targetDuration, setTargetDuration] = useState(60);
 
   const [jobId, setJobId] = useState<string | null>(null);
@@ -110,11 +128,22 @@ export default function AppPage() {
     const saved = localStorage.getItem("viralizaia_token");
     const savedPlan = localStorage.getItem("viralizaia_plan") as Plan | null;
     const savedEmail = localStorage.getItem("viralizaia_email");
+    const savedCredits = localStorage.getItem("viralizaia_credits");
     if (saved) {
       setToken(saved);
       if (savedPlan) setPlan(savedPlan);
       if (savedEmail) setEmail(savedEmail);
+      if (savedCredits) {
+        try { setCredits(JSON.parse(savedCredits)); } catch {}
+      }
       setStep("app");
+      // Refresh credits from server in background
+      if (savedEmail) {
+        fetchCredits(savedEmail).then(c => {
+          setCredits(c);
+          localStorage.setItem("viralizaia_credits", JSON.stringify(c));
+        }).catch(() => {});
+      }
     }
   }, []);
 
@@ -136,6 +165,13 @@ export default function AppPage() {
         if (status.status === "done" || status.status === "error") {
           clearInterval(pollRef.current!);
           setProcessing(false);
+          // Refresh credits after job completes
+          if (email) {
+            fetchCredits(email).then(c => {
+              setCredits(c);
+              localStorage.setItem("viralizaia_credits", JSON.stringify(c));
+            }).catch(() => {});
+          }
         }
       } catch {
         clearInterval(pollRef.current!);
@@ -144,7 +180,7 @@ export default function AppPage() {
       }
     }, 2000);
     return () => clearInterval(pollRef.current!);
-  }, [jobId]);
+  }, [jobId, email]);
 
   // ── OAuth auto-login ──
   async function handleOAuthLogin(oauthEmail: string) {
@@ -157,9 +193,10 @@ export default function AppPage() {
         setPendingToken(result.token);
         setPendingPlan(result.plan);
         setPendingEmail(oauthEmail);
+        setPendingCredits(result.credits);
         setStep("register");
       } else {
-        finishLogin(result.token, result.plan, oauthEmail, result.isTrial || false);
+        finishLogin(result.token, result.plan, oauthEmail, result.isTrial || false, result.credits);
       }
     } catch (err: unknown) {
       setLoginError(err instanceof Error ? err.message : "Erro ao fazer login com OAuth");
@@ -180,9 +217,10 @@ export default function AppPage() {
         setPendingToken(result.token);
         setPendingPlan(result.plan);
         setPendingEmail(email);
+        setPendingCredits(result.credits);
         setStep("register");
       } else {
-        finishLogin(result.token, result.plan, email, result.isTrial || false);
+        finishLogin(result.token, result.plan, email, result.isTrial || false, result.credits);
       }
     } catch (err: unknown) {
       setLoginError(err instanceof Error ? err.message : "Erro ao fazer login");
@@ -200,7 +238,7 @@ export default function AppPage() {
     try {
       await saveWhatsapp(pendingEmail, digits, pendingToken!);
       localStorage.setItem("viralizaia_whatsapp", digits);
-      finishLogin(pendingToken!, pendingPlan, pendingEmail, false);
+      finishLogin(pendingToken!, pendingPlan, pendingEmail, false, pendingCredits);
     } catch (err: unknown) {
       setRegisterError(err instanceof Error ? err.message : "Erro ao salvar WhatsApp");
     } finally {
@@ -219,7 +257,7 @@ export default function AppPage() {
       const result = await getTrialToken(trialEmail, trialName);
       await saveWhatsapp(trialEmail, digits, result.token);
       localStorage.setItem("viralizaia_whatsapp", digits);
-      finishLogin(result.token, result.plan, trialEmail, true);
+      finishLogin(result.token, result.plan, trialEmail, true, result.credits);
     } catch (err: unknown) {
       setTrialError(err instanceof Error ? err.message : "Erro ao criar conta");
     } finally {
@@ -227,7 +265,7 @@ export default function AppPage() {
     }
   }
 
-  function finishLogin(tok: string, p: Plan, loginEmail: string, trial: boolean) {
+  function finishLogin(tok: string, p: Plan, loginEmail: string, trial: boolean, creds?: Credits) {
     setToken(tok);
     setPlan(p);
     setIsTrial(trial);
@@ -235,6 +273,10 @@ export default function AppPage() {
     localStorage.setItem("viralizaia_token", tok);
     localStorage.setItem("viralizaia_plan", p);
     localStorage.setItem("viralizaia_email", loginEmail);
+    if (creds) {
+      setCredits(creds);
+      localStorage.setItem("viralizaia_credits", JSON.stringify(creds));
+    }
     setStep("app");
   }
 
@@ -243,9 +285,11 @@ export default function AppPage() {
     localStorage.removeItem("viralizaia_token");
     localStorage.removeItem("viralizaia_plan");
     localStorage.removeItem("viralizaia_email");
+    localStorage.removeItem("viralizaia_credits");
     setStep("login");
     setJob(null);
     setJobId(null);
+    setCredits({ monthly: 0, avulso: 0, total: 0 });
     if (sessionStatus === "authenticated") signOut({ redirect: false });
   }
 
@@ -268,15 +312,21 @@ export default function AppPage() {
       const clipsToRequest = Math.min(maxClips, planMaxClips);
       let id: string;
       if (inputMode === "url") {
-        ({ jobId: id } = await startProcessing(url, platforms, mode, token, clipsToRequest, captionStyle, targetDuration));
+        ({ jobId: id } = await startProcessing(url, platforms, mode, token, clipsToRequest, captionStyle, targetDuration, captionColor));
       } else {
-        ({ jobId: id } = await uploadAndProcess(selectedFile!, platforms, mode, token, clipsToRequest, captionStyle, targetDuration));
+        ({ jobId: id } = await uploadAndProcess(selectedFile!, platforms, mode, token, clipsToRequest, captionStyle, targetDuration, captionColor));
       }
       setJobId(id);
       setJob({ status: "queued", progress: 0, clips: [], error: null });
     } catch (err: unknown) {
       setProcessing(false);
-      setUrlError(err instanceof Error ? err.message : "Erro ao processar");
+      const msg = err instanceof Error ? err.message : "Erro ao processar";
+      if (msg.toLowerCase().includes("cr") && msg.toLowerCase().includes("ditos")) {
+        setUrlError("Créditos insuficientes. Adquira mais créditos ou aguarde a renovação mensal.");
+        if (email) fetchCredits(email).then(c => { setCredits(c); localStorage.setItem("viralizaia_credits", JSON.stringify(c)); }).catch(() => {});
+      } else {
+        setUrlError(msg);
+      }
     }
   }
 
@@ -465,7 +515,7 @@ export default function AppPage() {
             <button
               onClick={() => {
                 localStorage.setItem("viralizaia_whatsapp", "skip");
-                finishLogin(pendingToken!, pendingPlan, pendingEmail, false);
+                finishLogin(pendingToken!, pendingPlan, pendingEmail, false, pendingCredits);
               }}
               className="w-full py-2 text-xs text-gray-600 hover:text-gray-400 transition-colors"
             >
@@ -486,12 +536,12 @@ export default function AppPage() {
         <div className="flex items-center gap-3">
           {isTrial && (
             <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-300 border border-yellow-500/20">
-              Teste grátis — 1 clip
+              Trial — {credits.total} clip{credits.total !== 1 ? "s" : ""}
             </span>
           )}
           {!isTrial && (
             <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/20 capitalize">
-              {plan} — até {planMaxClips} clips
+              {credits.total} crédito{credits.total !== 1 ? "s" : ""}
             </span>
           )}
           <button onClick={handleLogout} className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
@@ -535,7 +585,16 @@ export default function AppPage() {
                 </label>
               </>
             )}
-            {urlError && <p className="text-red-400 text-xs mt-1">{urlError}</p>}
+            {urlError && (
+              <div className="mt-2">
+                <p className="text-red-400 text-xs">{urlError}</p>
+                {urlError.includes("réditos") && (
+                  <a href="/#planos" className="text-xs text-purple-400 hover:underline mt-1 inline-block">
+                    Ver planos e comprar créditos →
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Plataformas */}
@@ -586,7 +645,7 @@ export default function AppPage() {
                     {/* Mini animated preview */}
                     <div className="w-full h-10 flex items-center justify-center" style={{ background: "#080808" }}>
                       <span style={{
-                        color: p.color,
+                        color: captionColor !== "#FFFFFF" ? captionColor : p.color,
                         textShadow: p.textShadow,
                         fontFamily: p.fontFamily,
                         fontWeight: 700,
@@ -607,6 +666,23 @@ export default function AppPage() {
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Cor da legenda */}
+          <div>
+            <label className="text-xs text-gray-400 mb-3 block">Cor da legenda</label>
+            <div className="flex gap-2 flex-wrap">
+              {CAPTION_COLORS.map(c => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => setCaptionColor(c.value)}
+                  title={c.label}
+                  className={`w-8 h-8 rounded-full transition-all ${captionColor === c.value ? "ring-2 ring-white ring-offset-2 ring-offset-[#080808] scale-110" : "opacity-70 hover:opacity-100"}`}
+                  style={{ backgroundColor: c.value }}
+                />
+              ))}
             </div>
           </div>
 

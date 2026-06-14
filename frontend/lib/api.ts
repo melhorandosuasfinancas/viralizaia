@@ -5,6 +5,12 @@ export type ProcessMode = "ai" | "manual";
 export type CaptionStyle = "tiktok" | "hormozi" | "dark" | "clean" | "opensans" | "ubuntu" | "montserrat" | "neon";
 export type Plan = "trial" | "gratis" | "basico" | "pro" | "full" | "agencia";
 
+export interface Credits {
+  monthly: number;
+  avulso: number;
+  total: number;
+}
+
 export interface Clip {
   clipNumber: number;
   platform: string;
@@ -30,6 +36,7 @@ export interface AuthResult {
   plan: Plan;
   maxClips: number;
   isTrial?: boolean;
+  credits?: Credits;
 }
 
 export async function getAuthToken(email: string): Promise<AuthResult> {
@@ -86,6 +93,12 @@ export async function checkEmail(email: string): Promise<{ active: boolean; plan
   return res.json();
 }
 
+export async function fetchCredits(email: string): Promise<Credits> {
+  const res = await fetch(`${API_URL}/api/auth/credits/${encodeURIComponent(email)}`);
+  if (!res.ok) return { monthly: 0, avulso: 0, total: 0 };
+  return res.json();
+}
+
 export async function startProcessing(
   url: string,
   platforms: Platform[],
@@ -93,12 +106,13 @@ export async function startProcessing(
   token: string,
   maxClips: number = 3,
   captionStyle: CaptionStyle = "tiktok",
-  targetDuration: number = 60
+  targetDuration: number = 60,
+  captionColor: string = "#FFFFFF"
 ): Promise<{ jobId: string }> {
   const res = await fetch(`${API_URL}/api/video/process`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ url, platforms, mode, maxClips, captionStyle, targetDuration }),
+    body: JSON.stringify({ url, platforms, mode, maxClips, captionStyle, targetDuration, captionColor }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: "Erro ao processar" }));
@@ -114,7 +128,8 @@ export async function uploadAndProcess(
   token: string,
   maxClips: number = 3,
   captionStyle: CaptionStyle = "tiktok",
-  targetDuration: number = 60
+  targetDuration: number = 60,
+  captionColor: string = "#FFFFFF"
 ): Promise<{ jobId: string }> {
   const formData = new FormData();
   formData.append("video", file);
@@ -123,6 +138,7 @@ export async function uploadAndProcess(
   formData.append("maxClips", String(maxClips));
   formData.append("captionStyle", captionStyle);
   formData.append("targetDuration", String(targetDuration));
+  formData.append("captionColor", captionColor);
   const res = await fetch(`${API_URL}/api/video/upload`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
