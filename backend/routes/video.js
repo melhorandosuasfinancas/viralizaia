@@ -14,6 +14,8 @@ const { verifySubscription } = require('../services/auth');
 const authRouter = require('./auth');
 
 const PLAN_MAX_CLIPS = authRouter.PLAN_MAX_CLIPS || { trial: 1, starter: 5, pro: 20 };
+const getRemainingCredits = authRouter.getRemainingCredits;
+const deductCredits = authRouter.deductCredits;
 const MAX_DURATION_SECONDS = 1200; // 20 min
 
 const upload = multer({
@@ -29,7 +31,7 @@ const jobs = new Map();
 
 // POST /api/video/upload
 router.post('/upload', verifySubscription, upload.single('file'), async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'Arquivo de vídeo é obrigatório.' });
+  if (!req.file) return res.status(400).json({ error: 'Arquivo de video e obrigatorio.' });
 
   const { platforms = '["tiktok","instagram"]', mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60 } = req.body;
 
@@ -37,7 +39,13 @@ router.post('/upload', verifySubscription, upload.single('file'), async (req, re
   try { parsedPlatforms = JSON.parse(platforms); } catch { parsedPlatforms = ['tiktok', 'instagram']; }
 
   const planMax = PLAN_MAX_CLIPS[req.userPlan] || 5;
-  const clipsToProcess = Math.min(Math.max(parseInt(maxClips) || planMax, 1), planMax);
+  const credits = getRemainingCredits ? getRemainingCredits(req.userEmail) : { total: planMax };
+  const maxByCredits = credits.total > 0 ? credits.total : 0;
+  if (maxByCredits === 0) {
+    await fs.remove(req.file.path).catch(() => {});
+    return res.status(402).json({ error: 'Creditos insuficientes. Adquira mais creditos ou aguarde a renovacao mensal.', credits });
+  }
+  const clipsToProcess = Math.min(Math.max(parseInt(maxClips) || planMax, 1), planMax, maxByCredits);
 
   const jobId = uuidv4();
   jobs.set(jobId, { status: 'queued', progress: 0, clips: [], error: null });
@@ -56,10 +64,15 @@ router.post('/upload', verifySubscription, upload.single('file'), async (req, re
 router.post('/process', verifySubscription, async (req, res) => {
   const { url, platforms = ['tiktok', 'instagram'], mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60 } = req.body;
 
-  if (!url) return res.status(400).json({ error: 'URL do YouTube é obrigatória.' });
+  if (!url) return res.status(400).json({ error: 'URL do YouTube e obrigatoria.' });
 
   const planMax = PLAN_MAX_CLIPS[req.userPlan] || 5;
-  const clipsToProcess = Math.min(Math.max(parseInt(maxClips) || planMax, 1), planMax);
+  const credits = getRemainingCredits ? getRemainingCredits(req.userEmail) : { total: planMax };
+  const maxByCredits = credits.total > 0 ? credits.total : 0;
+  if (maxByCredits === 0) {
+    return res.status(402).json({ error: 'Creditos insuficientes. Adquira mais creditos ou aguarde a renovacao mensal.', credits });
+  }
+  const clipsToProcess = Math.min(Math.max(parseInt(maxClips) || planMax, 1), planMax, maxByCredits);
 
   const jobId = uuidv4();
   jobs.set(jobId, { status: 'queued', progress: 0, clips: [], error: null });
@@ -72,7 +85,7 @@ router.post('/process', verifySubscription, async (req, res) => {
 // GET /api/video/status/:jobId
 router.get('/status/:jobId', (req, res) => {
   const job = jobs.get(req.params.jobId);
-  if (!job) return res.status(404).json({ error: 'Job não encontrado.' });
+  if (!job) return res.status(404).json({ error: 'Job nao encontrado.' });
   res.json(job);
 });
 
@@ -100,12 +113,12 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
     let usedTranscriptAPI = false;
 
     try {
-      console.log('Buscando transcrição via YouTube Transcript API...');
+      console.log('Buscando transcricao via YouTube Transcript API...');
       const { segments: ytSegments, duration } = await getTranscript(url);
-      console.log(`Transcrição obtida: ${ytSegments.length} segmentos, ${duration}s`);
+      console.log('Transcricao obtida: ' + ytSegments.length + ' segmentos, ' + duration + 's');
 
       if (duration > MAX_DURATION_SECONDS) {
-        throw new Error(`Vídeo muito longo (${Math.round(duration / 60)} min). Máximo: 20 minutos.`);
+        throw new Error('Video muito longo (' + Math.round(duration / 60) + ' min). Maximo: 20 minutos.');
       }
 
       transcriptSegs = ytSegments;
@@ -115,7 +128,7 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
         : analyzer.splitEqually(ytSegments, maxClips);
       usedTranscriptAPI = true;
     } catch (transcriptErr) {
-      console.log(`Transcript API falhou (${transcriptErr.message}), usando download completo`);
+      console.log('Transcript API falhou (' + transcriptErr.message + '), usando download completo');
     }
 
     if (usedTranscriptAPI && segments && segments.length > 0) {
@@ -128,7 +141,7 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
         const startWithPad = Math.max(0, seg.start - padding);
         const endWithPad = seg.end + padding;
 
-        console.log(`Baixando segmento ${i + 1}/${segments.length}: ${seg.start}s-${seg.end}s`);
+        console.log('Baixando segmento ' + (i + 1) + '/' + segments.length + ': ' + seg.start + 's-' + seg.end + 's');
         const segPath = await downloader.downloadSection(url, startWithPad, endWithPad, tempDir, i);
 
         if (segPath) {
@@ -136,7 +149,7 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
           const trimDuration = seg.end - seg.start;
           const adjustedSeg = { ...seg, start: trimStart, end: trimStart + trimDuration };
 
-          // Ajusta timestamps da transcrição para o segmento baixado
+          // Ajusta timestamps da transcricao para o segmento baixado
           const adjustedTranscript = transcriptSegs.map(t => ({
             ...t,
             start: t.start - startWithPad,
@@ -156,12 +169,12 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
           );
           clips.push(...clipsResult);
         } else {
-          console.log(`Segmento ${i + 1} não baixou, pulando`);
+          console.log('Segmento ' + (i + 1) + ' nao baixou, pulando');
         }
       }
 
       if (clips.length > 0) {
-        markTrialIfNeeded(userEmail, userPlan);
+        finalizeJob(userEmail, userPlan, clips.length);
         updateJob({ status: 'done', progress: 100, clips });
         return;
       }
@@ -195,7 +208,7 @@ async function processVideoFromFile(jobId, videoPath, tempDir, platforms, mode, 
   }
 }
 
-// --- Pipeline comum (transcrição Whisper + análise + cortes) ---
+// --- Pipeline comum (transcricao Whisper + analise + cortes) ---
 async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, existingTranscript, userEmail, userPlan, targetDuration = 60) {
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
 
@@ -220,21 +233,24 @@ async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, 
     userPlan === 'trial'
   );
 
-  markTrialIfNeeded(userEmail, userPlan);
+  finalizeJob(userEmail, userPlan, clips.length);
   updateJob({ status: 'done', progress: 100, clips });
 }
 
-function markTrialIfNeeded(email, plan) {
-  if (plan === 'trial' && email) {
-    // Notifica o auth que o trial foi usado
+function finalizeJob(email, plan, clipsGenerated) {
+  if (!email) return;
+  const key = email.toLowerCase();
+  if (deductCredits) {
+    deductCredits(key, clipsGenerated);
+  }
+  if (plan === 'trial') {
     try {
-      require('./auth'); // já carregado
-      const data = require('../data/users.json').trials || {};
-      if (!data[email.toLowerCase()]) {
-        const fs2 = require('fs-extra');
-        const dataPath = require('path').join(__dirname, '../data/users.json');
-        const store = fs2.readJsonSync(dataPath);
-        store.trials[email.toLowerCase()] = { usedAt: new Date().toISOString() };
+      const fs2 = require('fs-extra');
+      const dataPath = require('path').join(__dirname, '../data/users.json');
+      const store = fs2.readJsonSync(dataPath);
+      if (!store.trials) store.trials = {};
+      if (!store.trials[key]) {
+        store.trials[key] = { usedAt: new Date().toISOString() };
         fs2.writeJsonSync(dataPath, store, { spaces: 2 });
       }
     } catch {}

@@ -55,6 +55,7 @@ app.use('/api/auth', authRoutes);
 
 // Servir arquivos de output para download
 app.use('/download', express.static(path.join(__dirname, 'output')));
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', version: '1.0.0', service: 'ViralizaIA Backend' });
