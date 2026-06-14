@@ -13,6 +13,10 @@ type User = {
   activatedBy?: string;
   whatsapp?: string;
   name?: string;
+  monthlyCredits?: number;
+  avulsoCredits?: number;
+  totalCreditsUsed?: number;
+  credits?: { monthly: number; avulso: number; total: number };
 };
 
 type Stats = {
@@ -42,6 +46,7 @@ export default function AdminPage() {
   const [filterStatus, setFilterStatus] = useState("");
   const [editEmail, setEditEmail] = useState<string | null>(null);
   const [editPlan, setEditPlan] = useState("");
+  const [editAvulso, setEditAvulso] = useState("");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
 
@@ -113,7 +118,7 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#050507] text-white px-6 py-8 max-w-6xl mx-auto">
+    <div className="min-h-screen bg-[#050507] text-white px-6 py-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold text-purple-400">Painel Admin</h1>
         {msg && <span className="text-green-400 text-sm font-medium">{msg}</span>}
@@ -162,13 +167,16 @@ export default function AdminPage() {
       </div>
 
       {/* User table */}
-      <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+      <div className="bg-white/5 border border-white/10 rounded-xl overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/10 text-gray-400 text-xs">
               <th className="text-left px-4 py-3">Email</th>
               <th className="text-left px-4 py-3">Plano</th>
               <th className="text-left px-4 py-3">Status</th>
+              <th className="text-left px-4 py-3">Cr/Mês</th>
+              <th className="text-left px-4 py-3">Cr/Extra</th>
+              <th className="text-left px-4 py-3">Usados</th>
               <th className="text-left px-4 py-3">Criado</th>
               <th className="text-left px-4 py-3">WhatsApp</th>
               <th className="text-right px-4 py-3">Ações</th>
@@ -193,6 +201,25 @@ export default function AdminPage() {
                     {u.active ? "ativo" : "inativo"}
                   </span>
                 </td>
+                <td className="px-4 py-3 text-xs">
+                  <span className={(u.monthlyCredits ?? 0) > 0 ? "text-green-400 font-semibold" : "text-gray-500"}>
+                    {u.monthlyCredits ?? 0}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-xs">
+                  {editEmail === u.email ? (
+                    <input
+                      type="number" min="0" value={editAvulso}
+                      onChange={e => setEditAvulso(e.target.value)}
+                      className="w-16 bg-white/20 border border-white/30 rounded px-1 py-0.5 text-xs text-white"
+                    />
+                  ) : (
+                    <span className={(u.avulsoCredits ?? 0) > 0 ? "text-blue-400 font-semibold" : "text-gray-500"}>
+                      {u.avulsoCredits ?? 0}
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-xs text-gray-500">{u.totalCreditsUsed ?? 0}</td>
                 <td className="px-4 py-3 text-xs text-gray-500">
                   {u.createdAt ? new Date(u.createdAt).toLocaleDateString("pt-BR") : "—"}
                 </td>
@@ -201,15 +228,19 @@ export default function AdminPage() {
                   <div className="flex gap-1.5 justify-end">
                     {editEmail === u.email ? (
                       <>
-                        <button disabled={saving} onClick={() => updateUser(u.email, { plan: editPlan })}
+                        <button disabled={saving}
+                          onClick={() => updateUser(u.email, {
+                            plan: editPlan,
+                            ...(editAvulso !== "" ? { avulsoCredits: parseInt(editAvulso) } : {})
+                          })}
                           className="bg-green-600 hover:bg-green-700 disabled:opacity-50 px-2 py-1 rounded text-xs">Salvar</button>
                         <button onClick={() => setEditEmail(null)}
                           className="bg-white/10 hover:bg-white/20 px-2 py-1 rounded text-xs">✕</button>
                       </>
                     ) : (
                       <>
-                        <button onClick={() => { setEditEmail(u.email); setEditPlan(u.plan); }}
-                          className="bg-white/10 hover:bg-white/20 px-2 py-1 rounded text-xs">Plano</button>
+                        <button onClick={() => { setEditEmail(u.email); setEditPlan(u.plan); setEditAvulso(String(u.avulsoCredits ?? 0)); }}
+                          className="bg-white/10 hover:bg-white/20 px-2 py-1 rounded text-xs">Editar</button>
                         <button onClick={() => updateUser(u.email, { active: !u.active })}
                           className={`px-2 py-1 rounded text-xs ${u.active ? "bg-red-500/20 hover:bg-red-500/40 text-red-400" : "bg-green-500/20 hover:bg-green-500/40 text-green-400"}`}>
                           {u.active ? "Desativar" : "Ativar"}
@@ -223,7 +254,7 @@ export default function AdminPage() {
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={6} className="text-center py-8 text-gray-600">Nenhum usuário encontrado</td></tr>
+              <tr><td colSpan={9} className="text-center py-8 text-gray-600">Nenhum usuário encontrado</td></tr>
             )}
           </tbody>
         </table>
