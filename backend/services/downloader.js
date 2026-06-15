@@ -85,7 +85,7 @@ function fetchJson(url, redirects = 0) {
 function buildYtDlpCmd(url, outputPath, playerClient, sections = null, proxy = null) {
   const args = [
     'yt-dlp',
-    '--format', '"bv*[height<=720]+ba/b[height<=720]/bv*+ba/b"',
+    '--format', '"bestvideo[height<=720][vcodec^=avc1]+bestaudio[acodec^=mp4a]/best[height<=720]/best"',
     '--merge-output-format', 'mp4',
     '--output', `"${outputPath}"`,
     '--no-playlist',
@@ -94,7 +94,7 @@ function buildYtDlpCmd(url, outputPath, playerClient, sections = null, proxy = n
     '--no-check-certificate',
     '--concurrent-fragments', '1',
     '--no-warnings',
-    '--js-runtimes', 'bun:/root/.bun/bin/bun',
+    '--js-runtimes', 'bun:/usr/local/bin/bun',
     '--remote-components', 'ejs:github',
     cookiesArg(playerClient),
   ];
@@ -503,7 +503,7 @@ async function getVideoInfo(url) {
   const videoId = extractVideoId(url);
 
   // Tenta yt-dlp com web client + bgutil PO token
-  const cmd = `yt-dlp --print duration --print title --skip-download --no-playlist --quiet --extractor-args "youtube:player_client=web" --no-check-certificate --js-runtimes bun:/root/.bun/bin/bun --remote-components ejs:github ${cookiesArg('web')} "${url}"`;
+  const cmd = `yt-dlp --print duration --print title --skip-download --no-playlist --quiet --extractor-args "youtube:player_client=web" --no-check-certificate --js-runtimes bun:/usr/local/bin/bun --remote-components ejs:github ${cookiesArg('web')} "${url}"`;
   try {
     const { stdout } = await execAsync(cmd, { timeout: 30000 });
     const lines = stdout.trim().split('\n');
