@@ -151,15 +151,24 @@ async function createClips(videoPath, segments, platforms, outputDir, jobId, onP
   const total = segments.length * configs.length;
   let done = 0;
 
+  // Renderiza todos os clips em paralelo (segmento × plataforma)
+  const tasks = [];
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
-
     for (const configKey of configs) {
+      tasks.push({ i, segment, configKey });
+    }
+  }
+
+  // Processa em lotes de 3 para não sobrecarregar o servidor
+  const CONCURRENCY = 3;
+  for (let t = 0; t < tasks.length; t += CONCURRENCY) {
+    const batch = tasks.slice(t, t + CONCURRENCY);
+    const results = await Promise.all(batch.map(async ({ i, segment, configKey }) => {
       const config = PLATFORM_CONFIGS[configKey];
       const fileName = `clip_${i + 1}_${configKey}.mp4`;
       const outputPath = path.join(outputDir, fileName);
 
-      // Cria arquivo ASS de legenda para este clip se houver transcrição
       let assPath = null;
       if (transcriptSegs && transcriptSegs.length > 0) {
         const assContent = buildAssContent(transcriptSegs, segment.start, segment.end, config.width, config.height, captionStyle || 'tiktok', captionColor);
@@ -171,8 +180,7 @@ async function createClips(videoPath, segments, platforms, outputDir, jobId, onP
 
       try {
         await renderClip(videoPath, segment, config, outputPath, assPath, addWatermark);
-
-        clips.push({
+        return {
           clipNumber: i + 1,
           platform: configKey,
           platformLabel: config.label,
@@ -183,16 +191,18 @@ async function createClips(videoPath, segments, platforms, outputDir, jobId, onP
           fileName,
           downloadUrl: `/download/${jobId}/${fileName}`,
           aspectRatio: config.aspectRatio
-        });
+        };
       } catch (err) {
         console.error(`Erro ao renderizar ${fileName}:`, err.message);
+        return null;
       } finally {
         if (assPath) await fs.remove(assPath).catch(() => {});
       }
+    }));
 
-      done++;
-      if (onProgress) onProgress(done, total);
-    }
+    results.forEach(r => { if (r) clips.push(r); });
+    done += batch.length;
+    if (onProgress) onProgress(done, total);
   }
 
   return clips;

@@ -13,7 +13,13 @@ async function findBestSegments(transcript, originalUrl = '', maxClips = 3, targ
     return splitEqually(transcript, maxClips, targetDuration);
   }
 
-  const fullText = transcript.map(s => `[${s.start.toFixed(1)}s] ${s.text}`).join('\n');
+  const MAX_CHARS = 14000; // ~3500 tokens — evita 413 no Groq
+  let fullText = transcript.map(s => `[${s.start.toFixed(1)}s] ${s.text}`).join('\n');
+  if (fullText.length > MAX_CHARS) {
+    // Preserva começo e fim do vídeo (mais ricos em conteúdo viral)
+    const half = Math.floor(MAX_CHARS / 2);
+    fullText = fullText.slice(0, half) + '\n[...trecho do meio omitido...]\n' + fullText.slice(-half);
+  }
   const videoDuration = transcript[transcript.length - 1]?.end || 0;
 
   const prompt = `Você é um especialista em criação de conteúdo viral para TikTok e Instagram.
