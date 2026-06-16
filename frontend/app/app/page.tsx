@@ -1018,14 +1018,53 @@ export default function AppPage() {
   );
 }
 
+// ─── Publish platform config ──────────────────────────────────────────────────
+
+const PUBLISH_PLATFORMS: Record<string, {
+  label: string; icon: string; color: string;
+  hashtags: string; tip: string; uploadUrl: string;
+}> = {
+  tiktok: {
+    label: "TikTok", icon: "🎵",
+    color: "border-pink-500/40 bg-pink-500/10 text-pink-300",
+    hashtags: "#viral #fyp #foryoupage #shorts #clip #criadores",
+    tip: "Melhor horário: 19h–21h • Adicione música trending • Responda comentários nas primeiras horas",
+    uploadUrl: "https://www.tiktok.com/upload",
+  },
+  instagram: {
+    label: "Instagram", icon: "📸",
+    color: "border-purple-500/40 bg-purple-500/10 text-purple-300",
+    hashtags: "#reels #viral #explorepage #conteudo #criadores #brasil",
+    tip: "Melhor horário: 18h–20h • Use localização • Primeiros 3s são decisivos",
+    uploadUrl: "https://www.instagram.com/reels/",
+  },
+  youtube: {
+    label: "YT Shorts", icon: "▶️",
+    color: "border-red-500/40 bg-red-500/10 text-red-300",
+    hashtags: "#shorts #viral #youtube #clip #conteudo",
+    tip: "Melhor horário: 15h–21h • Título em caixa alta atrai cliques • Thumbnail importa",
+    uploadUrl: "https://studio.youtube.com/",
+  },
+  facebook: {
+    label: "Facebook", icon: "👥",
+    color: "border-blue-500/40 bg-blue-500/10 text-blue-300",
+    hashtags: "#video #viral #conteudo #clip #reels",
+    tip: "Melhor horário: 13h–16h • Grupos temáticos amplificam alcance",
+    uploadUrl: "https://www.facebook.com/reels/create",
+  },
+};
+
 // ─── ClipCard Component ───────────────────────────────────────────────────────
 
 function ClipCard({ clip }: { clip: Clip }) {
   const [showPlayer, setShowPlayer] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [showPublish, setShowPublish] = useState(false);
+  const [publishTab, setPublishTab] = useState<keyof typeof PUBLISH_PLATFORMS>("tiktok");
   const [editTitle, setEditTitle] = useState(clip.title);
   const [editHook, setEditHook] = useState(clip.hook || "");
-  const [copied, setCopied] = useState<"hook" | "caption" | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
 
   const platformColors: Record<string, string> = {
     tiktok:           "text-pink-400 bg-pink-500/10 border-pink-500/20",
@@ -1037,28 +1076,51 @@ function ClipCard({ clip }: { clip: Clip }) {
   };
   const colorClass = platformColors[clip.platform] || "text-gray-400 bg-white/5 border-white/10";
 
-  function copyText(text: string, type: "hook" | "caption") {
+  const pub = PUBLISH_PLATFORMS[publishTab];
+  const fullCaption = `${editTitle}\n\n${editHook ? editHook + "\n\n" : ""}${pub.hashtags}`;
+
+  function copyText(text: string, key: string) {
     navigator.clipboard.writeText(text).then(() => {
-      setCopied(type);
+      setCopied(key);
       setTimeout(() => setCopied(null), 2000);
     });
   }
 
-  const suggestedCaption = `${editTitle}\n\n${editHook ? editHook + "\n\n" : ""}#viral #shorts #clip #conteudo #criadores`;
+  async function handleNativeShare() {
+    setSharing(true);
+    try {
+      const videoUrl = getDownloadUrl(clip.downloadUrl);
+      // Try sharing with file (mobile browsers)
+      if (typeof navigator.canShare === "function") {
+        const resp = await fetch(videoUrl);
+        const blob = await resp.blob();
+        const file = new File([blob], clip.fileName, { type: blob.type || "video/mp4" });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ title: editTitle, text: fullCaption, files: [file] });
+          setSharing(false);
+          return;
+        }
+      }
+      // Fallback: share URL only
+      if (navigator.share) {
+        await navigator.share({ title: editTitle, text: fullCaption, url: videoUrl });
+      } else {
+        alert("Baixe o vídeo e poste manualmente no app.");
+      }
+    } catch {
+      // cancelled by user — ignore
+    } finally {
+      setSharing(false);
+    }
+  }
 
   return (
     <div className="bg-[#0f0f0f] border border-white/8 rounded-2xl overflow-hidden">
       {/* Video preview player */}
       {showPlayer && (
         <div className="bg-black flex items-center justify-center" style={{ maxHeight: 400 }}>
-          <video
-            controls
-            autoPlay
-            playsInline
-            src={getDownloadUrl(clip.downloadUrl)}
-            className="max-h-96 max-w-full"
-            style={{ display: "block" }}
-          />
+          <video controls autoPlay playsInline src={getDownloadUrl(clip.downloadUrl)}
+            className="max-h-96 max-w-full" style={{ display: "block" }} />
         </div>
       )}
 
@@ -1074,25 +1136,16 @@ function ClipCard({ clip }: { clip: Clip }) {
                 {ASPECT_LABELS[clip.aspectRatio] || clip.aspectRatio} • {clip.duration}s
               </span>
             </div>
-            {/* Editable title */}
             {editing ? (
-              <input
-                value={editTitle}
-                onChange={e => setEditTitle(e.target.value)}
-                className="w-full bg-white/5 border border-purple-500/40 rounded-lg px-2 py-1 text-sm font-semibold outline-none"
-              />
+              <input value={editTitle} onChange={e => setEditTitle(e.target.value)}
+                className="w-full bg-white/5 border border-purple-500/40 rounded-lg px-2 py-1 text-sm font-semibold outline-none" />
             ) : (
               <p className="font-semibold text-sm leading-snug">{editTitle}</p>
             )}
-            {/* Editable hook */}
             {editing ? (
-              <textarea
-                value={editHook}
-                onChange={e => setEditHook(e.target.value)}
-                rows={3}
+              <textarea value={editHook} onChange={e => setEditHook(e.target.value)} rows={3}
                 className="w-full bg-white/5 border border-purple-500/40 rounded-lg px-2 py-1 text-xs text-gray-300 outline-none mt-1 resize-none"
-                placeholder="Hook de abertura..."
-              />
+                placeholder="Hook de abertura..." />
             ) : (
               editHook && <p className="text-xs text-gray-400 mt-1 leading-relaxed">💬 {editHook}</p>
             )}
@@ -1103,37 +1156,77 @@ function ClipCard({ clip }: { clip: Clip }) {
           </div>
         </div>
 
-        {/* Action buttons */}
+        {/* Action buttons row */}
         <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={() => setShowPlayer(v => !v)}
+          <button onClick={() => setShowPlayer(v => !v)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
               showPlayer ? "border-blue-500/40 bg-blue-500/10 text-blue-300" : "border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
-            }`}
-          >
+            }`}>
             {showPlayer ? "⏹ Fechar" : "▶ Preview"}
           </button>
-          <button
-            onClick={() => setEditing(v => !v)}
+          <button onClick={() => setEditing(v => !v)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
               editing ? "border-purple-500/40 bg-purple-500/10 text-purple-300" : "border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
-            }`}
-          >
-            ✏️ {editing ? "Fechar editor" : "Editar"}
+            }`}>
+            ✏️ {editing ? "Fechar" : "Editar"}
           </button>
-          <button
-            onClick={() => copyText(editHook || editTitle, "hook")}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
-          >
-            {copied === "hook" ? "✓ Copiado!" : "📋 Hook"}
-          </button>
-          <button
-            onClick={() => copyText(suggestedCaption, "caption")}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
-          >
-            {copied === "caption" ? "✓ Copiado!" : "📝 Legenda"}
+          <button onClick={() => setShowPublish(v => !v)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+              showPublish ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" : "border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
+            }`}>
+            🚀 {showPublish ? "Fechar" : "Publicar"}
           </button>
         </div>
+
+        {/* Publish panel */}
+        {showPublish && (
+          <div className="bg-[#080808] border border-white/8 rounded-xl overflow-hidden">
+            {/* Platform tabs */}
+            <div className="flex border-b border-white/8">
+              {Object.entries(PUBLISH_PLATFORMS).map(([key, p]) => (
+                <button key={key} onClick={() => setPublishTab(key as keyof typeof PUBLISH_PLATFORMS)}
+                  className={`flex-1 py-2 text-[11px] font-semibold transition-all ${
+                    publishTab === key ? "text-white border-b-2 border-purple-500" : "text-gray-600 hover:text-gray-400"
+                  }`}>
+                  {p.icon} {p.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="p-3 space-y-3">
+              {/* Tip */}
+              <p className="text-[11px] text-amber-300/80 leading-relaxed">💡 {pub.tip}</p>
+
+              {/* Caption box */}
+              <div className="bg-white/3 border border-white/8 rounded-lg p-3">
+                <p className="text-[11px] text-gray-500 mb-1.5 font-semibold uppercase tracking-wide">Legenda pronta</p>
+                <p className="text-xs text-gray-200 whitespace-pre-line leading-relaxed">{fullCaption}</p>
+              </div>
+
+              {/* Copy caption */}
+              <button onClick={() => copyText(fullCaption, "full")}
+                className="w-full py-2 rounded-lg text-xs font-semibold border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
+                {copied === "full" ? "✓ Legenda copiada!" : "📋 Copiar legenda completa"}
+              </button>
+
+              {/* Share & upload buttons */}
+              <div className="flex gap-2">
+                <button onClick={handleNativeShare} disabled={sharing}
+                  className="flex-1 py-2.5 rounded-lg text-xs font-bold bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity disabled:opacity-50">
+                  {sharing ? "Preparando..." : "📤 Compartilhar agora"}
+                </button>
+                <a href={pub.uploadUrl} target="_blank" rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center py-2.5 rounded-lg text-xs font-bold border border-white/15 bg-white/5 hover:bg-white/10 transition-colors">
+                  Abrir {pub.label} →
+                </a>
+              </div>
+
+              <p className="text-[10px] text-gray-600 text-center">
+                No celular, &quot;Compartilhar agora&quot; abre o seletor nativo de apps — escolha TikTok, Instagram etc direto
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Download button */}
         <a href={getDownloadUrl(clip.downloadUrl)} download={clip.fileName} target="_blank" rel="noopener noreferrer"
