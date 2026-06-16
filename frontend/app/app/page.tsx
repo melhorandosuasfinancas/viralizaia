@@ -169,6 +169,7 @@ export default function AppPage() {
   const [checkedInToday, setCheckedInToday] = useState(false);
   const [brandWatermark, setBrandWatermark] = useState("");
   const [brandSaved, setBrandSaved] = useState(false);
+  const [addWatermark, setAddWatermark] = useState(true);
 
   const planMaxClips = PLAN_MAX_CLIPS[plan] || 10;
 
@@ -388,10 +389,11 @@ export default function AppPage() {
     try {
       const clipsToRequest = Math.min(maxClips, planMaxClips);
       let id: string;
+      const effectiveWatermark = (plan === "trial" || plan === "gratis") ? true : addWatermark;
       if (inputMode === "url") {
-        ({ jobId: id } = await startProcessing(url, platforms, mode, token, clipsToRequest, captionStyle, targetDuration, captionColor));
+        ({ jobId: id } = await startProcessing(url, platforms, mode, token, clipsToRequest, captionStyle, targetDuration, captionColor, effectiveWatermark));
       } else {
-        ({ jobId: id } = await uploadAndProcess(selectedFile!, platforms, mode, token, clipsToRequest, captionStyle, targetDuration, captionColor));
+        ({ jobId: id } = await uploadAndProcess(selectedFile!, platforms, mode, token, clipsToRequest, captionStyle, targetDuration, captionColor, effectiveWatermark));
       }
       setJobId(id);
       setJob({ status: "queued", progress: 0, clips: [], error: null });
@@ -758,6 +760,26 @@ export default function AppPage() {
                             </button>
                           )}
                         </div>
+                      </div>
+                    )}
+
+                    {/* Watermark toggle */}
+                    {plan !== "trial" && plan !== "gratis" ? (
+                      <div className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-white/3">
+                        <div>
+                          <span className="text-sm text-white font-medium">Marca d&apos;água</span>
+                          <p className="text-xs text-gray-500 mt-0.5">Texto &quot;Viraliza Cortes&quot; no vídeo</p>
+                        </div>
+                        <button type="button" onClick={() => setAddWatermark(w => !w)}
+                          className={`relative w-11 h-6 rounded-full transition-all ${addWatermark ? "bg-purple-600" : "bg-white/10"}`}>
+                          <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all"
+                            style={{ left: addWatermark ? "22px" : "2px" }} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 p-3 rounded-xl border border-yellow-500/20 bg-yellow-500/5">
+                        <span className="text-yellow-400 text-sm">🏷️</span>
+                        <span className="text-xs text-yellow-400/80">Marca d&apos;água incluída no plano. Faça upgrade para remover.</span>
                       </div>
                     )}
 

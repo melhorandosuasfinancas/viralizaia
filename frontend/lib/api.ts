@@ -107,12 +107,13 @@ export async function startProcessing(
   maxClips: number = 3,
   captionStyle: CaptionStyle = "tiktok",
   targetDuration: number = 60,
-  captionColor: string = "#FFFFFF"
+  captionColor: string = "#FFFFFF",
+  addWatermark: boolean = true
 ): Promise<{ jobId: string }> {
   const res = await fetch(`${API_URL}/api/video/process`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ url, platforms, mode, maxClips, captionStyle, targetDuration, captionColor }),
+    body: JSON.stringify({ url, platforms, mode, maxClips, captionStyle, targetDuration, captionColor, addWatermark }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: "Erro ao processar" }));
@@ -129,7 +130,8 @@ export async function uploadAndProcess(
   maxClips: number = 3,
   captionStyle: CaptionStyle = "tiktok",
   targetDuration: number = 60,
-  captionColor: string = "#FFFFFF"
+  captionColor: string = "#FFFFFF",
+  addWatermark: boolean = true
 ): Promise<{ jobId: string }> {
   const formData = new FormData();
   formData.append("video", file);
@@ -139,6 +141,7 @@ export async function uploadAndProcess(
   formData.append("captionStyle", captionStyle);
   formData.append("targetDuration", String(targetDuration));
   formData.append("captionColor", captionColor);
+  formData.append("addWatermark", String(addWatermark));
   const res = await fetch(`${API_URL}/api/video/upload`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
