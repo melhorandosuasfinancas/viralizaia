@@ -1021,6 +1021,12 @@ export default function AppPage() {
 // ─── ClipCard Component ───────────────────────────────────────────────────────
 
 function ClipCard({ clip }: { clip: Clip }) {
+  const [showPlayer, setShowPlayer] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(clip.title);
+  const [editHook, setEditHook] = useState(clip.hook || "");
+  const [copied, setCopied] = useState<"hook" | "caption" | null>(null);
+
   const platformColors: Record<string, string> = {
     tiktok:           "text-pink-400 bg-pink-500/10 border-pink-500/20",
     instagram_reels:  "text-purple-400 bg-purple-500/10 border-purple-500/20",
@@ -1030,30 +1036,111 @@ function ClipCard({ clip }: { clip: Clip }) {
     youtube_shorts:   "text-red-400 bg-red-500/10 border-red-500/20",
   };
   const colorClass = platformColors[clip.platform] || "text-gray-400 bg-white/5 border-white/10";
+
+  function copyText(text: string, type: "hook" | "caption") {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(type);
+      setTimeout(() => setCopied(null), 2000);
+    });
+  }
+
+  const suggestedCaption = `${editTitle}\n\n${editHook ? editHook + "\n\n" : ""}#viral #shorts #clip #conteudo #criadores`;
+
   return (
-    <div className="bg-[#0f0f0f] border border-white/8 rounded-2xl p-4 space-y-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className={`text-xs px-2.5 py-0.5 rounded-full border font-semibold ${colorClass}`}>
-              {clip.platformLabel}
-            </span>
-            <span className="text-xs text-gray-500">
-              {ASPECT_LABELS[clip.aspectRatio] || clip.aspectRatio} • {clip.duration}s
-            </span>
+    <div className="bg-[#0f0f0f] border border-white/8 rounded-2xl overflow-hidden">
+      {/* Video preview player */}
+      {showPlayer && (
+        <div className="bg-black flex items-center justify-center" style={{ maxHeight: 400 }}>
+          <video
+            controls
+            autoPlay
+            playsInline
+            src={getDownloadUrl(clip.downloadUrl)}
+            className="max-h-96 max-w-full"
+            style={{ display: "block" }}
+          />
+        </div>
+      )}
+
+      <div className="p-4 space-y-3">
+        {/* Header row */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className={`text-xs px-2.5 py-0.5 rounded-full border font-semibold ${colorClass}`}>
+                {clip.platformLabel}
+              </span>
+              <span className="text-xs text-gray-500">
+                {ASPECT_LABELS[clip.aspectRatio] || clip.aspectRatio} • {clip.duration}s
+              </span>
+            </div>
+            {/* Editable title */}
+            {editing ? (
+              <input
+                value={editTitle}
+                onChange={e => setEditTitle(e.target.value)}
+                className="w-full bg-white/5 border border-purple-500/40 rounded-lg px-2 py-1 text-sm font-semibold outline-none"
+              />
+            ) : (
+              <p className="font-semibold text-sm leading-snug">{editTitle}</p>
+            )}
+            {/* Editable hook */}
+            {editing ? (
+              <textarea
+                value={editHook}
+                onChange={e => setEditHook(e.target.value)}
+                rows={3}
+                className="w-full bg-white/5 border border-purple-500/40 rounded-lg px-2 py-1 text-xs text-gray-300 outline-none mt-1 resize-none"
+                placeholder="Hook de abertura..."
+              />
+            ) : (
+              editHook && <p className="text-xs text-gray-400 mt-1 leading-relaxed">💬 {editHook}</p>
+            )}
           </div>
-          <p className="font-semibold text-sm leading-snug">{clip.title}</p>
-          {clip.hook && <p className="text-xs text-gray-400 mt-1 leading-relaxed">💬 {clip.hook}</p>}
+          <div className="flex-shrink-0 text-center">
+            <div className="text-xs text-gray-500 mb-0.5">Viral</div>
+            <div className="text-lg font-bold text-purple-400">{clip.viralScore}<span className="text-xs text-gray-600">/10</span></div>
+          </div>
         </div>
-        <div className="flex-shrink-0 text-center">
-          <div className="text-xs text-gray-500 mb-0.5">Viral</div>
-          <div className="text-lg font-bold text-purple-400">{clip.viralScore}<span className="text-xs text-gray-600">/10</span></div>
+
+        {/* Action buttons */}
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => setShowPlayer(v => !v)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+              showPlayer ? "border-blue-500/40 bg-blue-500/10 text-blue-300" : "border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
+            }`}
+          >
+            {showPlayer ? "⏹ Fechar" : "▶ Preview"}
+          </button>
+          <button
+            onClick={() => setEditing(v => !v)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+              editing ? "border-purple-500/40 bg-purple-500/10 text-purple-300" : "border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
+            }`}
+          >
+            ✏️ {editing ? "Fechar editor" : "Editar"}
+          </button>
+          <button
+            onClick={() => copyText(editHook || editTitle, "hook")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+          >
+            {copied === "hook" ? "✓ Copiado!" : "📋 Hook"}
+          </button>
+          <button
+            onClick={() => copyText(suggestedCaption, "caption")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+          >
+            {copied === "caption" ? "✓ Copiado!" : "📝 Legenda"}
+          </button>
         </div>
+
+        {/* Download button */}
+        <a href={getDownloadUrl(clip.downloadUrl)} download={clip.fileName} target="_blank" rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold hover:bg-white/10 transition-colors">
+          ⬇️ Baixar {clip.platformLabel}
+        </a>
       </div>
-      <a href={getDownloadUrl(clip.downloadUrl)} download={clip.fileName} target="_blank" rel="noopener noreferrer"
-        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold hover:bg-white/10 transition-colors">
-        ⬇️ Baixar {clip.platformLabel}
-      </a>
     </div>
   );
 }
