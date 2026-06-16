@@ -44,7 +44,7 @@ const DURATION_OPTIONS = [
   { value: 90, label: "1:30",   desc: "Clips extensos • podcasts" },
 ];
 
-const PLAN_MAX_CLIPS: Record<Plan, number> = { trial: 10, gratis: 2, basico: 10, pro: 20, full: 50, agencia: 100 };
+const PLAN_MAX_CLIPS: Record<Plan, number> = { trial: 10, gratis: 2, basico: 35, pro: 60, full: 120, agencia: 200 };
 
 const ASPECT_LABELS: Record<string, string> = {
   "9:16": "Vertical", "4:5": "Retrato", "1:1": "Quadrado", "16:9": "Horizontal",
@@ -1057,7 +1057,7 @@ const PUBLISH_PLATFORMS: Record<string, {
 // ─── ClipCard Component ───────────────────────────────────────────────────────
 
 function ClipCard({ clip }: { clip: Clip }) {
-  const [showPlayer, setShowPlayer] = useState(false);
+  const [playerOpen, setPlayerOpen] = useState(true);
   const [editing, setEditing] = useState(false);
   const [showPublish, setShowPublish] = useState(false);
   const [publishTab, setPublishTab] = useState<keyof typeof PUBLISH_PLATFORMS>("tiktok");
@@ -1066,15 +1066,15 @@ function ClipCard({ clip }: { clip: Clip }) {
   const [copied, setCopied] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
 
-  const platformColors: Record<string, string> = {
-    tiktok:           "text-pink-400 bg-pink-500/10 border-pink-500/20",
-    instagram_reels:  "text-purple-400 bg-purple-500/10 border-purple-500/20",
-    instagram_feed:   "text-purple-400 bg-purple-500/10 border-purple-500/20",
-    instagram_square: "text-purple-400 bg-purple-500/10 border-purple-500/20",
-    facebook:         "text-blue-400 bg-blue-500/10 border-blue-500/20",
-    youtube_shorts:   "text-red-400 bg-red-500/10 border-red-500/20",
+  const PLATFORM_ACCENT: Record<string, { border: string; glow: string; badge: string }> = {
+    tiktok:           { border: "border-pink-500/30",   glow: "shadow-pink-500/10",   badge: "text-pink-300 bg-pink-500/10 border-pink-500/25" },
+    instagram_reels:  { border: "border-purple-500/30", glow: "shadow-purple-500/10", badge: "text-purple-300 bg-purple-500/10 border-purple-500/25" },
+    instagram_feed:   { border: "border-purple-500/30", glow: "shadow-purple-500/10", badge: "text-purple-300 bg-purple-500/10 border-purple-500/25" },
+    instagram_square: { border: "border-purple-500/30", glow: "shadow-purple-500/10", badge: "text-purple-300 bg-purple-500/10 border-purple-500/25" },
+    facebook:         { border: "border-blue-500/30",   glow: "shadow-blue-500/10",   badge: "text-blue-300 bg-blue-500/10 border-blue-500/25" },
+    youtube_shorts:   { border: "border-red-500/30",    glow: "shadow-red-500/10",    badge: "text-red-300 bg-red-500/10 border-red-500/25" },
   };
-  const colorClass = platformColors[clip.platform] || "text-gray-400 bg-white/5 border-white/10";
+  const accent = PLATFORM_ACCENT[clip.platform] || { border: "border-white/10", glow: "", badge: "text-gray-400 bg-white/5 border-white/10" };
 
   const pub = PUBLISH_PLATFORMS[publishTab];
   const fullCaption = `${editTitle}\n\n${editHook ? editHook + "\n\n" : ""}${pub.hashtags}`;
@@ -1090,7 +1090,6 @@ function ClipCard({ clip }: { clip: Clip }) {
     setSharing(true);
     try {
       const videoUrl = getDownloadUrl(clip.downloadUrl);
-      // Try sharing with file (mobile browsers)
       if (typeof navigator.canShare === "function") {
         const resp = await fetch(videoUrl);
         const blob = await resp.blob();
@@ -1101,136 +1100,153 @@ function ClipCard({ clip }: { clip: Clip }) {
           return;
         }
       }
-      // Fallback: share URL only
       if (navigator.share) {
         await navigator.share({ title: editTitle, text: fullCaption, url: videoUrl });
       } else {
         alert("Baixe o vídeo e poste manualmente no app.");
       }
-    } catch {
-      // cancelled by user — ignore
-    } finally {
-      setSharing(false);
-    }
+    } catch { /* user cancelled */ }
+    finally { setSharing(false); }
   }
 
   return (
-    <div className="bg-[#0f0f0f] border border-white/8 rounded-2xl overflow-hidden">
-      {/* Video preview player */}
-      {showPlayer && (
-        <div className="bg-black flex items-center justify-center" style={{ maxHeight: 400 }}>
-          <video controls autoPlay playsInline src={getDownloadUrl(clip.downloadUrl)}
-            className="max-h-96 max-w-full" style={{ display: "block" }} />
-        </div>
-      )}
+    <div className={`rounded-2xl overflow-hidden border shadow-lg transition-all duration-200 ${accent.border} ${accent.glow}`}
+      style={{ background: "linear-gradient(160deg, #111118 0%, #0d0d12 100%)" }}>
 
+      {/* ── Mini Player ── */}
+      <div className="relative bg-black" style={{ aspectRatio: playerOpen ? undefined : "auto" }}>
+        {playerOpen ? (
+          <video
+            controls
+            playsInline
+            preload="metadata"
+            src={getDownloadUrl(clip.downloadUrl)}
+            className="w-full"
+            style={{ maxHeight: 320, display: "block", background: "#000" }}
+          />
+        ) : (
+          <button
+            onClick={() => setPlayerOpen(true)}
+            className="w-full flex items-center justify-center gap-3 py-4 text-sm font-semibold text-gray-400 hover:text-white transition-colors"
+            style={{ background: "rgba(255,255,255,0.02)" }}
+          >
+            <span className="w-9 h-9 rounded-full flex items-center justify-center border border-white/15 bg-white/5">▶</span>
+            Abrir player
+          </button>
+        )}
+        {playerOpen && (
+          <button
+            onClick={() => setPlayerOpen(false)}
+            className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-xs text-gray-300 hover:text-white transition-colors"
+            style={{ background: "rgba(0,0,0,0.7)" }}
+            title="Minimizar"
+          >✕</button>
+        )}
+      </div>
+
+      {/* ── Content ── */}
       <div className="p-4 space-y-3">
-        {/* Header row */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className={`text-xs px-2.5 py-0.5 rounded-full border font-semibold ${colorClass}`}>
+
+        {/* Header: platform badge + score + title */}
+        <div className="flex items-start gap-3">
+          <div className="flex-1 min-w-0 space-y-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-bold ${accent.badge}`}>
                 {clip.platformLabel}
               </span>
-              <span className="text-xs text-gray-500">
-                {ASPECT_LABELS[clip.aspectRatio] || clip.aspectRatio} • {clip.duration}s
+              <span className="text-[11px] text-gray-600 font-medium">
+                {ASPECT_LABELS[clip.aspectRatio] || clip.aspectRatio} · {clip.duration}s
               </span>
             </div>
+
             {editing ? (
               <input value={editTitle} onChange={e => setEditTitle(e.target.value)}
-                className="w-full bg-white/5 border border-purple-500/40 rounded-lg px-2 py-1 text-sm font-semibold outline-none" />
+                className="w-full bg-white/5 border border-purple-500/40 rounded-lg px-2.5 py-1.5 text-sm font-semibold outline-none text-white" />
             ) : (
-              <p className="font-semibold text-sm leading-snug">{editTitle}</p>
+              <p className="font-bold text-sm leading-snug text-white/90">{editTitle}</p>
             )}
+
             {editing ? (
-              <textarea value={editHook} onChange={e => setEditHook(e.target.value)} rows={3}
-                className="w-full bg-white/5 border border-purple-500/40 rounded-lg px-2 py-1 text-xs text-gray-300 outline-none mt-1 resize-none"
+              <textarea value={editHook} onChange={e => setEditHook(e.target.value)} rows={2}
+                className="w-full bg-white/5 border border-purple-500/40 rounded-lg px-2.5 py-1.5 text-xs text-gray-300 outline-none resize-none"
                 placeholder="Hook de abertura..." />
             ) : (
-              editHook && <p className="text-xs text-gray-400 mt-1 leading-relaxed">💬 {editHook}</p>
+              editHook && (
+                <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">💬 {editHook}</p>
+              )
             )}
           </div>
-          <div className="flex-shrink-0 text-center">
-            <div className="text-xs text-gray-500 mb-0.5">Viral</div>
-            <div className="text-lg font-bold text-purple-400">{clip.viralScore}<span className="text-xs text-gray-600">/10</span></div>
+
+          {/* Viral score ring */}
+          <div className="flex-shrink-0 flex flex-col items-center justify-center w-12 h-12 rounded-full border-2 border-purple-500/40"
+            style={{ background: "radial-gradient(circle, rgba(139,43,226,0.15), transparent)" }}>
+            <span className="text-base font-black text-purple-300 leading-none">{clip.viralScore}</span>
+            <span className="text-[9px] text-gray-600 leading-none">/10</span>
           </div>
         </div>
 
-        {/* Action buttons row */}
-        <div className="flex gap-2 flex-wrap">
-          <button onClick={() => setShowPlayer(v => !v)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-              showPlayer ? "border-blue-500/40 bg-blue-500/10 text-blue-300" : "border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
-            }`}>
-            {showPlayer ? "⏹ Fechar" : "▶ Preview"}
-          </button>
-          <button onClick={() => setEditing(v => !v)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-              editing ? "border-purple-500/40 bg-purple-500/10 text-purple-300" : "border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
-            }`}>
-            ✏️ {editing ? "Fechar" : "Editar"}
-          </button>
-          <button onClick={() => setShowPublish(v => !v)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-              showPublish ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" : "border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
-            }`}>
-            🚀 {showPublish ? "Fechar" : "Publicar"}
+        {/* Action strip */}
+        <div className="flex gap-1.5 flex-wrap">
+          {[
+            { label: editing ? "✓ Salvar" : "✏️ Editar",    active: editing,     onClick: () => setEditing(v => !v),     activeClass: "border-purple-500/40 bg-purple-500/10 text-purple-300" },
+            { label: showPublish ? "✕ Publicar" : "🚀 Publicar", active: showPublish, onClick: () => setShowPublish(v => !v), activeClass: "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" },
+          ].map(btn => (
+            <button key={btn.label} onClick={btn.onClick}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                btn.active ? btn.activeClass : "border-white/8 bg-white/4 text-gray-500 hover:text-white hover:bg-white/8"
+              }`}>
+              {btn.label}
+            </button>
+          ))}
+          <button onClick={() => copyText(editHook || editTitle, "hook")}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-white/8 bg-white/4 text-gray-500 hover:text-white hover:bg-white/8 transition-all">
+            {copied === "hook" ? "✓ Copiado" : "📋 Hook"}
           </button>
         </div>
 
         {/* Publish panel */}
         {showPublish && (
-          <div className="bg-[#080808] border border-white/8 rounded-xl overflow-hidden">
-            {/* Platform tabs */}
+          <div className="rounded-xl overflow-hidden border border-white/8" style={{ background: "#08080e" }}>
             <div className="flex border-b border-white/8">
               {Object.entries(PUBLISH_PLATFORMS).map(([key, p]) => (
                 <button key={key} onClick={() => setPublishTab(key as keyof typeof PUBLISH_PLATFORMS)}
-                  className={`flex-1 py-2 text-[11px] font-semibold transition-all ${
-                    publishTab === key ? "text-white border-b-2 border-purple-500" : "text-gray-600 hover:text-gray-400"
+                  className={`flex-1 py-2 text-[10px] font-bold transition-all ${
+                    publishTab === key ? "text-white border-b-2 border-purple-500 bg-white/3" : "text-gray-600 hover:text-gray-400"
                   }`}>
-                  {p.icon} {p.label}
+                  {p.icon}<br /><span className="hidden sm:inline">{p.label}</span>
                 </button>
               ))}
             </div>
-
-            <div className="p-3 space-y-3">
-              {/* Tip */}
+            <div className="p-3 space-y-2.5">
               <p className="text-[11px] text-amber-300/80 leading-relaxed">💡 {pub.tip}</p>
-
-              {/* Caption box */}
-              <div className="bg-white/3 border border-white/8 rounded-lg p-3">
-                <p className="text-[11px] text-gray-500 mb-1.5 font-semibold uppercase tracking-wide">Legenda pronta</p>
-                <p className="text-xs text-gray-200 whitespace-pre-line leading-relaxed">{fullCaption}</p>
+              <div className="rounded-lg p-3 border border-white/6" style={{ background: "rgba(255,255,255,0.02)" }}>
+                <p className="text-[10px] text-gray-600 mb-1.5 font-bold uppercase tracking-wide">Legenda gerada</p>
+                <p className="text-xs text-gray-300 whitespace-pre-line leading-relaxed">{fullCaption}</p>
               </div>
-
-              {/* Copy caption */}
               <button onClick={() => copyText(fullCaption, "full")}
-                className="w-full py-2 rounded-lg text-xs font-semibold border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
-                {copied === "full" ? "✓ Legenda copiada!" : "📋 Copiar legenda completa"}
+                className="w-full py-2 rounded-lg text-xs font-semibold border border-white/8 bg-white/4 hover:bg-white/8 transition-colors text-gray-300">
+                {copied === "full" ? "✓ Copiado!" : "📋 Copiar legenda"}
               </button>
-
-              {/* Share & upload buttons */}
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button onClick={handleNativeShare} disabled={sharing}
-                  className="flex-1 py-2.5 rounded-lg text-xs font-bold bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition-opacity disabled:opacity-50">
-                  {sharing ? "Preparando..." : "📤 Compartilhar agora"}
+                  className="py-2.5 rounded-lg text-xs font-bold text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #3b82f6)" }}>
+                  {sharing ? "..." : "📤 Compartilhar"}
                 </button>
                 <a href={pub.uploadUrl} target="_blank" rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center py-2.5 rounded-lg text-xs font-bold border border-white/15 bg-white/5 hover:bg-white/10 transition-colors">
-                  Abrir {pub.label} →
+                  className="flex items-center justify-center py-2.5 rounded-lg text-xs font-bold border border-white/12 bg-white/5 hover:bg-white/10 text-gray-300 transition-colors">
+                  {pub.icon} Abrir app
                 </a>
               </div>
-
-              <p className="text-[10px] text-gray-600 text-center">
-                No celular, &quot;Compartilhar agora&quot; abre o seletor nativo de apps — escolha TikTok, Instagram etc direto
-              </p>
+              <p className="text-[10px] text-gray-700 text-center">No celular, &quot;Compartilhar&quot; envia o arquivo direto para TikTok, Instagram etc</p>
             </div>
           </div>
         )}
 
-        {/* Download button */}
+        {/* Download CTA — prominent */}
         <a href={getDownloadUrl(clip.downloadUrl)} download={clip.fileName} target="_blank" rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold hover:bg-white/10 transition-colors">
+          className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-xl font-black text-sm text-white transition-all hover:opacity-90 active:scale-[0.98]"
+          style={{ background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)", boxShadow: "0 4px 20px rgba(124,58,237,0.35)" }}>
           ⬇️ Baixar {clip.platformLabel}
         </a>
       </div>

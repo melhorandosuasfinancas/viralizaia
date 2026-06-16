@@ -195,44 +195,39 @@ const TESTIMONIALS = [
   },
 ];
 
+const NEW_FEATURES = [
+  { icon: "▶", title: "Mini player inline", desc: "Visualize cada corte diretamente na plataforma antes de baixar. Sem precisar abrir outro app." },
+  { icon: "✏️", title: "Editor inline", desc: "Edite título e hook de cada clip. Copie a legenda pronta com hashtags para postar em segundos." },
+  { icon: "🚀", title: "Publicação direta", desc: "Compartilhe o vídeo direto no TikTok, Instagram ou YouTube sem sair do Viraliza Cortes." },
+  { icon: "📋", title: "Histórico de projetos", desc: "Todos seus clips salvos e disponíveis para re-download a qualquer momento." },
+  { icon: "🔍", title: "Hub de conteúdo", desc: "Canais brasileiros curados por categoria para você sempre ter conteúdo pronto para clipar." },
+  { icon: "🎁", title: "Check-in diário", desc: "Ganhe +1 crédito todo dia que entrar na plataforma. Quanto mais usa, mais você ganha." },
+];
+
 const FAQS = [
   { q: "Preciso baixar algum programa?", a: "Não! Tudo funciona direto no navegador. Cole o link, aguarde o processamento e baixe os clips — sem instalação." },
   { q: "Quais formatos de vídeo são aceitos?", a: "Aceitamos links do YouTube, arquivos MP4, MOV e AVI. O vídeo pode ter até 4 horas de duração." },
   { q: "Quanto tempo leva para processar?", a: "Em média 2 a 5 minutos por hora de vídeo. Para vídeos de 30 minutos, seus cortes ficam prontos em menos de 2 minutos." },
   { q: "As legendas são em português?", a: "Sim! Nossa IA foi treinada especialmente para o português brasileiro, incluindo gírias e regionalismos." },
   { q: "Posso cancelar quando quiser?", a: "Sim, sem multa e sem burocracia. Cancele com 1 clique a qualquer momento pelo painel." },
-  { q: "Como funciona o plano grátis?", a: "Ao criar sua conta você recebe 2 cortes grátis completos — com legendas, formato 9:16, sem cartão de crédito." },
+  { q: "Como funciona o teste grátis?", a: "Ao criar sua conta você recebe 10 cortes grátis completos — com legendas, formato 9:16, editor inline e publicação direta. Sem cartão de crédito." },
 ];
 
 const PLANS = [
   {
-    name: "GRÁTIS",
-    price: "R$0",
-    period: "",
-    desc: "Para testar a plataforma",
-    features: [
-      "2 cortes por vídeo",
-      "Marca d'água Viraliza",
-      "TikTok e Reels",
-      "Qualidade HD",
-    ],
-    cta: "Começar Grátis",
-    href: "/app",
-    highlight: false,
-  },
-  {
-    name: "BÁSICO",
+    name: "STARTER",
     price: "R$29,90",
     period: "/mês",
-    desc: "Para criadores iniciantes",
+    desc: "Para começar a crescer",
     features: [
-      "Vídeos ilimitados",
-      "10 cortes por vídeo",
+      "35 cortes por mês",
       "Sem marca d'água",
       "TikTok + Reels + Shorts",
-      "Legendas automáticas",
+      "8 estilos de legenda",
+      "Editor + publicação direta",
+      "Histórico de projetos",
     ],
-    cta: "Assinar Básico",
+    cta: "Assinar Starter",
     href: "https://pay.finaliza.shop/pl/cf81361a6d",
     highlight: false,
   },
@@ -240,14 +235,15 @@ const PLANS = [
     name: "PRO",
     price: "R$49,90",
     period: "/mês",
-    desc: "Para criadores em crescimento",
+    desc: "Para criadores sérios",
     features: [
-      "Vídeos ilimitados",
-      "20 cortes por vídeo",
+      "60 cortes por mês",
       "Sem marca d'água",
       "Todos os formatos",
-      "4 estilos de legenda premium",
-      "Download HD",
+      "8 estilos de legenda premium",
+      "IA escolhe os virais",
+      "Check-in diário (+créditos)",
+      "Suporte prioritário",
     ],
     cta: "Quero o Pro",
     href: "https://pay.finaliza.shop/pl/9391b0d5c5",
@@ -258,14 +254,15 @@ const PLANS = [
     name: "FULL",
     price: "R$99,90",
     period: "/mês",
-    desc: "Para criadores avançados",
+    desc: "Para quem quer escalar",
     features: [
-      "Vídeos ilimitados",
-      "50 cortes por vídeo",
+      "120 cortes por mês",
       "Sem marca d'água",
       "Todos os formatos + Shorts",
       "IA avançada de viralização",
-      "Suporte prioritário",
+      "Brand Kit personalizado",
+      "Hub de conteúdo curado",
+      "Suporte VIP",
     ],
     cta: "Assinar Full",
     href: "https://pay.finaliza.shop/pl/1fac0eef10",
@@ -277,12 +274,12 @@ const PLANS = [
     period: "/mês",
     desc: "Para equipes e agências",
     features: [
-      "Vídeos ilimitados",
-      "100 cortes por vídeo",
+      "200 cortes por mês",
       "Tudo do Full",
-      "10 contas simultâneas",
+      "Múltiplos clientes",
       "API de integração",
-      "Suporte VIP",
+      "Relatório de performance",
+      "Suporte VIP dedicado",
     ],
     cta: "Falar com vendas",
     href: "https://pay.finaliza.shop/pl/71a2cf32b6",
@@ -441,7 +438,7 @@ export default function LandingPage() {
             </div>
 
             <div className="flex flex-wrap gap-5 justify-center lg:justify-start text-sm text-gray-500 font-medium">
-              {["Sem cartão de crédito", "2 clips grátis", "Resultado em minutos"].map((t) => (
+              {["Sem cartão de crédito", "10 clips grátis", "Resultado em minutos"].map((t) => (
                 <span key={t} className="flex items-center gap-1.5">
                   <span className="text-green-400">✓</span> {t}
                 </span>
@@ -562,15 +559,93 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* SOCIAL PROOF TICKER */}
+      <div className="relative z-10 overflow-hidden border-y border-white/5 py-3" style={{ background: "rgba(139,43,226,0.04)" }}>
+        <div className="flex gap-8 animate-none" style={{ animation: "ticker 28s linear infinite", whiteSpace: "nowrap", display: "flex" }}>
+          <style>{`@keyframes ticker { from { transform: translateX(0) } to { transform: translateX(-50%) } }`}</style>
+          {[...Array(2)].map((_, rep) => (
+            <span key={rep} className="flex gap-8 flex-shrink-0">
+              {[
+                "🎵 @criador_tiktok ganhou 15k seguidores",
+                "📸 @marinaoficial: 8x mais alcance",
+                "▶️ @podcast.br: 47 cortes em 5 min",
+                "🔥 @felipemkt: +340% engajamento",
+                "⭐ @carladias.fit: 5k novos fãs em 10 dias",
+                "🚀 @agencia_conteudo: 7 clientes satisfeitos",
+                "💰 @educafinancas: 23k views no primeiro corte",
+                "🎬 @estudio_viral: ROI de 1 viral já paga o plano",
+              ].map((item) => (
+                <span key={item} className="text-xs text-gray-400 font-medium flex-shrink-0">
+                  {item}
+                </span>
+              ))}
+            </span>
+          ))}
+        </div>
+      </div>
+
       {/* STATS */}
-      <section className="relative z-10 border-y border-white/5 py-10 px-6" style={{ background: "rgba(255,255,255,0.015)" }}>
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          {STATS.map((s) => (
+      <section className="relative z-10 border-b border-white/5 py-12 px-6" style={{ background: "rgba(255,255,255,0.015)" }}>
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          {[
+            { value: "1.200+", label: "criadores ativos" },
+            { value: "47.000+", label: "clips gerados" },
+            { value: "< 3 min", label: "tempo médio por vídeo" },
+            { value: "4.9★", label: "nota dos usuários" },
+          ].map((s) => (
             <div key={s.value}>
               <p className="text-4xl font-black gradient-text mb-1">{s.value}</p>
               <p className="text-sm text-gray-500 font-semibold uppercase tracking-wider">{s.label}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ANTES × DEPOIS */}
+      <section className="relative z-10 px-6 md:px-10 py-20 max-w-5xl mx-auto">
+        <div className="text-center mb-12">
+          <div className="section-badge mb-4">Transformação Real</div>
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-3">
+            Antes do Viraliza vs{" "}
+            <span className="gradient-text">depois</span>
+          </h2>
+          <p className="text-gray-400 font-medium">A diferença que faz para quem cria conteúdo todo dia</p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Antes */}
+          <div className="rounded-3xl p-7 space-y-4" style={{ background: "rgba(255,59,59,0.04)", border: "1px solid rgba(255,59,59,0.15)" }}>
+            <p className="text-red-400 font-black text-sm uppercase tracking-widest mb-4">😓 Sem Viraliza Cortes</p>
+            {[
+              { icon: "⏰", text: "3–5 horas editando por vídeo" },
+              { icon: "🎞️", text: "Recortar manualmente no Premiere / CapCut" },
+              { icon: "📐", text: "Redimensionar para cada formato" },
+              { icon: "✍️", text: "Criar legendas palavra por palavra" },
+              { icon: "😩", text: "Exausto antes de publicar" },
+              { icon: "📉", text: "Poucas publicações = menos alcance" },
+            ].map((item) => (
+              <div key={item.text} className="flex items-center gap-3 text-sm text-gray-400 font-medium">
+                <span className="text-lg w-7 flex-shrink-0">{item.icon}</span>
+                <span>{item.text}</span>
+              </div>
+            ))}
+          </div>
+          {/* Depois */}
+          <div className="rounded-3xl p-7 space-y-4 card-glow" style={{ background: "linear-gradient(160deg, #0e0e20, #080810)" }}>
+            <p className="text-green-400 font-black text-sm uppercase tracking-widest mb-4">🚀 Com Viraliza Cortes</p>
+            {[
+              { icon: "⚡", text: "Clips prontos em menos de 3 minutos" },
+              { icon: "🤖", text: "IA escolhe os momentos mais virais" },
+              { icon: "📱", text: "9:16 automático para todas as redes" },
+              { icon: "💬", text: "Legendas estilizadas já gravadas" },
+              { icon: "😎", text: "Cole o link e vá tomar um café" },
+              { icon: "📈", text: "Mais clips = mais alcance = mais seguidores" },
+            ].map((item) => (
+              <div key={item.text} className="flex items-center gap-3 text-sm text-gray-200 font-medium">
+                <span className="text-lg w-7 flex-shrink-0">{item.icon}</span>
+                <span>{item.text}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -733,6 +808,36 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* NOVOS RECURSOS */}
+      <section className="relative z-10 px-6 md:px-10 py-20" style={{ background: "rgba(0,0,0,0.25)" }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <div className="section-badge mb-4">Novidades 2026</div>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-4">
+              Muito mais que um{" "}
+              <span style={{ background: "linear-gradient(135deg, #22d3ee, #3b82f6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                cortador de vídeo
+              </span>
+            </h2>
+            <p className="text-gray-400 max-w-xl mx-auto font-medium">Uma plataforma completa para criar, editar e publicar seus clips virais</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {NEW_FEATURES.map((f) => (
+              <div key={f.title} className="card-border-hover rounded-2xl p-6 flex gap-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                  style={{ background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.2)" }}>
+                  {f.icon}
+                </div>
+                <div>
+                  <h3 className="font-black text-sm mb-1.5 tracking-tight">{f.title}</h3>
+                  <p className="text-gray-400 text-xs leading-relaxed font-medium">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* DEPOIMENTOS */}
       <section className="relative z-10 px-6 md:px-10 py-24" style={{ background: "rgba(0,0,0,0.2)" }}>
         <div className="max-w-6xl mx-auto">
@@ -808,7 +913,7 @@ export default function LandingPage() {
           <p className="text-gray-400 font-medium">Cancele quando quiser. Garantia de 7 dias em todos os planos pagos.</p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 items-stretch">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
           {PLANS.map((plan) => (
             <div
               key={plan.name}
