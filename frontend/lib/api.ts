@@ -166,6 +166,15 @@ export async function deleteJob(jobId: string): Promise<void> {
   await fetch(`${API_URL}/api/video/job/${jobId}`, { method: "DELETE" });
 }
 
+export async function checkIn(token: string): Promise<{ ok: boolean; message: string; credits?: Credits }> {
+  const res = await fetch(`${API_URL}/api/auth/checkin`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Erro no check-in");
+  return res.json();
+}
+
 export function getStatusLabel(status: string): string {
   const labels: Record<string, string> = {
     queued: "Na fila...",
