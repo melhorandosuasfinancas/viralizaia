@@ -30,10 +30,11 @@ const upload = multer({
 const jobs = new Map();
 
 // POST /api/video/upload
-router.post('/upload', verifySubscription, upload.single('file'), async (req, res) => {
+router.post('/upload', verifySubscription, upload.single('video'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Arquivo de video e obrigatorio.' });
 
-  const { platforms = '["tiktok","instagram"]', mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60, captionColor = '#FFFFFF' } = req.body;
+  const { platforms = '["tiktok","instagram"]', mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60, captionColor = '#FFFFFF', addWatermark: bodyWatermark } = req.body;
+  const addWatermarkUpload = (req.userPlan === 'trial' || req.userPlan === 'gratis') ? true : (bodyWatermark !== false && bodyWatermark !== 'false');
 
   let parsedPlatforms;
   try { parsedPlatforms = JSON.parse(platforms); } catch { parsedPlatforms = ['tiktok', 'instagram']; }
@@ -56,13 +57,14 @@ router.post('/upload', verifySubscription, upload.single('file'), async (req, re
   const destPath = path.join(tempDir, 'source.mp4');
   await fs.move(req.file.path, destPath);
 
-  processVideoFromFile(jobId, destPath, tempDir, parsedPlatforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60, captionColor)
+  processVideoFromFile(jobId, destPath, tempDir, parsedPlatforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60, captionColor, addWatermarkUpload)
     .catch(err => jobs.set(jobId, { status: 'error', progress: 0, clips: [], error: err.message }));
 });
 
 // POST /api/video/process
 router.post('/process', verifySubscription, async (req, res) => {
-  const { url, platforms = ['tiktok', 'instagram'], mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60, captionColor = '#FFFFFF' } = req.body;
+  const { url, platforms = ['tiktok', 'instagram'], mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60, captionColor = '#FFFFFF', addWatermark: bodyWatermarkP } = req.body;
+  const addWatermarkProcess = (req.userPlan === 'trial' || req.userPlan === 'gratis') ? true : (bodyWatermarkP !== false && bodyWatermarkP !== 'false');
 
   if (!url) return res.status(400).json({ error: 'URL do YouTube e obrigatoria.' });
 
@@ -78,7 +80,7 @@ router.post('/process', verifySubscription, async (req, res) => {
   jobs.set(jobId, { status: 'queued', progress: 0, clips: [], error: null });
   res.json({ jobId, message: 'Processamento iniciado.' });
 
-  processVideo(jobId, url, platforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60, captionColor)
+  processVideo(jobId, url, platforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60, captionColor, addWatermarkProcess)
     .catch(err => jobs.set(jobId, { status: 'error', progress: 0, clips: [], error: err.message }));
 });
 
@@ -99,7 +101,7 @@ router.delete('/job/:jobId', async (req, res) => {
 });
 
 // --- Processamento via URL do YouTube ---
-async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF') {
+async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF', addWatermark = true) {
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
   const tempDir = path.join(__dirname, '../temp', jobId);
   const outputDir = path.join(__dirname, '../output', jobId);
@@ -135,56 +137,122 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
       updateJob({ status: 'downloading', progress: 50 });
       const clips = [];
 
-      for (let i = 0; i < segments.length; i++) {
-        const seg = segments[i];
+      // Baixa todos os segmentos em paralelo (3x mais rápido que sequencial)
+      console.log('Baixando ' + segments.length + ' segmento(s) em paralelo...');
+      const segDownloads = await Promise.all(segments.map(async (seg, i) => {
         const padding = 2;
         const startWithPad = Math.max(0, seg.start - padding);
         const endWithPad = seg.end + padding;
-
-        console.log('Baixando segmento ' + (i + 1) + '/' + segments.length + ': ' + seg.start + 's-' + seg.end + 's');
+        console.log('Download segmento ' + (i + 1) + '/' + segments.length + ': ' + seg.start + 's-' + seg.end + 's');
         const segPath = await downloader.downloadSection(url, startWithPad, endWithPad, tempDir, i);
+        return { seg, i, segPath, startWithPad };
+      }));
 
-        if (segPath) {
-          const trimStart = seg.start - startWithPad;
-          const trimDuration = seg.end - seg.start;
-          const adjustedSeg = { ...seg, start: trimStart, end: trimStart + trimDuration };
-
-          // Ajusta timestamps da transcricao para o segmento baixado
-          const adjustedTranscript = transcriptSegs.map(t => ({
-            ...t,
-            start: t.start - startWithPad,
-            end: t.end - startWithPad
-          }));
-
-          const clipsResult = await processor.createClips(
-            segPath,
-            [adjustedSeg],
-            platforms,
-            outputDir,
-            jobId,
-            (done, total) => updateJob({ progress: Math.round(50 + ((i * total + done) / (segments.length * total)) * 45) }),
-            adjustedTranscript,
-            captionStyle,
-            userPlan === 'trial',
-            captionColor
-          );
-          clips.push(...clipsResult);
-        } else {
+      // Renderiza clips de cada segmento (sequencial para poupar RAM do servidor 2vCPU)
+      for (const { seg, i, segPath, startWithPad } of segDownloads) {
+        if (!segPath) {
           console.log('Segmento ' + (i + 1) + ' nao baixou, pulando');
+          continue;
         }
+        const trimStart = seg.start - startWithPad;
+        const trimDuration = seg.end - seg.start;
+        const adjustedSeg = { ...seg, start: trimStart, end: trimStart + trimDuration };
+
+        const adjustedTranscript = transcriptSegs.map(t => ({
+          ...t,
+          start: t.start - startWithPad,
+          end: t.end - startWithPad
+        }));
+
+        const clipsResult = await processor.createClips(
+          segPath,
+          [adjustedSeg],
+          platforms,
+          outputDir,
+          jobId,
+          (done, total) => updateJob({ progress: Math.round(50 + ((i * total + done) / (segments.length * total)) * 45) }),
+          adjustedTranscript,
+          captionStyle,
+          addWatermark,
+          captionColor,
+          i
+        );
+        clips.push(...clipsResult);
       }
 
       if (clips.length > 0) {
-        finalizeJob(userEmail, userPlan, clips.length);
+        finalizeJob(userEmail, userPlan, segDownloads.filter(s => s.segPath).length);
         updateJob({ status: 'done', progress: 100, clips });
         return;
       }
     }
 
-    // Fallback: download completo
+    // Fallback: audio-only (10-20x mais rapido que download completo)
     updateJob({ status: 'downloading', progress: 20 });
-    const videoPath = await downloader.download(url, tempDir);
-    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, null, userEmail, userPlan, targetDuration, captionColor);
+    let videoPath;
+    try {
+      console.log('[video.js] Fallback: tentando audio-only para transcricao...');
+      const audioPath = await downloader.downloadAudioOnly(url, tempDir);
+      updateJob({ status: 'transcribing', progress: 35 });
+      const transcriptSegsAudio = await transcriber.transcribe(audioPath);
+      updateJob({ status: 'analyzing', progress: 55 });
+      const audioSegments = mode === 'ai'
+        ? await analyzer.findBestSegments(transcriptSegsAudio, url, maxClips, targetDuration)
+        : analyzer.splitEqually(transcriptSegsAudio, maxClips, targetDuration);
+      updateJob({ status: 'processing', progress: 65 });
+
+      const segDownloads = await Promise.all(audioSegments.map(async (seg, i) => {
+        try {
+          const padding = 2;
+          const startWithPad = Math.max(0, seg.start - padding);
+          const endWithPad = seg.end + padding;
+          const segPath = await downloader.downloadSection(url, startWithPad, endWithPad, tempDir, i);
+          return { seg, i, segPath, startWithPad };
+        } catch (e) {
+          console.error('[video.js] Falha ao baixar segmento', i, e.message);
+          return { seg, i, segPath: null, startWithPad: seg.start };
+        }
+      }));
+
+      const clips = [];
+      for (const { seg, i, segPath, startWithPad } of segDownloads) {
+        if (!segPath) continue;
+        const trimStart = seg.start - startWithPad;
+        const trimDuration = seg.end - seg.start;
+        const adjustedSeg = { ...seg, start: trimStart, end: trimStart + trimDuration };
+        const adjustedTranscript = transcriptSegsAudio.map(t => ({
+          ...t,
+          start: t.start - startWithPad,
+          end: t.end - startWithPad
+        }));
+        const clipsResult = await processor.createClips(
+          segPath,
+          [adjustedSeg],
+          platforms,
+          outputDir,
+          jobId,
+          (done, total) => updateJob({ progress: Math.round(65 + ((i * total + done) / (audioSegments.length * total)) * 30) }),
+          adjustedTranscript,
+          captionStyle,
+          addWatermark,
+          captionColor,
+          i
+        );
+        clips.push(...clipsResult);
+      }
+
+      if (clips.length > 0) {
+        finalizeJob(userEmail, userPlan, segDownloads.filter(s => s.segPath).length);
+        updateJob({ status: 'done', progress: 100, clips });
+        return;
+      }
+      console.log('[video.js] Nenhum clip renderizado dos segmentos. Baixando video completo...');
+      videoPath = await downloader.download(url, tempDir);
+    } catch (audioErr) {
+      console.error('[video.js] Audio-only falhou, baixando video completo:', audioErr.message);
+      videoPath = await downloader.download(url, tempDir);
+    }
+    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, null, userEmail, userPlan, targetDuration, captionColor, addWatermark);
 
   } catch (err) {
     updateJob({ status: 'error', error: err.message });
@@ -195,12 +263,12 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
 }
 
 // --- Processamento via upload de arquivo ---
-async function processVideoFromFile(jobId, videoPath, tempDir, platforms, mode, maxClips, captionStyle, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF') {
+async function processVideoFromFile(jobId, videoPath, tempDir, platforms, mode, maxClips, captionStyle, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF', addWatermark = true) {
   const outputDir = path.join(__dirname, '../output', jobId);
   await fs.ensureDir(outputDir);
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
   try {
-    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, null, null, userEmail, userPlan, targetDuration, captionColor);
+    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, null, null, userEmail, userPlan, targetDuration, captionColor, addWatermark);
   } catch (err) {
     updateJob({ status: 'error', error: err.message });
     throw err;
@@ -209,15 +277,40 @@ async function processVideoFromFile(jobId, videoPath, tempDir, platforms, mode, 
   }
 }
 
+// Obtém duração do vídeo via ffprobe (fallback quando transcrição falha)
+async function getVideoDurationAsTranscript(videoPath, maxClips, targetDuration) {
+  try {
+    const ffmpeg = require('fluent-ffmpeg');
+    const duration = await new Promise((resolve) => {
+      ffmpeg.ffprobe(videoPath, (err, metadata) => {
+        resolve(err ? maxClips * targetDuration : (metadata && metadata.format && metadata.format.duration || maxClips * targetDuration));
+      });
+    });
+    return [{ start: 0, end: duration, text: '', id: 0 }];
+  } catch (e) {
+    return [{ start: 0, end: maxClips * targetDuration, text: '', id: 0 }];
+  }
+}
+
 // --- Pipeline comum (transcricao Whisper + analise + cortes) ---
-async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, existingTranscript, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF') {
+async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, existingTranscript, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF', addWatermark = true) {
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
 
   updateJob({ status: 'transcribing', progress: 30 });
-  const transcriptSegs = existingTranscript || await transcriber.transcribe(videoPath);
+  let transcriptSegs = existingTranscript;
+  let effectiveMode = mode;
+  if (!transcriptSegs) {
+    try {
+      transcriptSegs = await transcriber.transcribe(videoPath);
+    } catch (transcribeErr) {
+      console.error('Transcricao Whisper falhou:', transcribeErr.message, '— usando divisao igualitaria');
+      transcriptSegs = await getVideoDurationAsTranscript(videoPath, maxClips, targetDuration);
+      effectiveMode = 'manual';
+    }
+  }
 
   updateJob({ status: 'analyzing', progress: 50 });
-  const segments = mode === 'ai'
+  const segments = effectiveMode === 'ai'
     ? await analyzer.findBestSegments(transcriptSegs, url || 'upload', maxClips, targetDuration)
     : analyzer.splitEqually(transcriptSegs, maxClips, targetDuration);
 
@@ -231,11 +324,11 @@ async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, 
     (done, total) => updateJob({ progress: Math.round(70 + (done / total) * 25) }),
     transcriptSegs,
     captionStyle,
-    userPlan === 'trial',
+    addWatermark,
     captionColor
   );
 
-  finalizeJob(userEmail, userPlan, clips.length);
+  finalizeJob(userEmail, userPlan, segments.length);
   updateJob({ status: 'done', progress: 100, clips });
 }
 

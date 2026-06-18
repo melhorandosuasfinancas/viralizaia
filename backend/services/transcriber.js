@@ -8,7 +8,7 @@ const groq = new OpenAI({
 });
 
 async function transcribe(videoPath) {
-  const audioPath = videoPath.replace('.mp4', '_audio.mp3');
+  const audioPath = videoPath.replace(/\.[^.]+$/, '_audio.mp3');
 
   // Extrai áudio antes de enviar para Whisper
   await extractAudio(videoPath, audioPath);
@@ -35,13 +35,15 @@ async function transcribe(videoPath) {
   }
 }
 
-function extractAudio(videoPath, audioPath) {
+function extractAudio(videoPath, audioPath, maxDuration = 600) {
   const ffmpeg = require('fluent-ffmpeg');
   return new Promise((resolve, reject) => {
-    ffmpeg(videoPath)
+    const cmd = ffmpeg(videoPath)
       .noVideo()
       .audioCodec('libmp3lame')
-      .audioBitrate('64k') // qualidade suficiente para transcrição
+      .audioBitrate('64k'); // qualidade suficiente para transcrição
+    if (maxDuration) cmd.setDuration(maxDuration); // evita 413 no Groq Whisper
+    cmd
       .output(audioPath)
       .on('end', resolve)
       .on('error', reject)

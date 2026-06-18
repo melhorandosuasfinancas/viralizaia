@@ -145,7 +145,16 @@ function hexToASS(hex) {
   return ('&H00' + b + g + r).toUpperCase();
 }
 
-async function createClips(videoPath, segments, platforms, outputDir, jobId, onProgress, transcriptSegs, captionStyle, addWatermark = false, captionColor = null) {
+
+function slugify(title) {
+  return title
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove accents
+    .replace(/[^a-zA-Z0-9 _-]/g, '')                    // keep alphanumeric, space, dash, underscore
+    .trim()
+    .replace(/\s+/g, '_')
+    .slice(0, 60) || 'clip';
+}
+async function createClips(videoPath, segments, platforms, outputDir, jobId, onProgress, transcriptSegs, captionStyle, addWatermark = false, captionColor = null, clipOffset = 0) {
   const clips = [];
   const configs = getConfigs(platforms);
   const total = segments.length * configs.length;
@@ -166,7 +175,8 @@ async function createClips(videoPath, segments, platforms, outputDir, jobId, onP
     const batch = tasks.slice(t, t + CONCURRENCY);
     const results = await Promise.all(batch.map(async ({ i, segment, configKey }) => {
       const config = PLATFORM_CONFIGS[configKey];
-      const fileName = `clip_${i + 1}_${configKey}.mp4`;
+      const clipTitle = segment.title ? slugify(segment.title) : `clip_${clipOffset + i + 1}`;
+      const fileName = `${clipTitle}_${configKey}.mp4`;
       const outputPath = path.join(outputDir, fileName);
 
       let assPath = null;
@@ -181,10 +191,10 @@ async function createClips(videoPath, segments, platforms, outputDir, jobId, onP
       try {
         await renderClip(videoPath, segment, config, outputPath, assPath, addWatermark);
         return {
-          clipNumber: i + 1,
+          clipNumber: clipOffset + i + 1,
           platform: configKey,
           platformLabel: config.label,
-          title: segment.title || `Clip ${i + 1}`,
+          title: segment.title || `Clip ${clipOffset + i + 1}`,
           hook: segment.hook || '',
           viralScore: segment.viralScore || 5,
           duration: Math.round(segment.end - segment.start),
@@ -214,6 +224,7 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
   const isSquare = width === height;
 
   return new Promise((resolve, reject) => {
+    let stderrLog = '';
     const cmd = ffmpeg(videoPath)
       .setStartTime(segment.start)
       .setDuration(segment.end - segment.start)
@@ -221,15 +232,17 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
       .audioCodec('aac')
       .audioBitrate('128k')
       .outputOptions([
-        '-preset fast',
-        '-crf 19',
+        '-preset veryfast',
+        '-crf 21',
         '-movflags +faststart',
         '-pix_fmt yuv420p',
-        '-threads 2'
+        '-threads 0',
+        '-map_metadata -1'
       ])
       .output(outputPath)
       .on('end', resolve)
-      .on('error', (err) => reject(err));
+      .on('stderr', (line) => { stderrLog += line + '\n'; })
+      .on('error', (err) => reject(new Error(err.message + (stderrLog ? '\nFFmpeg: ' + stderrLog.slice(-600) : ''))));
 
     if (isVertical || isSquare) {
       // Blurred background: full content visible (no aggressive crop) + blurred fill
@@ -249,7 +262,12 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
       if (addWatermark) {
         const wFontSize = Math.max(20, Math.round(height / 42));
         const wY       = Math.max(10, Math.round(height / 30));
-        filterParts.push(`[${lastOut}]drawtext=text='Viraliza Cortes':x=(w-text_w)/2:y=h-th-${wY}:fontsize=${wFontSize}:fontcolor=white@0.65:shadowcolor=black@0.75:shadowx=2:shadowy=2[wm]`);
+        const logoScale = Math.max(20, Math.round(height / 30));
+        const logoY = Math.max(6, Math.round(height / 40));
+        const textY = logoY + logoScale + 4;
+        filterParts.push(`movie='/root/viralizaia/frontend/public/logo-viraliza-cortes.png',scale=${logoScale}:${logoScale}[logo]`);
+        filterParts.push(`[${lastOut}][logo]overlay=x=(W-w)/2:y=${logoY}[withlogo]`);
+        filterParts.push(`[withlogo]drawtext=text=Viraliza Cortes:x=(w-text_w)/2:y=${textY}:fontsize=${wFontSize}:fontcolor=white@0.9:shadowcolor=black@0.85:shadowx=2:shadowy=2[wm]`);
         lastOut = 'wm';
       }
       cmd.complexFilter(filterParts.join(';'));
@@ -267,7 +285,7 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
       if (addWatermark) {
         const wFontSize = Math.max(20, Math.round(height / 42));
         const wY       = Math.max(10, Math.round(height / 30));
-        filters.push(`drawtext=text='Viraliza Cortes':x=(w-text_w)/2:y=h-th-${wY}:fontsize=${wFontSize}:fontcolor=white@0.65:shadowcolor=black@0.75:shadowx=2:shadowy=2`);
+        filters.push(`drawtext=text=Viraliza Cortes:x=(w-text_w)/2:y=${wY}:fontsize=${wFontSize}:fontcolor=white@0.9:shadowcolor=black@0.85:shadowx=2:shadowy=2`);
       }
       cmd.videoFilters(filters);
     }
