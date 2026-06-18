@@ -446,8 +446,8 @@ export default function LandingPage() {
             </div>
 
             {/* Google Play badge */}
-            <div className=flex justify-center lg:justify-start mt-5>
-              <div className=inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm>
+            <div className="flex justify-center lg:justify-start mt-5">
+              <div className="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                   <path d="M3.18 23.76c.31.17.67.19 1 .07l11.9-6.87-2.58-2.58-10.32 9.38z" fill="#EA4335"/>
                   <path d="M20.82 10.01c-.54-.31-5.74-3.32-7.05-4.07L3.18.24C2.85.12 2.49.14 2.18.31L13.14 11.27l7.68-1.26z" fill="#FBBC05"/>
