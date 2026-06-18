@@ -29,6 +29,35 @@ const upload = multer({
 
 const jobs = new Map();
 
+let _processingCount = 0;
+const MAX_CONCURRENT = 1;
+const _pendingQueue = [];
+
+function enqueue(jobId, fn) {
+  if (_processingCount < MAX_CONCURRENT) {
+    _processingCount++;
+    fn().finally(_runNext);
+  } else {
+    _pendingQueue.push({ jobId, fn });
+    const pos = _pendingQueue.length;
+    const job = jobs.get(jobId);
+    if (job) jobs.set(jobId, { ...job, queuePosition: pos });
+  }
+}
+
+function _runNext() {
+  _processingCount--;
+  if (_pendingQueue.length > 0) {
+    const { fn } = _pendingQueue.shift();
+    _processingCount++;
+    _pendingQueue.forEach(({ jobId: qId }, i) => {
+      const j = jobs.get(qId);
+      if (j) jobs.set(qId, { ...j, queuePosition: i + 1 });
+    });
+    fn().finally(_runNext);
+  }
+}
+
 // POST /api/video/upload
 router.post('/upload', verifySubscription, upload.single('video'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Arquivo de video e obrigatorio.' });
@@ -57,8 +86,8 @@ router.post('/upload', verifySubscription, upload.single('video'), async (req, r
   const destPath = path.join(tempDir, 'source.mp4');
   await fs.move(req.file.path, destPath);
 
-  processVideoFromFile(jobId, destPath, tempDir, parsedPlatforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60, captionColor, addWatermarkUpload)
-    .catch(err => jobs.set(jobId, { status: 'error', progress: 0, clips: [], error: err.message }));
+  enqueue(jobId, () => processVideoFromFile(jobId, destPath, tempDir, parsedPlatforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60, captionColor, addWatermarkUpload)
+    .catch(err => jobs.set(jobId, { status: 'error', progress: 0, clips: [], error: err.message })));
 });
 
 // POST /api/video/process
@@ -80,8 +109,8 @@ router.post('/process', verifySubscription, async (req, res) => {
   jobs.set(jobId, { status: 'queued', progress: 0, clips: [], error: null });
   res.json({ jobId, message: 'Processamento iniciado.' });
 
-  processVideo(jobId, url, platforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60, captionColor, addWatermarkProcess)
-    .catch(err => jobs.set(jobId, { status: 'error', progress: 0, clips: [], error: err.message }));
+  enqueue(jobId, () => processVideo(jobId, url, platforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60, captionColor, addWatermarkProcess)
+    .catch(err => jobs.set(jobId, { status: 'error', progress: 0, clips: [], error: err.message })));
 });
 
 // GET /api/video/status/:jobId

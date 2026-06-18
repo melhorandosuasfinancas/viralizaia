@@ -232,11 +232,11 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
       .audioCodec('aac')
       .audioBitrate('128k')
       .outputOptions([
-        '-preset veryfast',
+        '-preset ultrafast',
         '-crf 21',
         '-movflags +faststart',
         '-pix_fmt yuv420p',
-        '-threads 0',
+        '-threads 2',
         '-map_metadata -1'
       ])
       .output(outputPath)
@@ -247,11 +247,9 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
     if (isVertical || isSquare) {
       // Blurred background: full content visible (no aggressive crop) + blurred fill
       // Same technique used by Opus Clip, Klap, Submagic for 16:9 → 9:16 conversion
+      // Center crop: escala para preencher o frame e corta o centro
       const filterParts = [
-        `[0:v]split=2[bg_in][fg_in]`,
-        `[bg_in]scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height},boxblur=20:5[bg]`,
-        `[fg_in]scale=${width}:${height}:force_original_aspect_ratio=decrease[fg]`,
-        `[bg][fg]overlay=(W-w)/2:(H-h)/2[base]`
+        `[0:v]scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height}[base]`
       ];
       let lastOut = 'base';
       if (assPath) {
