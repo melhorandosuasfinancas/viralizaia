@@ -1,9 +1,13 @@
 'use client'
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, User, ArrowRight, AlertCircle } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { checkEmail, getAuthToken, getTrialToken } from "@/lib/api";
+
+type Mode = "login" | "signup";
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -20,13 +24,22 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   );
 }
 
+function persistSession(token: string, plan: string, email: string, credits: unknown) {
+  localStorage.setItem("viralizaia_token", token);
+  localStorage.setItem("viralizaia_plan", plan);
+  localStorage.setItem("viralizaia_email", email);
+  if (credits) localStorage.setItem("viralizaia_credits", JSON.stringify(credits));
+}
+
 export function ViralizaSignInCard() {
-  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+  const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -43,6 +56,54 @@ export function ViralizaSignInCard() {
     mouseX.set(0);
     mouseY.set(0);
   };
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail.includes("@")) {
+      setError("Digite um e-mail válido.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      if (mode === "signup") {
+        const result = await getTrialToken(cleanEmail, name.trim() || undefined);
+        persistSession(result.token, result.plan, cleanEmail, result.credits);
+        router.push("/app");
+        return;
+      }
+      // mode === "login": tenta detectar se já existe conta ativa
+      const status = await checkEmail(cleanEmail);
+      if (status.active) {
+        const result = await getAuthToken(cleanEmail);
+        persistSession(result.token, result.plan, cleanEmail, result.credits);
+      } else {
+        // Sem assinatura: cria/recupera trial (mesmo fluxo de antes — sem senha)
+        const result = await getTrialToken(cleanEmail);
+        persistSession(result.token, result.plan, cleanEmail, result.credits);
+      }
+      router.push("/app");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro ao entrar. Tente novamente.";
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleGoogle() {
+    setError(null);
+    setGoogleLoading(true);
+    try {
+      await signIn("google", { callbackUrl: "/app" });
+    } catch {
+      setError("Não foi possível entrar com Google.");
+      setGoogleLoading(false);
+    }
+  }
+
+  const isSignup = mode === "signup";
 
   return (
     <div className="min-h-screen w-screen bg-black relative overflow-hidden flex items-center justify-center">
@@ -74,7 +135,7 @@ export function ViralizaSignInCard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="w-full max-w-sm relative z-10"
+        className="w-full max-w-sm relative z-10 px-4"
         style={{ perspective: 1500 }}
       >
         <motion.div
@@ -130,7 +191,7 @@ export function ViralizaSignInCard() {
                   transition={{ delay: 0.2 }}
                   className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80"
                 >
-                  Bem-vindo de volta
+                  {isSignup ? "Crie sua conta grátis" : "Bem-vindo de volta"}
                 </motion.h1>
 
                 <motion.p
@@ -139,97 +200,79 @@ export function ViralizaSignInCard() {
                   transition={{ delay: 0.3 }}
                   className="text-white/60 text-xs"
                 >
-                  Entre para criar cortes que viralizam
+                  {isSignup
+                    ? "2 cortes virais grátis. Sem cartão de crédito."
+                    : "Entre para criar cortes que viralizam"}
                 </motion.p>
               </div>
 
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setIsLoading(true);
-                  setTimeout(() => setIsLoading(false), 2000);
-                }}
-                className="space-y-4"
-              >
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-3">
+                  <AnimatePresence initial={false}>
+                    {isSignup && (
+                      <motion.div
+                        key="name-field"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className={`relative ${focusedInput === "name" ? 'z-10' : ''}`}
+                      >
+                        <div className="relative flex items-center overflow-hidden rounded-lg">
+                          <User className={`absolute left-3 w-4 h-4 transition-all duration-300 ${focusedInput === "name" ? 'text-white' : 'text-white/40'}`} />
+                          <Input
+                            type="text"
+                            placeholder="Seu nome (opcional)"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            onFocus={() => setFocusedInput("name")}
+                            onBlur={() => setFocusedInput(null)}
+                            autoComplete="name"
+                            className="w-full bg-white/5 border-transparent text-white h-10 pl-10 pr-3 focus:bg-white/10"
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <div className={`relative ${focusedInput === "email" ? 'z-10' : ''}`}>
                     <div className="relative flex items-center overflow-hidden rounded-lg">
                       <Mail className={`absolute left-3 w-4 h-4 transition-all duration-300 ${focusedInput === "email" ? 'text-white' : 'text-white/40'}`} />
                       <Input
                         type="email"
-                        placeholder="Seu email"
+                        placeholder="Seu e-mail"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         onFocus={() => setFocusedInput("email")}
                         onBlur={() => setFocusedInput(null)}
+                        autoComplete="email"
+                        required
                         className="w-full bg-white/5 border-transparent text-white h-10 pl-10 pr-3 focus:bg-white/10"
                       />
                     </div>
                   </div>
-
-                  <div className={`relative ${focusedInput === "password" ? 'z-10' : ''}`}>
-                    <div className="relative flex items-center overflow-hidden rounded-lg">
-                      <Lock className={`absolute left-3 w-4 h-4 transition-all duration-300 ${focusedInput === "password" ? 'text-white' : 'text-white/40'}`} />
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Senha"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        onFocus={() => setFocusedInput("password")}
-                        onBlur={() => setFocusedInput(null)}
-                        className="w-full bg-white/5 border-transparent text-white h-10 pl-10 pr-10 focus:bg-white/10"
-                      />
-                      <div onClick={() => setShowPassword(!showPassword)} className="absolute right-3 cursor-pointer">
-                        {showPassword ? (
-                          <Eye className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
-                        ) : (
-                          <EyeOff className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
-                        )}
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-1">
-                  <div className="flex items-center space-x-2">
-                    <div className="relative">
-                      <input
-                        id="remember-me"
-                        type="checkbox"
-                        checked={rememberMe}
-                        onChange={() => setRememberMe(!rememberMe)}
-                        className="appearance-none h-4 w-4 rounded border border-white/20 bg-white/5 checked:bg-white checked:border-white focus:outline-none focus:ring-1 focus:ring-white/30 transition-all duration-200"
-                      />
-                      {rememberMe && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.5 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="absolute inset-0 flex items-center justify-center text-black pointer-events-none"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        </motion.div>
-                      )}
-                    </div>
-                    <label htmlFor="remember-me" className="text-xs text-white/60 hover:text-white/80 transition-colors duration-200">
-                      Lembrar de mim
-                    </label>
-                  </div>
-
-                  <div className="text-xs">
-                    <Link href="#" className="text-white/60 hover:text-white transition-colors duration-200">
-                      Esqueci a senha
-                    </Link>
-                  </div>
-                </div>
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      className="flex items-start gap-2 text-xs text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                      <span>{error}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit"
-                  disabled={isLoading}
-                  className="w-full relative group/button mt-5"
+                  disabled={isLoading || googleLoading}
+                  className="w-full relative group/button mt-3"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/30 to-violet-500/30 rounded-lg blur-lg opacity-0 group-hover/button:opacity-70 transition-opacity duration-300" />
                   <div className="relative overflow-hidden bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white font-medium h-10 rounded-lg transition-all duration-300 flex items-center justify-center">
@@ -240,7 +283,7 @@ export function ViralizaSignInCard() {
                         </motion.div>
                       ) : (
                         <motion.span key="button-text" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center gap-1 text-sm font-medium">
-                          Entrar
+                          {isSignup ? "Criar conta grátis" : "Entrar"}
                           <ArrowRight className="w-3 h-3 group-hover/button:translate-x-1 transition-transform duration-300" />
                         </motion.span>
                       )}
@@ -248,7 +291,7 @@ export function ViralizaSignInCard() {
                   </div>
                 </motion.button>
 
-                <div className="relative mt-2 mb-5 flex items-center">
+                <div className="relative mt-2 mb-2 flex items-center">
                   <div className="flex-grow border-t border-white/5" />
                   <span className="mx-3 text-xs text-white/40">ou</span>
                   <div className="flex-grow border-t border-white/5" />
@@ -258,18 +301,26 @@ export function ViralizaSignInCard() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="button"
+                  onClick={handleGoogle}
+                  disabled={isLoading || googleLoading}
                   className="w-full relative group/google"
                 >
                   <div className="relative overflow-hidden bg-white/5 text-white font-medium h-10 rounded-lg border border-white/10 hover:border-white/20 transition-all duration-300 flex items-center justify-center gap-2">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                    </svg>
-                    <span className="text-white/80 group-hover/google:text-white transition-colors text-xs">
-                      Entrar com Google
-                    </span>
+                    {googleLoading ? (
+                      <div className="w-4 h-4 border-2 border-white/70 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                        </svg>
+                        <span className="text-white/80 group-hover/google:text-white transition-colors text-xs">
+                          {isSignup ? "Cadastrar com Google" : "Entrar com Google"}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </motion.button>
 
@@ -279,13 +330,17 @@ export function ViralizaSignInCard() {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
                 >
-                  Ainda não tem conta?{' '}
-                  <Link href="#" className="relative inline-block group/signup">
+                  {isSignup ? "Já tem conta? " : "Ainda não tem conta? "}
+                  <button
+                    type="button"
+                    onClick={() => { setError(null); setMode(isSignup ? "login" : "signup"); }}
+                    className="relative inline-block group/signup"
+                  >
                     <span className="relative z-10 text-white group-hover/signup:text-fuchsia-300 transition-colors duration-300 font-medium">
-                      Criar conta grátis
+                      {isSignup ? "Entrar" : "Criar conta grátis"}
                     </span>
                     <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-fuchsia-400 group-hover/signup:w-full transition-all duration-300" />
-                  </Link>
+                  </button>
                 </motion.p>
               </form>
             </div>

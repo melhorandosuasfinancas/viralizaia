@@ -320,6 +320,8 @@ const CORTES: Corte[] = [
 ];
 
 function VerticalClipCard({ corte, index }: { corte: Corte; index: number }) {
+  const overlapClass =
+    index === 0 ? "-mr-10 sm:mr-0" : index === 2 ? "-ml-10 sm:ml-0" : "";
   return (
     <motion.div
       initial={{ opacity: 0, y: 60, scale: corte.scale * 0.9 }}
@@ -327,7 +329,7 @@ function VerticalClipCard({ corte, index }: { corte: Corte; index: number }) {
       transition={{ duration: 0.9, delay: 0.7 + index * 0.15, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ scale: corte.scale * 1.04, rotate: 0, zIndex: 10, transition: { duration: 0.4 } }}
       style={{ zIndex: corte.zIndex }}
-      className="relative w-[230px] sm:w-[260px] md:w-[280px] aspect-[9/16] rounded-[2rem] overflow-hidden shadow-[0_30px_80px_-20px_rgba(168,85,247,0.5)] border-[3px] border-white/10 flex-shrink-0"
+      className={`relative w-[140px] sm:w-[230px] md:w-[260px] lg:w-[280px] aspect-[9/16] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-[0_30px_80px_-20px_rgba(168,85,247,0.5)] border-2 sm:border-[3px] border-white/10 flex-shrink-0 ${overlapClass}`}
     >
       {/* Background image */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -359,11 +361,10 @@ function VerticalClipCard({ corte, index }: { corte: Corte; index: number }) {
 
       {/* TikTok-style caption — palavra por palavra animada */}
       <motion.div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-2 text-center font-black tracking-tight leading-tight"
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-2 text-center font-black tracking-tight leading-tight text-base sm:text-2xl"
         style={{
           color: corte.captionColor,
           fontFamily: "'Arial Black', sans-serif",
-          fontSize: "1.5rem",
           textShadow: "0 0 1px #000, 0 0 1px #000, 0 4px 12px rgba(0,0,0,0.9), 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000",
           WebkitTextStroke: "1px black",
         }}
@@ -445,7 +446,7 @@ function ProductMockup() {
       </motion.div>
 
       {/* Grid de cortes verticais */}
-      <div className="relative flex justify-center items-end gap-3 sm:gap-6 md:gap-8 px-4 py-6">
+      <div className="relative flex justify-center items-end gap-0 sm:gap-6 md:gap-8 px-2 sm:px-4 py-6">
         {CORTES.map((corte, i) => (
           <VerticalClipCard key={i} corte={corte} index={i} />
         ))}
