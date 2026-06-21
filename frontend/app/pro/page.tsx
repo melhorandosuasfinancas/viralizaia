@@ -658,10 +658,9 @@ function PricingCard({ plan, yearly }: { plan: typeof PLANS[number]; yearly: boo
 }
 
 // ───────────── Página ─────────────
-export default function LandingPage() {
+export default function ProPage() {
   const [yearly, setYearly] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [url, setUrl] = useState("");
 
   return (
     <div className="min-h-screen bg-[#050507] text-white overflow-x-hidden font-sans antialiased">
@@ -672,20 +671,8 @@ export default function LandingPage() {
         <div className="absolute bottom-[20%] right-[-200px] w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[100px]" />
       </div>
 
-      {/* FAIXA DE URGÊNCIA (sticky no topo, antes da nav) */}
-      <div
-        className="relative z-[60] sticky top-0 py-2.5 px-4 text-center text-xs font-bold text-white flex items-center justify-center gap-2 flex-wrap"
-        style={{ background: "linear-gradient(90deg, #6B21A8 0%, #7C3AED 50%, #6B21A8 100%)", borderBottom: "1px solid rgba(255,255,255,0.12)" }}
-      >
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
-        <span><strong>1.247 criadores</strong> geraram clips hoje —</span>
-        <Link href="/app" className="underline underline-offset-2 hover:no-underline text-yellow-300 font-bold">
-          Comece grátis agora →
-        </Link>
-      </div>
-
       {/* NAV */}
-      <nav className="relative z-50 sticky top-9 backdrop-blur-xl bg-[#050507]/80 border-b border-white/5">
+      <nav className="relative z-50 sticky top-0 backdrop-blur-xl bg-[#050507]/80 border-b border-white/5">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3.5">
           <Link href="/" className="flex items-center gap-2">
             <Image src="/logo-viraliza-cortes.png" alt="Viraliza Cortes" width={36} height={36} className="rounded-lg" />
@@ -840,77 +827,33 @@ export default function LandingPage() {
           adiciona legendas e entrega pronto para TikTok, Reels e Shorts. Em menos de 3 minutos.
         </motion.p>
 
-        {/* INPUT URL + CTA primário */}
-        <motion.form
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.4 }}
-          onSubmit={(e) => {
-            e.preventDefault();
-            window.location.href = url
-              ? `/app?url=${encodeURIComponent(url)}`
-              : "/app";
-          }}
-          className="flex flex-col sm:flex-row items-stretch justify-center gap-3 max-w-2xl mx-auto mb-4"
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6"
         >
-          <div className="flex items-center gap-3 flex-1 px-5 py-3.5 rounded-xl border border-white/10 bg-white/[0.03] backdrop-blur-sm hover:border-white/20 focus-within:border-fuchsia-400/50 focus-within:bg-white/[0.05] transition-colors">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-500 flex-shrink-0">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-            </svg>
-            <input
-              type="url"
-              placeholder="Cole o link do YouTube aqui..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="flex-1 bg-transparent text-sm md:text-base text-white placeholder-zinc-500 outline-none min-w-0 font-medium"
-              aria-label="Link do YouTube"
-            />
-          </div>
           <MagneticButton distance={0.35}>
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white font-semibold text-base shadow-[0_10px_40px_-10px_rgba(217,70,239,0.6)] hover:scale-[1.02] transition-transform whitespace-nowrap"
+            <Link
+              href="/app"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white text-black font-semibold text-base shadow-[0_10px_40px_-10px_rgba(255,255,255,0.5)] hover:scale-[1.02] transition-transform"
             >
-              Viralizar agora <span aria-hidden>→</span>
-            </button>
+              Comece grátis <span aria-hidden>→</span>
+            </Link>
           </MagneticButton>
-        </motion.form>
-
-        {/* Linha de trust + link "como funciona" */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-zinc-500 mb-8"
-        >
-          <span className="flex items-center gap-1"><Check className="w-3 h-3 text-emerald-400" /> Sem cartão de crédito</span>
-          <span className="flex items-center gap-1"><Check className="w-3 h-3 text-emerald-400" /> 10 cortes grátis</span>
-          <a href="#como-funciona" className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors font-medium">
+          <a href="#como-funciona" className="text-zinc-400 hover:text-white text-sm font-medium transition-colors">
             Ver como funciona ↓
           </a>
         </motion.div>
 
-        {/* Google Play badge "em breve" */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="flex justify-center"
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="text-xs text-zinc-500"
         >
-          <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl border border-white/10 bg-white/[0.03] backdrop-blur-sm">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="flex-shrink-0">
-              <path d="M3.18 23.76c.31.17.67.19 1 .07l11.9-6.87-2.58-2.58-10.32 9.38z" fill="#EA4335" />
-              <path d="M20.82 10.01c-.54-.31-5.74-3.32-7.05-4.07L3.18.24C2.85.12 2.49.14 2.18.31L13.14 11.27l7.68-1.26z" fill="#FBBC05" />
-              <path d="M2.18.31A1.2 1.2 0 0 0 1.6 1.4v21.2c0 .44.22.84.58 1.16L13.14 11.27 2.18.31z" fill="#4285F4" />
-              <path d="M20.82 10.01l-7.68 1.26 2.58 2.58 5.1-2.95c.75-.43.75-1.46 0-1.89z" fill="#34A853" />
-            </svg>
-            <div className="text-left">
-              <div className="text-[10px] text-zinc-400 leading-none mb-0.5 uppercase tracking-wider font-semibold">Em breve no</div>
-              <div className="text-sm font-bold text-white leading-none">Google Play</div>
-            </div>
-          </div>
-        </motion.div>
+          Sem cartão de crédito · 10 cortes grátis no primeiro mês
+        </motion.p>
 
         {/* MOCKUP DO PRODUTO */}
         <motion.div
@@ -1199,37 +1142,6 @@ export default function LandingPage() {
         <p className="text-center text-xs text-zinc-500 mt-8">
           7 dias de garantia · Cancele quando quiser · Sem fidelidade
         </p>
-
-        {/* Créditos extras */}
-        <motion.div variants={fadeUp} className="mt-20 max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 mb-4">
-            <span className="text-lg">⚡</span>
-            <span className="text-xs font-bold tracking-wider text-amber-200 uppercase">Acabaram os cortes do mês?</span>
-          </div>
-          <p className="text-zinc-400 text-sm mb-8">
-            Compre créditos extras a qualquer momento, sem trocar de plano.
-          </p>
-          <div className="grid grid-cols-3 gap-3 max-w-xl mx-auto">
-            {[
-              { clips: "10 cortes", price: "R$15", icon: "🔋" },
-              { clips: "25 cortes", price: "R$30", icon: "⚡" },
-              { clips: "50 cortes", price: "R$50", icon: "🚀" },
-            ].map((pack) => (
-              <motion.div
-                key={pack.clips}
-                whileHover={{ y: -4 }}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-5 cursor-pointer hover:border-amber-400/30 transition-colors"
-              >
-                <div className="text-3xl mb-2">{pack.icon}</div>
-                <div className="text-xl font-bold bg-gradient-to-b from-white to-zinc-400 bg-clip-text text-transparent">{pack.price}</div>
-                <div className="text-xs text-zinc-500 mt-1">{pack.clips}</div>
-              </motion.div>
-            ))}
-          </div>
-          <p className="text-[11px] text-zinc-600 mt-5">
-            Disponíveis para compra dentro da plataforma após o login
-          </p>
-        </motion.div>
       </motion.section>
 
       {/* ━━━━━━━━━━━━━━━━ FAQ ━━━━━━━━━━━━━━━━ */}

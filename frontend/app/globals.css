@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -5,6 +6,51 @@
   --foreground: #f9f9f9;
   --purple: #7c3aed;
   --purple-light: #a78bfa;
+
+  /* shadcn primitives — tons escuros do Viraliza */
+  --card: #0d0d1f;
+  --card-foreground: #f9f9f9;
+  --popover: #0d0d1f;
+  --popover-foreground: #f9f9f9;
+  --primary: #a855f7;
+  --primary-foreground: #ffffff;
+  --secondary: #1f1d2e;
+  --secondary-foreground: #f9f9f9;
+  --muted: #1f1d2e;
+  --muted-foreground: #a1a1aa;
+  --accent: #1f1d2e;
+  --accent-foreground: #f9f9f9;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255,255,255,0.08);
+  --input: rgba(255,255,255,0.08);
+  --ring: #a855f7;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+.font-handwritten {
+  font-family: 'Caveat', cursive;
 }
 
 * { box-sizing: border-box; }
