@@ -824,18 +824,73 @@ export default function AppPage() {
                 )}
 
                 {/* Processing status */}
-                {job && job.status !== "done" && job.status !== "error" && (
-                  <div className="card-glow rounded-2xl p-6 text-center space-y-4">
-                    <div className="text-4xl animate-pulse">
-                      {job.status === "downloading" ? "⬇️" : job.status === "transcribing" ? "🎙️" : job.status === "analyzing" ? "🤖" : "✂️"}
+                {job && job.status !== "done" && job.status !== "error" && (() => {
+                  const STEPS = [
+                    { id: "downloading",  icon: "⬇️",  label: "Baixando",    sub: "Obtendo o vídeo do YouTube…" },
+                    { id: "transcribing", icon: "🎙️", label: "Transcrevendo", sub: "Convertendo áudio em texto com IA…" },
+                    { id: "analyzing",    icon: "🤖",  label: "Analisando",   sub: "IA identificando os melhores momentos virais…" },
+                    { id: "processing",   icon: "✂️",  label: "Cortando",     sub: "Gerando seus clips e adicionando legendas…" },
+                  ] as const;
+                  const ORDER = ["queued","downloading","transcribing","analyzing","processing"];
+                  const curIdx = ORDER.indexOf(job.status);
+                  const stepIdx = Math.max(0, curIdx - 1); // queued fica no step 0
+                  const cur = STEPS[Math.min(stepIdx, STEPS.length - 1)];
+                  return (
+                    <div className="card-glow rounded-2xl p-6 space-y-5">
+                      {/* Stepper */}
+                      <div className="flex items-center justify-center gap-0">
+                        {STEPS.map((s, i) => {
+                          const done = i < stepIdx;
+                          const active = i === stepIdx;
+                          return (
+                            <div key={s.id} className="flex items-center">
+                              <div className={`flex flex-col items-center gap-1 transition-all duration-500 ${active ? "scale-110" : ""}`}>
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm border-2 transition-all duration-500 ${
+                                  done   ? "bg-emerald-500/20 border-emerald-400 text-emerald-300" :
+                                  active ? "bg-fuchsia-500/20 border-fuchsia-400 shadow-[0_0_12px_rgba(217,70,239,0.6)] animate-pulse" :
+                                           "bg-white/5 border-white/15 text-white/30"
+                                }`}>
+                                  {done ? "✓" : s.icon}
+                                </div>
+                                <span className={`text-[9px] font-semibold uppercase tracking-wide ${active ? "text-fuchsia-300" : done ? "text-emerald-400" : "text-white/25"}`}>
+                                  {s.label}
+                                </span>
+                              </div>
+                              {i < STEPS.length - 1 && (
+                                <div className={`w-8 h-[2px] mb-4 rounded-full transition-all duration-700 ${i < stepIdx ? "bg-emerald-400/60" : "bg-white/10"}`} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Icon + status */}
+                      <div className="text-center space-y-1.5">
+                        <div className="text-5xl" style={{ animation: "cpop 1.5s ease-in-out infinite" }}>{cur.icon}</div>
+                        <p className="font-bold text-base text-white">{getStatusLabel(job.status)}</p>
+                        <p className="text-xs text-white/50">{cur.sub}</p>
+                      </div>
+
+                      {/* Progress bar */}
+                      <div className="space-y-2">
+                        <div className="h-3 bg-white/5 rounded-full overflow-hidden relative">
+                          <div
+                            className="h-full rounded-full transition-all duration-700 ease-out"
+                            style={{
+                              width: `${job.progress}%`,
+                              background: "linear-gradient(90deg, #a855f7, #d946ef)",
+                              boxShadow: "0 0 12px rgba(217,70,239,0.5)",
+                            }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-[11px] text-white/40">
+                          <span>Processando seu vídeo…</span>
+                          <span className="font-bold text-white/60">{job.progress}%</span>
+                        </div>
+                      </div>
                     </div>
-                    <p className="font-semibold">{getStatusLabel(job.status)}</p>
-                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full progress-animated rounded-full transition-all duration-500" style={{ width: `${job.progress}%` }} />
-                    </div>
-                    <p className="text-xs text-white/50">{job.progress}% concluído</p>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Error */}
                 {job?.status === "error" && (
