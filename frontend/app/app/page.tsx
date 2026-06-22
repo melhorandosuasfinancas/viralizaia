@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import {
   startProcessing, uploadAndProcess, getJobStatus, getDownloadUrl,
+  getForceDownloadUrl,
   deleteJob, getStatusLabel, getAuthToken, getTrialToken, getOAuthToken,
   saveWhatsapp, fetchCredits, checkIn,
   type Credits, type Clip, type Job, type Platform, type CaptionStyle, type Plan,
@@ -427,50 +428,61 @@ export default function AppPage() {
   // ── LOGIN SCREEN ──────────────────────────────────────────────────────────
   if (step === "login") {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center px-4">
-        <div className="w-full max-w-sm">
-          <div className="text-center mb-8">
-            <p className="gradient-text font-extrabold text-2xl mb-1">Viraliza Cortes</p>
-            <p className="text-gray-400 text-sm">Cortes virais com IA em segundos</p>
+      <div className="min-h-screen w-screen bg-black relative overflow-hidden flex items-center justify-center px-4">
+        <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-500/40 via-violet-700/50 to-black pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120vh] h-[60vh] rounded-b-[50%] bg-fuchsia-400/20 blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[90vh] h-[90vh] rounded-t-full bg-violet-400/20 blur-[60px] pointer-events-none" />
+        <div className="w-full max-w-sm relative z-10 bg-black/40 backdrop-blur-xl rounded-2xl p-6 border border-white/[0.05] shadow-2xl">
+          <div className="text-center mb-6">
+            <div className="mx-auto w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-gradient-to-br from-fuchsia-500/30 to-violet-500/30 mb-2">
+              <span className="text-lg font-bold text-white">V</span>
+            </div>
+            <p className="font-extrabold text-xl bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">Viraliza Cortes</p>
+            <p className="text-white/60 text-xs mt-1">Cortes virais com IA em segundos</p>
           </div>
-          <div className="space-y-3 mb-5">
+          <div className="space-y-3 mb-4">
             <button onClick={() => signIn("google", { callbackUrl: "/app" })} disabled={loggingIn}
-              className="w-full flex items-center justify-center gap-3 py-3 rounded-xl font-bold text-sm bg-white text-gray-900 hover:bg-gray-100 transition-all disabled:opacity-50">
-              <svg width="18" height="18" viewBox="0 0 24 24">
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm bg-white/5 border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all disabled:opacity-50">
+              <svg width="16" height="16" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              Entrar com Google
+              <span className="text-white/80">Entrar com Google</span>
             </button>
           </div>
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
-            <div className="relative flex justify-center"><span className="bg-[#080808] px-3 text-xs text-gray-600">ou entre com e-mail</span></div>
+          <div className="relative my-3 flex items-center">
+            <div className="flex-grow border-t border-white/5" />
+            <span className="mx-3 text-xs text-white/40">ou</span>
+            <div className="flex-grow border-t border-white/5" />
           </div>
           <form onSubmit={handleLogin} className="space-y-3">
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
               placeholder="seu@email.com" required
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition-colors" />
-            {loginError && <p className="text-red-400 text-xs">{loginError}</p>}
+              className="w-full bg-white/5 border border-transparent rounded-lg px-3 h-10 text-sm text-white outline-none placeholder:text-white/30 focus:bg-white/10 focus:border-white/30 transition-all" />
+            {loginError && <p className="text-rose-300 text-xs bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">{loginError}</p>}
             <button type="submit" disabled={loggingIn}
-              className="btn-primary w-full py-3 rounded-xl font-bold text-sm disabled:opacity-50">
-              {loggingIn ? "Verificando..." : "Entrar com assinatura →"}
+              className="w-full relative group/btn mt-1">
+              <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/30 to-violet-500/30 rounded-lg blur-lg opacity-0 group-hover/btn:opacity-70 transition-opacity duration-300" />
+              <div className="relative overflow-hidden bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white font-semibold h-10 rounded-lg flex items-center justify-center text-sm disabled:opacity-50">
+                {loggingIn ? "Verificando..." : "Entrar com assinatura →"}
+              </div>
             </button>
           </form>
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
-            <div className="relative flex justify-center"><span className="bg-[#080808] px-3 text-xs text-gray-600">ou</span></div>
+          <div className="relative my-3 flex items-center">
+            <div className="flex-grow border-t border-white/5" />
+            <span className="mx-3 text-xs text-white/40">ou</span>
+            <div className="flex-grow border-t border-white/5" />
           </div>
           <button onClick={() => setStep("trial-register")}
-            className="w-full py-3 rounded-xl font-bold text-sm border border-purple-500/40 text-purple-300 hover:bg-purple-500/10 transition-all">
+            className="w-full py-2.5 rounded-lg font-semibold text-sm border border-fuchsia-400/30 text-fuchsia-200 bg-fuchsia-500/5 hover:bg-fuchsia-500/15 transition-all">
             🎁 Testar 10 clips grátis
           </button>
-          <p className="text-center text-xs text-gray-600 mt-2">Sem cartão • Resultado em minutos</p>
-          <p className="text-center text-xs text-gray-600 mt-6">
+          <p className="text-center text-xs text-white/40 mt-2">Sem cartão • Resultado em minutos</p>
+          <p className="text-center text-xs text-white/60 mt-5">
             Ainda não é assinante?{" "}
-            <a href="/#planos" className="text-purple-400 hover:underline">Ver planos</a>
+            <a href="/#planos" className="text-fuchsia-300 hover:text-fuchsia-200 underline-offset-4 hover:underline">Ver planos</a>
           </p>
         </div>
       </div>
@@ -480,33 +492,38 @@ export default function AppPage() {
   // ── TRIAL REGISTER ────────────────────────────────────────────────────────
   if (step === "trial-register") {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center px-4">
-        <div className="w-full max-w-sm">
-          <div className="text-center mb-8">
-            <div className="text-5xl mb-4">🎬</div>
-            <p className="gradient-text font-extrabold text-2xl mb-1">Viraliza Cortes</p>
-            <p className="font-bold text-lg mt-2 mb-1">Criar conta grátis</p>
-            <p className="text-gray-400 text-sm">10 clips grátis · sem cartão de crédito</p>
+      <div className="min-h-screen w-screen bg-black relative overflow-hidden flex items-center justify-center px-4">
+        <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-500/40 via-violet-700/50 to-black pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120vh] h-[60vh] rounded-b-[50%] bg-fuchsia-400/20 blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[90vh] h-[90vh] rounded-t-full bg-violet-400/20 blur-[60px] pointer-events-none" />
+        <div className="w-full max-w-sm relative z-10 bg-black/40 backdrop-blur-xl rounded-2xl p-6 border border-white/[0.05] shadow-2xl">
+          <div className="text-center mb-6">
+            <div className="mx-auto w-12 h-12 rounded-full border border-white/10 flex items-center justify-center bg-gradient-to-br from-fuchsia-500/30 to-violet-500/30 mb-3 text-2xl">🎬</div>
+            <p className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">Criar conta grátis</p>
+            <p className="text-white/60 text-xs mt-1">10 clips grátis · sem cartão de crédito</p>
           </div>
           <div className="space-y-3">
             <input type="text" value={trialName} onChange={(e) => setTrialName(e.target.value)}
               placeholder="Seu nome completo"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition-colors" />
+              className="w-full bg-white/5 border border-transparent rounded-lg px-3 h-10 text-sm text-white outline-none placeholder:text-white/30 focus:bg-white/10 focus:border-white/30 transition-all" />
             <input type="email" value={trialEmail} onChange={(e) => setTrialEmail(e.target.value)}
               placeholder="seu@email.com"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition-colors" />
+              className="w-full bg-white/5 border border-transparent rounded-lg px-3 h-10 text-sm text-white outline-none placeholder:text-white/30 focus:bg-white/10 focus:border-white/30 transition-all" />
             <div>
               <input type="tel" value={trialWhatsapp} onChange={(e) => setTrialWhatsapp(e.target.value)}
                 placeholder="WhatsApp com DDD — (11) 99999-9999"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition-colors" />
-              <p className="text-xs text-gray-600 mt-1">Para avisar quando os clips ficarem prontos</p>
+                className="w-full bg-white/5 border border-transparent rounded-lg px-3 h-10 text-sm text-white outline-none placeholder:text-white/30 focus:bg-white/10 focus:border-white/30 transition-all" />
+              <p className="text-xs text-white/40 mt-1">Para avisar quando os clips ficarem prontos</p>
             </div>
-            {trialError && <p className="text-red-400 text-xs">{trialError}</p>}
+            {trialError && <p className="text-rose-300 text-xs bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">{trialError}</p>}
             <button onClick={handleTrialRegister} disabled={trialLoading}
-              className="btn-primary w-full py-3 rounded-xl font-bold text-sm disabled:opacity-50">
-              {trialLoading ? "Criando conta..." : "Criar conta e testar grátis →"}
+              className="w-full relative group/btn mt-1">
+              <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/30 to-violet-500/30 rounded-lg blur-lg opacity-0 group-hover/btn:opacity-70 transition-opacity duration-300" />
+              <div className="relative overflow-hidden bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white font-semibold h-10 rounded-lg flex items-center justify-center text-sm disabled:opacity-50">
+                {trialLoading ? "Criando conta..." : "Criar conta e testar grátis →"}
+              </div>
             </button>
-            <button onClick={() => setStep("login")} className="w-full py-2 text-xs text-gray-600 hover:text-gray-400 transition-colors">
+            <button onClick={() => setStep("login")} className="w-full py-2 text-xs text-white/50 hover:text-white/80 transition-colors">
               ← Voltar
             </button>
           </div>
@@ -518,31 +535,37 @@ export default function AppPage() {
   // ── WHATSAPP REGISTER ─────────────────────────────────────────────────────
   if (step === "register") {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center px-4">
-        <div className="w-full max-w-sm">
-          <div className="text-center mb-8">
-            <div className="text-5xl mb-4">📱</div>
-            <p className="font-extrabold text-xl mb-2">Quase pronto!</p>
-            <p className="text-gray-400 text-sm leading-relaxed">
+      <div className="min-h-screen w-screen bg-black relative overflow-hidden flex items-center justify-center px-4">
+        <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-500/40 via-violet-700/50 to-black pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120vh] h-[60vh] rounded-b-[50%] bg-fuchsia-400/20 blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[90vh] h-[90vh] rounded-t-full bg-violet-400/20 blur-[60px] pointer-events-none" />
+        <div className="w-full max-w-sm relative z-10 bg-black/40 backdrop-blur-xl rounded-2xl p-6 border border-white/[0.05] shadow-2xl">
+          <div className="text-center mb-6">
+            <div className="mx-auto w-12 h-12 rounded-full border border-white/10 flex items-center justify-center bg-gradient-to-br from-fuchsia-500/30 to-violet-500/30 mb-3 text-2xl">📱</div>
+            <p className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">Quase pronto!</p>
+            <p className="text-white/60 text-xs mt-1 leading-relaxed">
               Adicione seu WhatsApp para receber aviso quando seus clips ficarem prontos.
             </p>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
-              <label className="text-xs text-gray-400 mb-2 block">WhatsApp (com DDD)</label>
+              <label className="text-xs text-white/60 mb-1.5 block">WhatsApp (com DDD)</label>
               <input type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)}
                 placeholder="(11) 99999-9999"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition-colors" />
+                className="w-full bg-white/5 border border-transparent rounded-lg px-3 h-10 text-sm text-white outline-none placeholder:text-white/30 focus:bg-white/10 focus:border-white/30 transition-all" />
             </div>
-            {registerError && <p className="text-red-400 text-xs">{registerError}</p>}
+            {registerError && <p className="text-rose-300 text-xs bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">{registerError}</p>}
             <button onClick={handleRegisterWhatsapp} disabled={registering}
-              className="btn-primary w-full py-3 rounded-xl font-bold text-sm disabled:opacity-50">
-              {registering ? "Salvando..." : "Confirmar e entrar →"}
+              className="w-full relative group/btn">
+              <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/30 to-violet-500/30 rounded-lg blur-lg opacity-0 group-hover/btn:opacity-70 transition-opacity duration-300" />
+              <div className="relative overflow-hidden bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white font-semibold h-10 rounded-lg flex items-center justify-center text-sm disabled:opacity-50">
+                {registering ? "Salvando..." : "Confirmar e entrar →"}
+              </div>
             </button>
             <button onClick={() => {
               localStorage.setItem("viralizaia_whatsapp", "skip");
               finishLogin(pendingToken!, pendingPlan, pendingEmail, false, pendingCredits);
-            }} className="w-full py-2 text-xs text-gray-600 hover:text-gray-400 transition-colors">
+            }} className="w-full py-2 text-xs text-white/50 hover:text-white/80 transition-colors">
               Pular por enquanto
             </button>
           </div>
@@ -553,46 +576,56 @@ export default function AppPage() {
 
   // ── APP (with sidebar) ────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#080808] flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
+
+      {/* Mesh gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-500/15 via-violet-700/10 to-black pointer-events-none" />
+      <div className="absolute -top-40 -left-40 w-[60vh] h-[60vh] rounded-full bg-fuchsia-500/15 blur-[100px] pointer-events-none" />
+      <div className="absolute -bottom-40 -right-40 w-[70vh] h-[70vh] rounded-full bg-violet-500/15 blur-[100px] pointer-events-none" />
 
       {/* Top Header */}
-      <header className="flex items-center justify-between px-4 py-3 border-b border-white/8 bg-[#0a0a0a] sticky top-0 z-50">
-        <span className="gradient-text font-extrabold text-lg tracking-tight">Viraliza Cortes</span>
+      <header className="relative z-50 flex items-center justify-between px-4 py-3 border-b border-white/[0.05] bg-black/40 backdrop-blur-xl sticky top-0">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-gradient-to-br from-fuchsia-500/30 to-violet-500/30">
+            <span className="text-sm font-bold text-white">V</span>
+          </div>
+          <span className="font-extrabold text-base tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-200 to-violet-200">Viraliza Cortes</span>
+        </div>
         <div className="flex items-center gap-2">
           {/* Daily check-in */}
           <button onClick={handleCheckIn} disabled={checkingIn || checkedInToday}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border backdrop-blur transition-all ${
               checkedInToday
-                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 cursor-default"
-                : "bg-purple-500/10 text-purple-300 border-purple-500/25 hover:bg-purple-500/20"
+                ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/25 cursor-default"
+                : "bg-fuchsia-500/10 text-fuchsia-200 border-fuchsia-400/30 hover:bg-fuchsia-500/20"
             }`}>
             {checkinMsg ? <span className="animate-pulse">{checkinMsg}</span> : checkedInToday ? "✓ Check-in" : "🎁 Check-in +1"}
           </button>
           {/* Credits badge */}
-          <span className={`text-xs px-2.5 py-1.5 rounded-lg border font-bold tabular-nums ${
+          <span className={`text-xs px-2.5 py-1.5 rounded-lg border font-bold tabular-nums backdrop-blur ${
             isTrial
-              ? "bg-amber-500/10 text-amber-300 border-amber-500/20"
-              : "bg-purple-500/10 text-purple-300 border-purple-500/20"
+              ? "bg-amber-500/10 text-amber-200 border-amber-400/30"
+              : "bg-gradient-to-r from-fuchsia-500/15 to-violet-500/15 text-white border-white/15"
           }`}>
             {credits.total} cr.
           </span>
-          <button onClick={handleLogout} className="text-xs text-gray-600 hover:text-gray-400 transition-colors px-1">
+          <button onClick={handleLogout} className="text-xs text-white/50 hover:text-white/90 transition-colors px-1">
             Sair
           </button>
         </div>
       </header>
 
       {/* Body */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="relative z-10 flex flex-1 overflow-hidden">
 
         {/* Sidebar — desktop */}
-        <aside className="hidden md:flex flex-col w-[72px] bg-[#090909] border-r border-white/8 py-4 gap-1 items-center shrink-0">
+        <aside className="hidden md:flex flex-col w-[72px] bg-black/30 backdrop-blur-xl border-r border-white/[0.05] py-4 gap-1 items-center shrink-0">
           {NAV_ITEMS.map(item => (
             <button key={item.id} onClick={() => setView(item.id)}
-              className={`flex flex-col items-center gap-1.5 w-[56px] py-3 rounded-xl transition-all ${
+              className={`flex flex-col items-center gap-1.5 w-[56px] py-3 rounded-xl transition-all relative ${
                 view === item.id
-                  ? "bg-purple-600/20 text-white"
-                  : "text-gray-600 hover:text-gray-300 hover:bg-white/5"
+                  ? "bg-gradient-to-br from-fuchsia-500/25 to-violet-500/25 text-white border border-white/10 shadow-[0_0_20px_-5px_rgba(217,70,239,0.5)]"
+                  : "text-white/40 hover:text-white/80 hover:bg-white/5 border border-transparent"
               }`}>
               <span className="text-[22px] leading-none">{item.icon}</span>
               <span className="text-[9px] font-semibold leading-none uppercase tracking-wide">{item.label}</span>
@@ -621,7 +654,7 @@ export default function AppPage() {
                     <div className="flex gap-2">
                       {(["url", "upload"] as const).map(m => (
                         <button key={m} type="button" onClick={() => setInputMode(m)}
-                          className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all ${inputMode === m ? "border-purple-500/50 bg-purple-500/15 text-white" : "border-white/10 bg-white/5 text-gray-400"}`}>
+                          className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all ${inputMode === m ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
                           {m === "url" ? "🔗 Link YouTube" : "📁 Upload de arquivo"}
                         </button>
                       ))}
@@ -631,28 +664,28 @@ export default function AppPage() {
                     <div>
                       {inputMode === "url" ? (
                         <>
-                          <label className="text-xs text-gray-400 mb-2 block">Link do YouTube</label>
+                          <label className="text-xs text-white/60 mb-2 block">Link do YouTube</label>
                           <input type="url" value={url} onChange={(e) => setUrl(e.target.value)}
                             placeholder="https://youtube.com/watch?v=..." disabled={processing}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition-colors disabled:opacity-50" />
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-fuchsia-400 transition-colors disabled:opacity-50" />
                         </>
                       ) : (
                         <>
-                          <label className="text-xs text-gray-400 mb-2 block">Arquivo de vídeo <span className="text-gray-600">(MP4, MOV, AVI — máx 500 MB)</span></label>
+                          <label className="text-xs text-white/60 mb-2 block">Arquivo de vídeo <span className="text-white/40">(MP4, MOV, AVI — máx 500 MB)</span></label>
                           <label className={`flex flex-col items-center justify-center w-full h-28 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${selectedFile ? "border-purple-500/50 bg-purple-500/5" : "border-white/10 bg-white/5 hover:border-white/20"} ${processing ? "opacity-50 pointer-events-none" : ""}`}>
                             <input type="file" accept="video/*" className="hidden" disabled={processing}
                               onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)} />
                             {selectedFile
-                              ? <span className="text-sm text-purple-300 px-4 text-center truncate max-w-full">{selectedFile.name}</span>
-                              : <span className="text-sm text-gray-500">Clique para selecionar o vídeo</span>}
+                              ? <span className="text-sm text-fuchsia-200 px-4 text-center truncate max-w-full">{selectedFile.name}</span>
+                              : <span className="text-sm text-white/50">Clique para selecionar o vídeo</span>}
                           </label>
                         </>
                       )}
                       {urlError && (
                         <div className="mt-2">
-                          <p className="text-red-400 text-xs">{urlError}</p>
+                          <p className="text-rose-300 text-xs">{urlError}</p>
                           {urlError.includes("réditos") && (
-                            <a href="/#planos" className="text-xs text-purple-400 hover:underline mt-1 inline-block">
+                            <a href="/#planos" className="text-xs text-fuchsia-300 hover:underline mt-1 inline-block">
                               Ver planos e comprar créditos →
                             </a>
                           )}
@@ -662,11 +695,11 @@ export default function AppPage() {
 
                     {/* Platforms */}
                     <div>
-                      <label className="text-xs text-gray-400 mb-3 block">Plataformas</label>
+                      <label className="text-xs text-white/60 mb-3 block">Plataformas</label>
                       <div className="flex flex-wrap gap-2">
                         {PLATFORM_OPTIONS.map(p => (
                           <button key={p.id} type="button" onClick={() => togglePlatform(p.id)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${platforms.includes(p.id) ? "border-purple-500/50 bg-purple-500/15 text-white" : "border-white/10 bg-white/5 text-gray-400"}`}>
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${platforms.includes(p.id) ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
                             <span>{p.icon}</span>{p.label}
                           </button>
                         ))}
@@ -675,13 +708,13 @@ export default function AppPage() {
 
                     {/* Caption style */}
                     <div>
-                      <label className="text-xs text-gray-400 mb-3 block">Estilo de legenda</label>
+                      <label className="text-xs text-white/60 mb-3 block">Estilo de legenda</label>
                       <div className="grid grid-cols-2 gap-2">
                         {CAPTION_OPTIONS.map((c, index) => {
                           const p = CAPTION_PREVIEW[c.id];
                           return (
                             <button key={c.id} type="button" onClick={() => setCaptionStyle(c.id)}
-                              className={`flex flex-col rounded-xl text-left text-sm border transition-all overflow-hidden ${captionStyle === c.id ? "border-purple-500/50 bg-purple-500/15 text-white" : "border-white/10 bg-white/5 text-gray-400"}`}>
+                              className={`flex flex-col rounded-xl text-left text-sm border transition-all overflow-hidden ${captionStyle === c.id ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
                               <div className="w-full h-10 flex items-center justify-center" style={{ background: "#080808" }}>
                                 <span style={{
                                   color: captionColor !== "#FFFFFF" ? captionColor : p.color,
@@ -693,7 +726,7 @@ export default function AppPage() {
                               </div>
                               <div className="px-3 py-2">
                                 <span className="font-semibold">{c.badge} {c.label}</span>
-                                <span className="text-xs text-gray-500 mt-0.5 block">{c.desc}</span>
+                                <span className="text-xs text-white/50 mt-0.5 block">{c.desc}</span>
                               </div>
                             </button>
                           );
@@ -703,11 +736,11 @@ export default function AppPage() {
 
                     {/* Caption color */}
                     <div>
-                      <label className="text-xs text-gray-400 mb-3 block">Cor da legenda</label>
+                      <label className="text-xs text-white/60 mb-3 block">Cor da legenda</label>
                       <div className="flex gap-2 flex-wrap">
                         {CAPTION_COLORS.map(c => (
                           <button key={c.value} type="button" onClick={() => setCaptionColor(c.value)} title={c.label}
-                            className={`w-8 h-8 rounded-full transition-all ${captionColor === c.value ? "ring-2 ring-white ring-offset-2 ring-offset-[#080808] scale-110" : "opacity-70 hover:opacity-100"}`}
+                            className={`w-8 h-8 rounded-full transition-all ${captionColor === c.value ? "ring-2 ring-white ring-offset-2 ring-offset-black scale-110" : "opacity-70 hover:opacity-100"}`}
                             style={{ backgroundColor: c.value }} />
                         ))}
                       </div>
@@ -715,13 +748,13 @@ export default function AppPage() {
 
                     {/* Duration */}
                     <div>
-                      <label className="text-xs text-gray-400 mb-3 block">Duração de cada corte</label>
+                      <label className="text-xs text-white/60 mb-3 block">Duração de cada corte</label>
                       <div className="flex gap-2">
                         {DURATION_OPTIONS.map(d => (
                           <button key={d.value} type="button" onClick={() => setTargetDuration(d.value)}
-                            className={`flex-1 flex flex-col items-center py-3 rounded-xl text-sm font-medium border transition-all ${targetDuration === d.value ? "border-purple-500/50 bg-purple-500/15 text-white" : "border-white/10 bg-white/5 text-gray-400"}`}>
+                            className={`flex-1 flex flex-col items-center py-3 rounded-xl text-sm font-medium border transition-all ${targetDuration === d.value ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
                             <span className="font-bold text-base">{d.label}</span>
-                            <span className="text-xs text-gray-500 mt-0.5 text-center">{d.desc}</span>
+                            <span className="text-xs text-white/50 mt-0.5 text-center">{d.desc}</span>
                           </button>
                         ))}
                       </div>
@@ -729,11 +762,11 @@ export default function AppPage() {
 
                     {/* Mode */}
                     <div>
-                      <label className="text-xs text-gray-400 mb-3 block">Modo de corte</label>
+                      <label className="text-xs text-white/60 mb-3 block">Modo de corte</label>
                       <div className="flex gap-2">
                         {(["ai", "manual"] as const).map(m => (
                           <button key={m} type="button" onClick={() => setMode(m)}
-                            className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all ${mode === m ? "border-purple-500/50 bg-purple-500/15 text-white" : "border-white/10 bg-white/5 text-gray-400"}`}>
+                            className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all ${mode === m ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
                             {m === "ai" ? "🤖 IA escolhe" : "✂️ Dividir igual"}
                           </button>
                         ))}
@@ -743,19 +776,19 @@ export default function AppPage() {
                     {/* Clip count */}
                     {!isTrial && (
                       <div>
-                        <label className="text-xs text-gray-400 mb-3 block">
-                          Quantidade de clips <span className="text-gray-600">máx {planMaxClips} no seu plano</span>
+                        <label className="text-xs text-white/60 mb-3 block">
+                          Quantidade de clips <span className="text-white/40">máx {planMaxClips} no seu plano</span>
                         </label>
                         <div className="flex gap-2 flex-wrap">
                           {Array.from({ length: Math.min(planMaxClips, 5) }, (_, i) => i + 1).map(n => (
                             <button key={n} type="button" onClick={() => setMaxClips(n)}
-                              className={`flex-1 min-w-[52px] py-2 rounded-xl text-sm font-bold border transition-all ${maxClips === n ? "border-purple-500/50 bg-purple-500/15 text-white" : "border-white/10 bg-white/5 text-gray-400"}`}>
+                              className={`flex-1 min-w-[52px] py-2 rounded-xl text-sm font-bold border transition-all ${maxClips === n ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
                               {n}
                             </button>
                           ))}
                           {planMaxClips > 5 && (
                             <button type="button" onClick={() => setMaxClips(planMaxClips)}
-                              className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${maxClips === planMaxClips ? "border-purple-500/50 bg-purple-500/15 text-white" : "border-white/10 bg-white/5 text-gray-400"}`}>
+                              className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${maxClips === planMaxClips ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
                               {planMaxClips} (max)
                             </button>
                           )}
@@ -765,10 +798,10 @@ export default function AppPage() {
 
                     {/* Watermark toggle */}
                     {plan !== "trial" && plan !== "gratis" ? (
-                      <div className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-white/3">
+                      <div className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-white/5">
                         <div>
                           <span className="text-sm text-white font-medium">Marca d&apos;água</span>
-                          <p className="text-xs text-gray-500 mt-0.5">Texto &quot;Viraliza Cortes&quot; no vídeo</p>
+                          <p className="text-xs text-white/50 mt-0.5">Texto &quot;Viraliza Cortes&quot; no vídeo</p>
                         </div>
                         <button type="button" onClick={() => setAddWatermark(w => !w)}
                           className={`relative w-11 h-6 rounded-full transition-all ${addWatermark ? "bg-purple-600" : "bg-white/10"}`}>
@@ -800,15 +833,15 @@ export default function AppPage() {
                     <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                       <div className="h-full progress-animated rounded-full transition-all duration-500" style={{ width: `${job.progress}%` }} />
                     </div>
-                    <p className="text-xs text-gray-500">{job.progress}% concluído</p>
+                    <p className="text-xs text-white/50">{job.progress}% concluído</p>
                   </div>
                 )}
 
                 {/* Error */}
                 {job?.status === "error" && (
-                  <div className="rounded-2xl bg-red-500/10 border border-red-500/20 p-6 text-center space-y-3">
-                    <p className="text-red-400 font-semibold">❌ Erro no processamento</p>
-                    <p className="text-gray-400 text-sm">{job.error}</p>
+                  <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 p-6 text-center space-y-3">
+                    <p className="text-rose-300 font-semibold">❌ Erro no processamento</p>
+                    <p className="text-white/60 text-sm">{job.error}</p>
                     <button onClick={handleNewVideo} className="btn-primary px-6 py-2 rounded-xl text-sm font-bold">
                       Tentar novamente
                     </button>
@@ -820,12 +853,12 @@ export default function AppPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h2 className="font-bold text-lg">{job.clips.length} clips gerados ✅</h2>
-                      <button onClick={handleNewVideo} className="text-sm text-purple-400 hover:text-purple-300">
+                      <button onClick={handleNewVideo} className="text-sm text-fuchsia-300 hover:text-fuchsia-200">
                         + Novo vídeo
                       </button>
                     </div>
                     {isTrial && (
-                      <div className="rounded-xl bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/20 p-4 text-center">
+                      <div className="rounded-xl bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-fuchsia-400/30 p-4 text-center">
                         <p className="text-sm font-semibold text-white mb-1">Gostou? Assine para gerar até 100 clips por vídeo 🚀</p>
                         <a href="/#planos" className="inline-block mt-2 btn-primary px-6 py-2 rounded-full text-sm font-bold">
                           Ver planos a partir de R$29,90
@@ -849,7 +882,7 @@ export default function AppPage() {
                     <button onClick={() => {
                       setHistory([]);
                       localStorage.removeItem("viralizaia_history");
-                    }} className="text-xs text-gray-600 hover:text-red-400 transition-colors">
+                    }} className="text-xs text-white/40 hover:text-rose-300 transition-colors">
                       Limpar tudo
                     </button>
                   )}
@@ -857,24 +890,24 @@ export default function AppPage() {
                 {history.length === 0 ? (
                   <div className="text-center py-16 space-y-3">
                     <div className="text-5xl">📋</div>
-                    <p className="text-gray-400 text-sm">Nenhum projeto ainda</p>
-                    <p className="text-gray-600 text-xs">Seus clips gerados aparecem aqui para download posterior</p>
+                    <p className="text-white/60 text-sm">Nenhum projeto ainda</p>
+                    <p className="text-white/40 text-xs">Seus clips gerados aparecem aqui para download posterior</p>
                     <button onClick={() => setView("studio")} className="btn-primary px-6 py-2 rounded-xl text-sm font-semibold mt-2">
                       Gerar primeiro clip →
                     </button>
                   </div>
                 ) : (
                   history.map(item => (
-                    <div key={item.id} className="bg-[#0f0f0f] border border-white/8 rounded-2xl overflow-hidden">
+                    <div key={item.id} className="bg-black/30 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden">
                       <div className="p-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs text-gray-500 mb-1">
+                            <p className="text-xs text-white/50 mb-1">
                               {new Date(item.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                             </p>
-                            <p className="text-sm text-gray-300 truncate font-mono">{item.url.replace("https://", "").slice(0, 50)}</p>
+                            <p className="text-sm text-white/80 truncate font-mono">{item.url.replace("https://", "").slice(0, 50)}</p>
                           </div>
-                          <span className="text-xs px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 font-semibold shrink-0">
+                          <span className="text-xs px-2.5 py-1 rounded-full bg-fuchsia-500/10 text-fuchsia-200 border border-fuchsia-400/30 font-semibold shrink-0">
                             {item.clipCount} clip{item.clipCount !== 1 ? "s" : ""}
                           </span>
                         </div>
@@ -884,22 +917,22 @@ export default function AppPage() {
                             {expandedHistory === item.id ? "Ocultar clips" : "Ver clips"}
                           </button>
                           <button onClick={() => { setUrl(item.url); setView("studio"); setInputMode("url"); }}
-                            className="flex-1 py-2 rounded-xl text-xs font-semibold bg-purple-500/10 border border-purple-500/20 text-purple-300 hover:bg-purple-500/20 transition-colors">
+                            className="flex-1 py-2 rounded-xl text-xs font-semibold bg-fuchsia-500/10 border border-fuchsia-400/30 text-fuchsia-200 hover:bg-fuchsia-500/20 transition-colors">
                             Usar URL →
                           </button>
                         </div>
                       </div>
                       {expandedHistory === item.id && item.clips.length > 0 && (
-                        <div className="border-t border-white/8 p-4 space-y-2">
+                        <div className="border-t border-white/10 p-4 space-y-2">
                           {item.clips.map(clip => (
                             <a key={`${clip.clipNumber}-${clip.platform}`}
-                              href={getDownloadUrl(clip.downloadUrl)} download={clip.fileName} target="_blank" rel="noopener noreferrer"
-                              className="flex items-center justify-between py-2 px-3 rounded-xl bg-white/3 border border-white/8 hover:bg-white/8 transition-colors">
+                              href={getForceDownloadUrl(clip.downloadUrl)} download={clip.fileName}
+                              className="flex items-center justify-between py-2 px-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs font-semibold text-gray-200 truncate">{clip.title || clip.platformLabel}</p>
-                                <p className="text-xs text-gray-500">{clip.platformLabel} • {clip.duration}s</p>
+                                <p className="text-xs font-semibold text-white/90 truncate">{clip.title || clip.platformLabel}</p>
+                                <p className="text-xs text-white/50">{clip.platformLabel} • {clip.duration}s</p>
                               </div>
-                              <span className="text-xs text-purple-400 ml-3 shrink-0">⬇️ Baixar</span>
+                              <span className="text-xs text-fuchsia-300 ml-3 shrink-0">⬇️ Baixar</span>
                             </a>
                           ))}
                         </div>
@@ -915,9 +948,9 @@ export default function AppPage() {
               <div className="space-y-6">
                 <div>
                   <h2 className="font-bold text-lg mb-1">Hub de Conteúdo</h2>
-                  <p className="text-gray-500 text-sm">Canais brasileiros com conteúdo perfeito para cortes virais. Clique em um canal, escolha um vídeo longo e copie a URL para o Studio.</p>
+                  <p className="text-white/50 text-sm">Canais brasileiros com conteúdo perfeito para cortes virais. Clique em um canal, escolha um vídeo longo e copie a URL para o Studio.</p>
                 </div>
-                <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-3 flex gap-3 items-start">
+                <div className="bg-fuchsia-500/10 border border-fuchsia-400/30 rounded-xl p-3 flex gap-3 items-start">
                   <span className="text-xl">💡</span>
                   <p className="text-xs text-purple-200 leading-relaxed">
                     <strong>Dica:</strong> vídeos longos (30min+) de entrevistas, podcasts e debates geram mais clips virais. Use a IA para ela escolher os melhores momentos automaticamente.
@@ -927,19 +960,19 @@ export default function AppPage() {
                   <div key={section.category}>
                     <div className="flex items-center gap-2 mb-3">
                       <span className="text-lg">{section.icon}</span>
-                      <h3 className="font-semibold text-sm text-gray-200">{section.category}</h3>
+                      <h3 className="font-semibold text-sm text-white/90">{section.category}</h3>
                     </div>
                     <div className="grid grid-cols-1 gap-2">
                       {section.channels.map(ch => (
-                        <div key={ch.name} className="flex items-center justify-between bg-[#0f0f0f] border border-white/8 rounded-xl px-4 py-3">
+                        <div key={ch.name} className="flex items-center justify-between bg-black/30 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3">
                           <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600/40 to-blue-600/40 border border-white/10 flex items-center justify-center text-sm font-bold text-white">
                               {ch.name.charAt(0)}
                             </div>
-                            <span className="text-sm font-medium text-gray-200">{ch.name}</span>
+                            <span className="text-sm font-medium text-white/90">{ch.name}</span>
                           </div>
                           <a href={ch.url} target="_blank" rel="noopener noreferrer"
-                            className="text-xs px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                            className="text-xs px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-all">
                             Abrir →
                           </a>
                         </div>
@@ -947,9 +980,9 @@ export default function AppPage() {
                     </div>
                   </div>
                 ))}
-                <div className="bg-white/3 border border-white/8 rounded-xl p-4 text-center space-y-2">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center space-y-2">
                   <p className="text-sm font-semibold">Quer clipar um vídeo específico?</p>
-                  <p className="text-xs text-gray-500">Cole a URL direto no Studio</p>
+                  <p className="text-xs text-white/50">Cole a URL direto no Studio</p>
                   <button onClick={() => setView("studio")} className="btn-primary px-6 py-2 rounded-xl text-sm font-semibold">
                     Ir ao Studio →
                   </button>
@@ -962,21 +995,21 @@ export default function AppPage() {
               <div className="space-y-6">
                 <div>
                   <h2 className="font-bold text-lg mb-1">Brand Kit</h2>
-                  <p className="text-gray-500 text-sm">Personalize seus clips com a identidade da sua marca.</p>
+                  <p className="text-white/50 text-sm">Personalize seus clips com a identidade da sua marca.</p>
                 </div>
 
-                <div className="bg-[#0f0f0f] border border-white/8 rounded-2xl p-5 space-y-4">
+                <div className="bg-black/30 backdrop-blur-md border border-white/10 rounded-2xl p-5 space-y-4">
                   <div>
-                    <label className="text-xs text-gray-400 mb-2 block font-semibold">Texto de marca (aparece no final dos clips)</label>
+                    <label className="text-xs text-white/60 mb-2 block font-semibold">Texto de marca (aparece no final dos clips)</label>
                     <input
                       type="text"
                       value={brandWatermark}
                       onChange={(e) => setBrandWatermark(e.target.value)}
                       placeholder="@seu.perfil ou Nome do Canal"
                       maxLength={40}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition-colors"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-fuchsia-400 transition-colors"
                     />
-                    <p className="text-xs text-gray-600 mt-1">{brandWatermark.length}/40 caracteres</p>
+                    <p className="text-xs text-white/40 mt-1">{brandWatermark.length}/40 caracteres</p>
                   </div>
 
                   {brandWatermark && (
@@ -1000,21 +1033,21 @@ export default function AppPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <div className="bg-white/3 border border-white/8 rounded-xl p-4 flex gap-3 items-start opacity-60">
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex gap-3 items-start opacity-60">
                     <span className="text-xl">🖼️</span>
                     <div>
                       <p className="text-sm font-semibold">Logo personalizado</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Upload da sua logo nos clips — em breve</p>
+                      <p className="text-xs text-white/50 mt-0.5">Upload da sua logo nos clips — em breve</p>
                     </div>
-                    <span className="ml-auto text-xs px-2 py-0.5 rounded bg-gray-700 text-gray-400">Em breve</span>
+                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-fuchsia-500/10 border border-fuchsia-400/30 text-fuchsia-200 font-semibold tracking-wide">Em breve</span>
                   </div>
-                  <div className="bg-white/3 border border-white/8 rounded-xl p-4 flex gap-3 items-start opacity-60">
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex gap-3 items-start opacity-60">
                     <span className="text-xl">🎨</span>
                     <div>
                       <p className="text-sm font-semibold">Paleta de cores da marca</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Cores personalizadas nas legendas — em breve</p>
+                      <p className="text-xs text-white/50 mt-0.5">Cores personalizadas nas legendas — em breve</p>
                     </div>
-                    <span className="ml-auto text-xs px-2 py-0.5 rounded bg-gray-700 text-gray-400">Em breve</span>
+                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-fuchsia-500/10 border border-fuchsia-400/30 text-fuchsia-200 font-semibold tracking-wide">Em breve</span>
                   </div>
                 </div>
               </div>
@@ -1025,11 +1058,11 @@ export default function AppPage() {
       </div>
 
       {/* Bottom navigation — mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/8 flex z-50">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/10 flex z-50">
         {NAV_ITEMS.map(item => (
           <button key={item.id} onClick={() => setView(item.id)}
             className={`flex-1 flex flex-col items-center py-2.5 gap-0.5 transition-colors ${
-              view === item.id ? "text-purple-400" : "text-gray-600"
+              view === item.id ? "text-fuchsia-300" : "text-white/40"
             }`}>
             <span className="text-lg leading-none">{item.icon}</span>
             <span className="text-[9px] font-semibold leading-none">{item.label}</span>
@@ -1055,7 +1088,7 @@ const PUBLISH_PLATFORMS: Record<string, {
   },
   instagram: {
     label: "Instagram", icon: "📸",
-    color: "border-purple-500/40 bg-purple-500/10 text-purple-300",
+    color: "border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200",
     hashtags: "#reels #viral #explorepage #conteudo #criadores #brasil",
     tip: "Melhor horário: 18h–20h • Use localização • Primeiros 3s são decisivos",
     uploadUrl: "https://www.instagram.com/reels/",
@@ -1090,13 +1123,13 @@ function ClipCard({ clip }: { clip: Clip }) {
 
   const PLATFORM_ACCENT: Record<string, { border: string; glow: string; badge: string }> = {
     tiktok:           { border: "border-pink-500/30",   glow: "shadow-pink-500/10",   badge: "text-pink-300 bg-pink-500/10 border-pink-500/25" },
-    instagram_reels:  { border: "border-purple-500/30", glow: "shadow-purple-500/10", badge: "text-purple-300 bg-purple-500/10 border-purple-500/25" },
-    instagram_feed:   { border: "border-purple-500/30", glow: "shadow-purple-500/10", badge: "text-purple-300 bg-purple-500/10 border-purple-500/25" },
-    instagram_square: { border: "border-purple-500/30", glow: "shadow-purple-500/10", badge: "text-purple-300 bg-purple-500/10 border-purple-500/25" },
+    instagram_reels:  { border: "border-fuchsia-400/30", glow: "shadow-fuchsia-500/30", badge: "text-fuchsia-200 bg-fuchsia-500/10 border-fuchsia-400/30" },
+    instagram_feed:   { border: "border-fuchsia-400/30", glow: "shadow-fuchsia-500/30", badge: "text-fuchsia-200 bg-fuchsia-500/10 border-fuchsia-400/30" },
+    instagram_square: { border: "border-fuchsia-400/30", glow: "shadow-fuchsia-500/30", badge: "text-fuchsia-200 bg-fuchsia-500/10 border-fuchsia-400/30" },
     facebook:         { border: "border-blue-500/30",   glow: "shadow-blue-500/10",   badge: "text-blue-300 bg-blue-500/10 border-blue-500/25" },
     youtube_shorts:   { border: "border-red-500/30",    glow: "shadow-red-500/10",    badge: "text-red-300 bg-red-500/10 border-red-500/25" },
   };
-  const accent = PLATFORM_ACCENT[clip.platform] || { border: "border-white/10", glow: "", badge: "text-gray-400 bg-white/5 border-white/10" };
+  const accent = PLATFORM_ACCENT[clip.platform] || { border: "border-white/10", glow: "", badge: "text-white/60 bg-white/5 border-white/10" };
 
   const pub = PUBLISH_PLATFORMS[publishTab];
   const fullCaption = `${editTitle}\n\n${editHook ? editHook + "\n\n" : ""}${pub.hashtags}`;
@@ -1149,7 +1182,7 @@ function ClipCard({ clip }: { clip: Clip }) {
         ) : (
           <button
             onClick={() => setPlayerOpen(true)}
-            className="w-full flex items-center justify-center gap-3 py-4 text-sm font-semibold text-gray-400 hover:text-white transition-colors"
+            className="w-full flex items-center justify-center gap-3 py-4 text-sm font-semibold text-white/60 hover:text-white transition-colors"
             style={{ background: "rgba(255,255,255,0.02)" }}
           >
             <span className="w-9 h-9 rounded-full flex items-center justify-center border border-white/15 bg-white/5">▶</span>
@@ -1159,7 +1192,7 @@ function ClipCard({ clip }: { clip: Clip }) {
         {playerOpen && (
           <button
             onClick={() => setPlayerOpen(false)}
-            className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-xs text-gray-300 hover:text-white transition-colors"
+            className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-xs text-white/80 hover:text-white transition-colors"
             style={{ background: "rgba(0,0,0,0.7)" }}
             title="Minimizar"
           >✕</button>
@@ -1176,64 +1209,64 @@ function ClipCard({ clip }: { clip: Clip }) {
               <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-bold ${accent.badge}`}>
                 {clip.platformLabel}
               </span>
-              <span className="text-[11px] text-gray-600 font-medium">
+              <span className="text-[11px] text-white/40 font-medium">
                 {ASPECT_LABELS[clip.aspectRatio] || clip.aspectRatio} · {clip.duration}s
               </span>
             </div>
 
             {editing ? (
               <input value={editTitle} onChange={e => setEditTitle(e.target.value)}
-                className="w-full bg-white/5 border border-purple-500/40 rounded-lg px-2.5 py-1.5 text-sm font-semibold outline-none text-white" />
+                className="w-full bg-white/5 border border-fuchsia-400/40 rounded-lg px-2.5 py-1.5 text-sm font-semibold outline-none text-white" />
             ) : (
               <p className="font-bold text-sm leading-snug text-white/90">{editTitle}</p>
             )}
 
             {editing ? (
               <textarea value={editHook} onChange={e => setEditHook(e.target.value)} rows={2}
-                className="w-full bg-white/5 border border-purple-500/40 rounded-lg px-2.5 py-1.5 text-xs text-gray-300 outline-none resize-none"
+                className="w-full bg-white/5 border border-fuchsia-400/40 rounded-lg px-2.5 py-1.5 text-xs text-white/80 outline-none resize-none"
                 placeholder="Hook de abertura..." />
             ) : (
               editHook && (
-                <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">💬 {editHook}</p>
+                <p className="text-xs text-white/50 leading-relaxed line-clamp-2">💬 {editHook}</p>
               )
             )}
           </div>
 
           {/* Viral score ring */}
-          <div className="flex-shrink-0 flex flex-col items-center justify-center w-12 h-12 rounded-full border-2 border-purple-500/40"
+          <div className="flex-shrink-0 flex flex-col items-center justify-center w-12 h-12 rounded-full border-2 border-fuchsia-400/40"
             style={{ background: "radial-gradient(circle, rgba(139,43,226,0.15), transparent)" }}>
-            <span className="text-base font-black text-purple-300 leading-none">{clip.viralScore}</span>
-            <span className="text-[9px] text-gray-600 leading-none">/10</span>
+            <span className="text-base font-black text-fuchsia-200 leading-none">{clip.viralScore}</span>
+            <span className="text-[9px] text-white/40 leading-none">/10</span>
           </div>
         </div>
 
         {/* Action strip */}
         <div className="flex gap-1.5 flex-wrap">
           {[
-            { label: editing ? "✓ Salvar" : "✏️ Editar",    active: editing,     onClick: () => setEditing(v => !v),     activeClass: "border-purple-500/40 bg-purple-500/10 text-purple-300" },
+            { label: editing ? "✓ Salvar" : "✏️ Editar",    active: editing,     onClick: () => setEditing(v => !v),     activeClass: "border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200" },
             { label: showPublish ? "✕ Publicar" : "🚀 Publicar", active: showPublish, onClick: () => setShowPublish(v => !v), activeClass: "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" },
           ].map(btn => (
             <button key={btn.label} onClick={btn.onClick}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                btn.active ? btn.activeClass : "border-white/8 bg-white/4 text-gray-500 hover:text-white hover:bg-white/8"
+                btn.active ? btn.activeClass : "border-white/10 bg-white/5 text-white/60 hover:text-white hover:bg-white/10"
               }`}>
               {btn.label}
             </button>
           ))}
           <button onClick={() => copyText(editHook || editTitle, "hook")}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-white/8 bg-white/4 text-gray-500 hover:text-white hover:bg-white/8 transition-all">
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-white/10 bg-white/5 text-white/60 hover:text-white hover:bg-white/10 transition-all">
             {copied === "hook" ? "✓ Copiado" : "📋 Hook"}
           </button>
         </div>
 
         {/* Publish panel */}
         {showPublish && (
-          <div className="rounded-xl overflow-hidden border border-white/8" style={{ background: "#08080e" }}>
-            <div className="flex border-b border-white/8">
+          <div className="rounded-xl overflow-hidden border border-white/10" style={{ background: "#08080e" }}>
+            <div className="flex border-b border-white/10">
               {Object.entries(PUBLISH_PLATFORMS).map(([key, p]) => (
                 <button key={key} onClick={() => setPublishTab(key as keyof typeof PUBLISH_PLATFORMS)}
                   className={`flex-1 py-2 text-[10px] font-bold transition-all ${
-                    publishTab === key ? "text-white border-b-2 border-purple-500 bg-white/3" : "text-gray-600 hover:text-gray-400"
+                    publishTab === key ? "text-white border-b-2 border-fuchsia-400 bg-white/5" : "text-white/40 hover:text-white/60"
                   }`}>
                   {p.icon}<br /><span className="hidden sm:inline">{p.label}</span>
                 </button>
@@ -1241,12 +1274,12 @@ function ClipCard({ clip }: { clip: Clip }) {
             </div>
             <div className="p-3 space-y-2.5">
               <p className="text-[11px] text-amber-300/80 leading-relaxed">💡 {pub.tip}</p>
-              <div className="rounded-lg p-3 border border-white/6" style={{ background: "rgba(255,255,255,0.02)" }}>
-                <p className="text-[10px] text-gray-600 mb-1.5 font-bold uppercase tracking-wide">Legenda gerada</p>
-                <p className="text-xs text-gray-300 whitespace-pre-line leading-relaxed">{fullCaption}</p>
+              <div className="rounded-lg p-3 border border-white/10" style={{ background: "rgba(255,255,255,0.02)" }}>
+                <p className="text-[10px] text-white/40 mb-1.5 font-bold uppercase tracking-wide">Legenda gerada</p>
+                <p className="text-xs text-white/80 whitespace-pre-line leading-relaxed">{fullCaption}</p>
               </div>
               <button onClick={() => copyText(fullCaption, "full")}
-                className="w-full py-2 rounded-lg text-xs font-semibold border border-white/8 bg-white/4 hover:bg-white/8 transition-colors text-gray-300">
+                className="w-full py-2 rounded-lg text-xs font-semibold border border-white/10 bg-white/5 hover:bg-white/10 transition-colors text-white/80">
                 {copied === "full" ? "✓ Copiado!" : "📋 Copiar legenda"}
               </button>
               <div className="grid grid-cols-2 gap-2">
@@ -1256,17 +1289,18 @@ function ClipCard({ clip }: { clip: Clip }) {
                   {sharing ? "..." : "📤 Compartilhar"}
                 </button>
                 <a href={pub.uploadUrl} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center py-2.5 rounded-lg text-xs font-bold border border-white/12 bg-white/5 hover:bg-white/10 text-gray-300 transition-colors">
+                  className="flex items-center justify-center py-2.5 rounded-lg text-xs font-bold border border-white/15 bg-white/5 hover:bg-white/10 text-white/80 transition-colors">
                   {pub.icon} Abrir app
                 </a>
               </div>
-              <p className="text-[10px] text-gray-700 text-center">No celular, &quot;Compartilhar&quot; envia o arquivo direto para TikTok, Instagram etc</p>
+              <p className="text-[10px] text-white/40 text-center">No celular, &quot;Compartilhar&quot; envia o arquivo direto para TikTok, Instagram etc</p>
             </div>
           </div>
         )}
 
-        {/* Download CTA — prominent */}
-        <a href={getDownloadUrl(clip.downloadUrl)} download={clip.fileName} target="_blank" rel="noopener noreferrer"
+        {/* Download CTA — prominent. Sem target="_blank": o backend manda Content-Disposition: attachment
+            via ?download=1, então o browser baixa direto sem abrir nova aba. */}
+        <a href={getForceDownloadUrl(clip.downloadUrl)} download={clip.fileName}
           className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-xl font-black text-sm text-white transition-all hover:opacity-90 active:scale-[0.98]"
           style={{ background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)", boxShadow: "0 4px 20px rgba(124,58,237,0.35)" }}>
           ⬇️ Baixar {clip.platformLabel}

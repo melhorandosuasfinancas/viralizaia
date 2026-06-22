@@ -53,8 +53,16 @@ app.use('/api/', limiter);
 app.use('/api/video', videoRoutes);
 app.use('/api/auth', authRoutes);
 
-// Servir arquivos de output para download
-app.use('/download', express.static(path.join(__dirname, 'output')));
+// Servir arquivos de output. Com ?download=1, força o browser a baixar (em vez de abrir o vídeo na aba)
+// — necessário porque o atributo `download` do <a> é ignorado cross-origin.
+// Sem a query, serve normal para o <video> streamar inline no player.
+app.use('/download', (req, res, next) => {
+  if (req.query.download === '1') {
+    const fileName = path.basename(req.path);
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+  }
+  next();
+}, express.static(path.join(__dirname, 'output')));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.get('/health', (req, res) => {

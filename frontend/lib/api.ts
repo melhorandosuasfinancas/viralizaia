@@ -165,6 +165,13 @@ export function getDownloadUrl(downloadUrl: string): string {
   return `${API_URL}${downloadUrl}`;
 }
 
+// Acrescenta ?download=1 para o backend responder com Content-Disposition: attachment,
+// forçando o browser a baixar direto em vez de abrir o vídeo na aba (mesmo cross-origin).
+export function getForceDownloadUrl(downloadUrl: string): string {
+  const url = getDownloadUrl(downloadUrl);
+  return url + (url.includes("?") ? "&" : "?") + "download=1";
+}
+
 export async function deleteJob(jobId: string): Promise<void> {
   await fetch(`${API_URL}/api/video/job/${jobId}`, { method: "DELETE" });
 }

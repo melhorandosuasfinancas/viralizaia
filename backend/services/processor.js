@@ -22,118 +22,136 @@ const PLATFORM_MAP = {
 
 // Presets de legenda — inspirados em Opus Clip, Submagic, Klap
 // Cores em formato ASS: &HAABBGGRR (alpha, blue, green, red)
+// highlightColour: cor da palavra atual (efeito karaoke word-by-word)
+// uppercase: converte texto para maiúsculas (estilo viral TikTok)
 const CAPTION_PRESETS = {
   tiktok: {
-    fontName: 'Liberation Sans',
-    fontSize: 58,
+    fontName: 'Noto Sans',
+    fontSize: 72,
     primaryColour: '&H00FFFFFF',
     outlineColour: '&H00000000',
     backColour: '&H00000000',
+    highlightColour: '&H0000FFFF', // amarelo (BGR: B=00 G=FF R=FF)
     bold: true,
-    outline: 3,
-    shadow: 0,
+    outline: 5,
+    shadow: 1,
     borderStyle: 1,
     alignment: 2,
-    marginV: 130,
-    animation: 'pop'       // fade-in + scale bounce
+    marginV: 140,
+    animation: 'pop',
+    uppercase: true
   },
   hormozi: {
-    fontName: 'Liberation Sans',
-    fontSize: 62,
-    primaryColour: '&H00FFFFFF',
-    outlineColour: '&H0000BFFF', // amarelo (BGR)
-    backColour: '&H00000000',
-    bold: true,
-    outline: 4,
-    shadow: 0,
-    borderStyle: 1,
-    alignment: 2,
-    marginV: 110,
-    animation: 'zoom'      // zoom in do centro
-  },
-  dark: {
-    fontName: 'Liberation Sans',
-    fontSize: 52,
+    fontName: 'Bebas Neue',
+    fontSize: 90,
     primaryColour: '&H00FFFFFF',
     outlineColour: '&H00000000',
-    backColour: '&H99000000', // caixa semi-transparente
+    backColour: '&H00000000',
+    highlightColour: '&H0000BFFF', // âmbar/ouro
+    bold: false,
+    outline: 5,
+    shadow: 2,
+    borderStyle: 1,
+    alignment: 2,
+    marginV: 120,
+    animation: 'zoom',
+    uppercase: true
+  },
+  dark: {
+    fontName: 'Noto Sans',
+    fontSize: 66,
+    primaryColour: '&H00FFFFFF',
+    outlineColour: '&H00000000',
+    backColour: '&HCC000000',
+    highlightColour: '&H0000FFFF',
     bold: true,
     outline: 0,
     shadow: 0,
-    borderStyle: 3, // box
+    borderStyle: 3,
     alignment: 2,
-    marginV: 110,
-    animation: 'slide'     // desliza de baixo para cima
+    marginV: 120,
+    animation: 'slide',
+    uppercase: false
   },
   clean: {
-    fontName: 'Liberation Sans',
-    fontSize: 48,
+    fontName: 'Noto Sans',
+    fontSize: 62,
     primaryColour: '&H00F5F5F5',
+    outlineColour: '&H99000000',
+    backColour: '&H00000000',
+    highlightColour: '&H00F5F5F5',
+    bold: false,
+    outline: 3,
+    shadow: 2,
+    borderStyle: 1,
+    alignment: 2,
+    marginV: 140,
+    animation: 'fade',
+    uppercase: false
+  },
+  opensans: {
+    fontName: 'Noto Sans',
+    fontSize: 70,
+    primaryColour: '&H00FFFFFF',
     outlineColour: '&H00000000',
     backColour: '&H00000000',
-    bold: false,
-    outline: 2,
+    highlightColour: '&H00FC7DD3',
+    bold: true,
+    outline: 5,
+    shadow: 1,
+    borderStyle: 1,
+    alignment: 2,
+    marginV: 135,
+    animation: 'pop',
+    uppercase: true
+  },
+  ubuntu: {
+    fontName: 'Noto Sans',
+    fontSize: 70,
+    primaryColour: '&H00FFFFFF',
+    outlineColour: '&H007C3CED',
+    backColour: '&H00000000',
+    highlightColour: '&H007C3CED',
+    bold: true,
+    outline: 4,
     shadow: 1,
     borderStyle: 1,
     alignment: 2,
     marginV: 130,
-    animation: 'fade'      // fade simples, sem bounce
-  },
-  opensans: {
-    fontName: 'Open Sans',
-    fontSize: 56,
-    primaryColour: '&H00FFFFFF',
-    outlineColour: '&H00000000',
-    backColour: '&H00000000',
-    bold: true,
-    outline: 3,
-    shadow: 0,
-    borderStyle: 1,
-    alignment: 2,
-    marginV: 125,
-    animation: 'pop'
-  },
-  ubuntu: {
-    fontName: 'Ubuntu',
-    fontSize: 56,
-    primaryColour: '&H00FFFFFF',
-    outlineColour: '&H00ED3A7C',
-    backColour: '&H00000000',
-    bold: true,
-    outline: 3,
-    shadow: 0,
-    borderStyle: 1,
-    alignment: 2,
-    marginV: 120,
-    animation: 'zoom'
+    animation: 'zoom',
+    uppercase: false
   },
   montserrat: {
     fontName: 'Montserrat',
-    fontSize: 60,
+    fontSize: 74,
     primaryColour: '&H00FFFFFF',
     outlineColour: '&H00000000',
     backColour: '&H00000000',
+    highlightColour: '&H0068A8FD',
     bold: true,
-    outline: 3,
-    shadow: 1,
+    outline: 5,
+    shadow: 2,
     borderStyle: 1,
     alignment: 2,
-    marginV: 115,
-    animation: 'slide'
+    marginV: 125,
+    animation: 'slide',
+    uppercase: true
   },
   neon: {
-    fontName: 'DejaVu Sans',
-    fontSize: 54,
-    primaryColour: '&H00FFFF00',
+    fontName: 'Noto Sans',
+    fontSize: 68,
+    primaryColour: '&H00FFFFFF',
     outlineColour: '&H00000000',
     backColour: '&H00000000',
+    highlightColour: '&H00FFFF00',
     bold: true,
-    outline: 3,
-    shadow: 1,
+    outline: 4,
+    shadow: 2,
     borderStyle: 1,
     alignment: 2,
-    marginV: 120,
-    animation: 'pop'
+    marginV: 130,
+    animation: 'pop',
+    uppercase: false
   }
 };
 
