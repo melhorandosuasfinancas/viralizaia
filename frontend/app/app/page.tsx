@@ -171,6 +171,8 @@ export default function AppPage() {
   const [brandWatermark, setBrandWatermark] = useState("");
   const [brandSaved, setBrandSaved] = useState(false);
   const [addWatermark, setAddWatermark] = useState(true);
+  const [layout, setLayout] = useState<'crop' | 'blur'>('crop');
+  const [addCaptions, setAddCaptions] = useState(true);
 
   const planMaxClips = PLAN_MAX_CLIPS[plan] || 10;
 
@@ -392,9 +394,9 @@ export default function AppPage() {
       let id: string;
       const effectiveWatermark = (plan === "trial" || plan === "gratis") ? true : addWatermark;
       if (inputMode === "url") {
-        ({ jobId: id } = await startProcessing(url, platforms, mode, token, clipsToRequest, captionStyle, targetDuration, captionColor, effectiveWatermark));
+        ({ jobId: id } = await startProcessing(url, platforms, mode, token, clipsToRequest, captionStyle, targetDuration, captionColor, effectiveWatermark, layout, addCaptions));
       } else {
-        ({ jobId: id } = await uploadAndProcess(selectedFile!, platforms, mode, token, clipsToRequest, captionStyle, targetDuration, captionColor, effectiveWatermark));
+        ({ jobId: id } = await uploadAndProcess(selectedFile!, platforms, mode, token, clipsToRequest, captionStyle, targetDuration, captionColor, effectiveWatermark, layout, addCaptions));
       }
       setJobId(id);
       setJob({ status: "queued", progress: 0, clips: [], error: null });
@@ -695,12 +697,42 @@ export default function AppPage() {
 
                     {/* Platforms */}
                     <div>
-                      <label className="text-xs text-white/60 mb-3 block">Plataformas</label>
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="text-xs text-white/60">Plataformas</label>
+                        {platforms.length > 0 && (() => {
+                          const n = platforms.length;
+                          const base = n === 1 ? "~1-2 min" : n === 2 ? "~2-3 min" : n === 3 ? "~3-4 min" : "~4-5 min";
+                          const color = n === 1 ? "text-green-400" : n === 2 ? "text-yellow-400" : "text-orange-400";
+                          return (
+                            <span className={`text-xs font-medium flex items-center gap-1 ${color}`}>
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              {base} estimado
+                            </span>
+                          );
+                        })()}
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {PLATFORM_OPTIONS.map(p => (
                           <button key={p.id} type="button" onClick={() => togglePlatform(p.id)}
                             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${platforms.includes(p.id) ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
                             <span>{p.icon}</span>{p.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Layout do vídeo */}
+                    <div>
+                      <label className="text-xs text-white/60 mb-3 block">Layout do vídeo</label>
+                      <div className="flex gap-2">
+                        {([
+                          { id: 'crop' as const, label: '✂️ Corte', desc: 'Preenche o frame cortando as bordas' },
+                          { id: 'blur' as const, label: '🌫️ Fundo embaçado', desc: 'Vídeo completo com blur atrás' },
+                        ]).map(opt => (
+                          <button key={opt.id} type="button" onClick={() => setLayout(opt.id)}
+                            className={`flex-1 flex flex-col items-center py-3 rounded-xl text-sm font-medium border transition-all ${layout === opt.id ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
+                            <span className="font-bold text-base">{opt.label}</span>
+                            <span className="text-xs text-white/50 mt-0.5 text-center">{opt.desc}</span>
                           </button>
                         ))}
                       </div>
@@ -815,6 +847,19 @@ export default function AppPage() {
                         <span className="text-xs text-yellow-400/80">Marca d&apos;água incluída no plano. Faça upgrade para remover.</span>
                       </div>
                     )}
+
+                    {/* Captions toggle */}
+                    <div className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-white/5">
+                      <div>
+                        <span className="text-sm text-white font-medium">Legendas</span>
+                        <p className="text-xs text-white/50 mt-0.5">Adicionar legendas automáticas ao vídeo</p>
+                      </div>
+                      <button type="button" onClick={() => setAddCaptions(c => !c)}
+                        className={`relative w-11 h-6 rounded-full transition-all ${addCaptions ? "bg-purple-600" : "bg-white/10"}`}>
+                        <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all"
+                          style={{ left: addCaptions ? "22px" : "2px" }} />
+                      </button>
+                    </div>
 
                     <button type="submit" disabled={processing}
                       className="btn-primary w-full py-4 rounded-xl font-bold text-base disabled:opacity-50">
