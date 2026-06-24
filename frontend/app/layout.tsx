@@ -104,6 +104,9 @@ export const metadata: Metadata = {
   category: "technology",
   verification: {
     google: "6UAK2eJN8-fty95-xJa-2WItmoDHZd3RZQirZ-YX-sA",
+    other: {
+      "msvalidate.01": "6A4BB58E8CF8C492B9783145F5B15829",
+    },
   },
 };
 
