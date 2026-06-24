@@ -808,22 +808,9 @@ export default function AppPage() {
                     {/* Clip count */}
                     {!isTrial && (
                       <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <label className="text-xs text-white/60">
-                            Quantidade de clips <span className="text-white/40">máx {planMaxClips} no seu plano</span>
-                          </label>
-                          {(() => {
-                            const total = maxClips * Math.max(1, platforms.length);
-                            const mins = total <= 1 ? "~1-2 min" : total <= 3 ? "~2-4 min" : total <= 6 ? "~4-8 min" : "~8-15 min";
-                            const color = total <= 2 ? "text-green-400" : total <= 4 ? "text-yellow-400" : "text-orange-400";
-                            return (
-                              <span className={`text-xs font-medium flex items-center gap-1 ${color}`}>
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                {mins} total
-                              </span>
-                            );
-                          })()}
-                        </div>
+                        <label className="text-xs text-white/60 mb-3 block">
+                          Quantidade de clips <span className="text-white/40">máx {planMaxClips} no seu plano</span>
+                        </label>
                         <div className="flex gap-2 flex-wrap">
                           {Array.from({ length: Math.min(planMaxClips, 5) }, (_, i) => i + 1).map(n => (
                             <button key={n} type="button" onClick={() => setMaxClips(n)}
