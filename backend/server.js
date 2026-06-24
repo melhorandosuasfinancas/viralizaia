@@ -30,7 +30,7 @@ app.use(cors({
     cb(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-secret']
 }));
 
 app.use(express.json({ limit: '10mb' }));
