@@ -17,6 +17,8 @@ export interface Clip {
   platformLabel: string;
   title: string;
   hook: string;
+  description?: string;
+  hashtags?: string;
   viralScore: number;
   duration: number;
   fileName: string;
@@ -108,12 +110,14 @@ export async function startProcessing(
   captionStyle: CaptionStyle = "tiktok",
   targetDuration: number = 60,
   captionColor: string = "#FFFFFF",
-  addWatermark: boolean = true
+  addWatermark: boolean = true,
+  layout: 'crop' | 'blur' = 'crop',
+  addCaptions: boolean = true
 ): Promise<{ jobId: string }> {
   const res = await fetch(`${API_URL}/api/video/process`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ url, platforms, mode, maxClips, captionStyle, targetDuration, captionColor, addWatermark }),
+    body: JSON.stringify({ url, platforms, mode, maxClips, captionStyle, targetDuration, captionColor, addWatermark, layout, addCaptions }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: "Erro ao processar" }));
@@ -131,7 +135,9 @@ export async function uploadAndProcess(
   captionStyle: CaptionStyle = "tiktok",
   targetDuration: number = 60,
   captionColor: string = "#FFFFFF",
-  addWatermark: boolean = true
+  addWatermark: boolean = true,
+  layout: 'crop' | 'blur' = 'crop',
+  addCaptions: boolean = true
 ): Promise<{ jobId: string }> {
   const formData = new FormData();
   formData.append("video", file);
@@ -142,6 +148,8 @@ export async function uploadAndProcess(
   formData.append("targetDuration", String(targetDuration));
   formData.append("captionColor", captionColor);
   formData.append("addWatermark", String(addWatermark));
+  formData.append("layout", layout);
+  formData.append("addCaptions", String(addCaptions));
   const res = await fetch(`${API_URL}/api/video/upload`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
