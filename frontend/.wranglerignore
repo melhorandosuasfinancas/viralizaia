@@ -1,0 +1,7 @@
+dev/
+cache/
+turbopack/
+standalone/
+trace
+trace-build
+diagnostics/

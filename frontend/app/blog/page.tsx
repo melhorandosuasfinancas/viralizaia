@@ -133,7 +133,7 @@ export default function BlogPage() {
 
       <footer className="border-t border-white/10 px-6 py-8 mt-16">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-gray-600 text-sm">
-          <span>© 2025 Viraliza Cortes. Todos os direitos reservados.</span>
+          <span>© 2026 Viraliza Cortes. Todos os direitos reservados.</span>
           <div className="flex gap-6">
             <Link href="/" className="hover:text-gray-400 transition-colors">Home</Link>
             <Link href="/#planos" className="hover:text-gray-400 transition-colors">Planos</Link>
