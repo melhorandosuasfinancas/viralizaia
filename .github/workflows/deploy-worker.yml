@@ -1,0 +1,27 @@
+name: Deploy Worker Ubuntu
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.WORKER_HOST }}
+          username: ${{ secrets.WORKER_USER }}
+          key: ${{ secrets.WORKER_SSH_KEY }}
+          timeout: 60s
+          script: |
+            cd /root/viralizaia
+            git pull origin main
+            npm install --prefix backend --omit=dev
+            pm2 restart all
+            pm2 save
+            echo "✅ Deploy concluído em $(date)"
