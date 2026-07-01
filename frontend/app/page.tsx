@@ -65,7 +65,7 @@ const PLANS = [
     href: "https://viralizacortes.carrinho.app/one-checkout/ocmdf/36710557",
     cta: "Assinar Starter",
     features: [
-      "35 cortes por mês",
+      "55 cortes por mês",
       "Sem marca d'água",
       "TikTok + Reels + Shorts",
       "8 estilos de legenda",
@@ -82,7 +82,7 @@ const PLANS = [
     cta: "Quero o Pro",
     popular: true,
     features: [
-      "60 cortes por mês",
+      "80 cortes por mês",
       "Tudo do Starter",
       "IA escolhe os mais virais",
       "Check-in diário (+créditos)",
@@ -98,7 +98,7 @@ const PLANS = [
     href: "https://viralizacortes.carrinho.app/one-checkout/ocmdf/36711838",
     cta: "Assinar Full",
     features: [
-      "120 cortes por mês",
+      "140 cortes por mês",
       "Tudo do Pro",
       "IA avançada de viralização",
       "Brand Kit personalizado",
@@ -114,7 +114,7 @@ const PLANS = [
     href: "https://viralizacortes.carrinho.app/one-checkout/ocmdf/36711896",
     cta: "Falar com vendas",
     features: [
-      "200 cortes por mês",
+      "220 cortes por mês",
       "Tudo do Full",
       "Múltiplos clientes",
       "API de integração",
@@ -1231,6 +1231,62 @@ export default function LandingPage() {
             Disponíveis para compra dentro da plataforma após o login
           </p>
         </motion.div>
+      </motion.section>
+
+      {/* ━━━━━━━━━━━━━━━━ PIX CREDITS ━━━━━━━━━━━━━━━━ */}
+      <motion.section
+        className="relative z-10 px-6 py-24 max-w-5xl mx-auto"
+        initial="hidden"
+        whileInView="show"
+        viewport={REVEAL}
+        variants={stagger}
+      >
+        <motion.div variants={fadeUp} className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-400/30 bg-green-500/10 mb-4">
+            <span className="text-xs font-bold tracking-wider text-green-300 uppercase">Pague com PIX</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Prefere pagar uma vez?</h2>
+          <p className="mt-4 text-zinc-400 text-lg max-w-xl mx-auto">
+            Compra única via PIX com o <span className="text-green-400 font-semibold">dobro de créditos</span>. Sem assinatura, sem vencimento.
+          </p>
+        </motion.div>
+        <motion.div variants={stagger} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { name: "Starter", credits: 110, price: "R$29,90", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888128" },
+            { name: "Pro", credits: 160, price: "R$49,90", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888178", popular: true },
+            { name: "Full", credits: 280, price: "R$99,90", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888195" },
+            { name: "Agência", credits: 440, price: "R$150", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888217" },
+          ].map((pkg) => (
+            <motion.a
+              key={pkg.name}
+              variants={fadeUp}
+              href={pkg.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ y: -4 }}
+              className={`relative flex flex-col rounded-2xl border p-6 text-center transition-colors ${
+                pkg.popular
+                  ? "border-green-500/50 bg-green-500/10 shadow-[0_0_30px_rgba(34,197,94,0.12)]"
+                  : "border-white/10 bg-white/[0.03] hover:border-white/20"
+              }`}
+            >
+              {pkg.popular && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-black text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                  MAIS POPULAR
+                </span>
+              )}
+              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{pkg.name}</p>
+              <p className="mt-3 text-4xl font-extrabold text-green-400">{pkg.credits}</p>
+              <p className="text-xs text-zinc-500">créditos de cortes</p>
+              <p className="mt-4 text-xl font-bold">{pkg.price}</p>
+              <p className="text-xs text-zinc-600 mb-4">pagamento único via PIX</p>
+              <div className="mt-auto pt-4 border-t border-white/10">
+                <span className="text-sm font-semibold text-green-400">Pagar com PIX →</span>
+              </div>
+            </motion.a>
+          ))}
+        </motion.div>
+        <p className="text-center text-xs text-zinc-600 mt-6">Créditos não expiram · Acumule e use quando quiser</p>
       </motion.section>
 
       {/* ━━━━━━━━━━━━━━━━ FAQ ━━━━━━━━━━━━━━━━ */}
