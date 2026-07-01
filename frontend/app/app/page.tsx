@@ -643,111 +643,142 @@ export default function AppPage() {
             {view === "studio" && (
               <>
                 {!job && (
-                  <form onSubmit={handleProcess} className="space-y-5">
+                  <form onSubmit={handleProcess} className="space-y-3">
                     <style>{`
                       @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&family=Ubuntu:wght@700&display=swap');
                       @keyframes cpop  { 0%,6%{opacity:0;transform:scale(0.7)} 14%,78%{opacity:1;transform:scale(1)} 88%,100%{opacity:0;transform:scale(1)} }
                       @keyframes czoom { 0%,6%{opacity:0;transform:scale(0.3)} 16%,78%{opacity:1;transform:scale(1)} 88%,100%{opacity:0;transform:scale(1)} }
                       @keyframes cslide{ 0%,6%{opacity:0;transform:translateY(10px)} 14%,78%{opacity:1;transform:translateY(0)} 88%,100%{opacity:0;transform:translateY(0)} }
                       @keyframes cfade { 0%,8%{opacity:0} 16%,80%{opacity:1} 90%,100%{opacity:0} }
+                      @keyframes scanline { 0%{top:0} 100%{top:100%} }
+                      .studio-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 18px; backdrop-filter: blur(8px); }
+                      .studio-card:hover { border-color: rgba(255,255,255,0.11); }
+                      .section-label { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+                      .section-label-num { width: 20px; height: 20px; border-radius: 6px; background: linear-gradient(135deg,#7c3aed,#a21caf); display:flex;align-items:center;justify-content:center; font-size:10px; font-weight:900; color:#fff; flex-shrink:0; }
+                      .section-label-text { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+                      .opt-btn { flex:1; display:flex;flex-direction:column;align-items:center;justify-content:center; padding:10px 8px; border-radius:12px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); color:rgba(255,255,255,0.5); font-size:13px;font-weight:600; cursor:pointer; transition:all .18s; gap:3px; }
+                      .opt-btn:hover { border-color:rgba(255,255,255,0.18); color:rgba(255,255,255,0.85); background:rgba(255,255,255,0.06); }
+                      .opt-btn.active { border-color:rgba(217,70,239,0.5); background:linear-gradient(135deg,rgba(217,70,239,0.15),rgba(139,92,246,0.15)); color:#fff; box-shadow:0 0 18px -4px rgba(217,70,239,0.35); }
                     `}</style>
 
-                    {/* URL / Upload toggle */}
-                    <div className="flex gap-2">
-                      {(["url", "upload"] as const).map(m => (
-                        <button key={m} type="button" onClick={() => setInputMode(m)}
-                          className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all ${inputMode === m ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
-                          {m === "url" ? "🔗 Link YouTube" : "📁 Upload de arquivo"}
-                        </button>
-                      ))}
-                    </div>
+                    {/* ── URL / Upload card ── */}
+                    <div className="studio-card">
+                      <div className="flex gap-2 mb-4">
+                        {(["url", "upload"] as const).map(m => (
+                          <button key={m} type="button" onClick={() => setInputMode(m)}
+                            className={`opt-btn ${inputMode === m ? "active" : ""}`}>
+                            <span className="text-base">{m === "url" ? "🔗" : "📁"}</span>
+                            <span>{m === "url" ? "Link YouTube" : "Upload de arquivo"}</span>
+                          </button>
+                        ))}
+                      </div>
 
-                    {/* Input */}
-                    <div>
                       {inputMode === "url" ? (
-                        <>
-                          <label className="text-xs text-white/60 mb-2 block">Link do YouTube</label>
+                        <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${url ? "border-fuchsia-500/50 bg-fuchsia-500/5 shadow-[0_0_20px_-6px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/[0.03]"} focus-within:border-fuchsia-400/60`}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-fuchsia-400 flex-shrink-0">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                          </svg>
                           <input type="url" value={url} onChange={(e) => setUrl(e.target.value)}
                             placeholder="https://youtube.com/watch?v=..." disabled={processing}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-fuchsia-400 transition-colors disabled:opacity-50" />
-                        </>
+                            className="flex-1 bg-transparent text-sm outline-none placeholder-white/30 text-white disabled:opacity-50" />
+                          {url && <span className="w-2 h-2 rounded-full bg-fuchsia-400 animate-pulse flex-shrink-0" />}
+                        </div>
                       ) : (
-                        <>
-                          <label className="text-xs text-white/60 mb-2 block">Arquivo de vídeo <span className="text-white/40">(MP4, MOV, AVI — máx 500 MB)</span></label>
-                          <label className={`flex flex-col items-center justify-center w-full h-28 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${selectedFile ? "border-purple-500/50 bg-purple-500/5" : "border-white/10 bg-white/5 hover:border-white/20"} ${processing ? "opacity-50 pointer-events-none" : ""}`}>
-                            <input type="file" accept="video/*" className="hidden" disabled={processing}
-                              onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)} />
-                            {selectedFile
-                              ? <span className="text-sm text-fuchsia-200 px-4 text-center truncate max-w-full">{selectedFile.name}</span>
-                              : <span className="text-sm text-white/50">Clique para selecionar o vídeo</span>}
-                          </label>
-                        </>
+                        <label className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-xl cursor-pointer transition-all ${selectedFile ? "border-fuchsia-500/50 bg-fuchsia-500/5" : "border-white/10 bg-white/[0.02] hover:border-white/20"} ${processing ? "opacity-50 pointer-events-none" : ""}`}>
+                          <input type="file" accept="video/*" className="hidden" disabled={processing} onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)} />
+                          {selectedFile
+                            ? <><span className="text-2xl mb-1">✅</span><span className="text-sm text-fuchsia-200 px-4 text-center truncate max-w-full">{selectedFile.name}</span></>
+                            : <><span className="text-2xl mb-1">📁</span><span className="text-sm text-white/40">Clique para selecionar o vídeo</span><span className="text-xs text-white/25 mt-0.5">MP4, MOV, AVI — máx 500 MB</span></>}
+                        </label>
                       )}
                       {urlError && (
-                        <div className="mt-2">
-                          <p className="text-rose-300 text-xs">{urlError}</p>
-                          {urlError.includes("réditos") && (
-                            <a href="/#planos" className="text-xs text-fuchsia-300 hover:underline mt-1 inline-block">
-                              Ver planos e comprar créditos →
-                            </a>
-                          )}
+                        <div className="mt-3 flex items-start gap-2 px-3 py-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20">
+                          <span className="text-rose-400 text-sm">⚠</span>
+                          <div>
+                            <p className="text-rose-300 text-xs">{urlError}</p>
+                            {urlError.includes("réditos") && <a href="/#planos" className="text-xs text-fuchsia-300 hover:underline mt-1 inline-block">Ver planos →</a>}
+                          </div>
                         </div>
                       )}
                     </div>
 
-                    {/* Platforms */}
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <label className="text-xs text-white/60">Plataformas</label>
+                    {/* ── Plataformas ── */}
+                    <div className="studio-card">
+                      <div className="section-label">
+                        <span className="section-label-num">1</span>
+                        <span className="section-label-text">Plataformas</span>
                         {platforms.length > 0 && (() => {
                           const n = platforms.length;
                           const base = n === 1 ? "~1-2 min" : n === 2 ? "~2-3 min" : n === 3 ? "~3-4 min" : "~4-5 min";
-                          const color = n === 1 ? "text-green-400" : n === 2 ? "text-yellow-400" : "text-orange-400";
-                          return (
-                            <span className={`text-xs font-medium flex items-center gap-1 ${color}`}>
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                              {base} estimado
-                            </span>
-                          );
+                          const color = n === 1 ? "#4ade80" : n === 2 ? "#facc15" : "#fb923c";
+                          return <span className="ml-auto text-[11px] font-semibold flex items-center gap-1" style={{ color }}>⏱ {base}</span>;
                         })()}
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {PLATFORM_OPTIONS.map(p => (
                           <button key={p.id} type="button" onClick={() => togglePlatform(p.id)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${platforms.includes(p.id) ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
-                            <span>{p.icon}</span>{p.label}
+                            className={`opt-btn ${platforms.includes(p.id) ? "active" : ""}`} style={{ flex: "none", padding: "8px 16px", flexDirection: "row", gap: "6px" }}>
+                            <span>{p.icon}</span><span>{p.label}</span>
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    {/* Layout do vídeo */}
-                    <div>
-                      <label className="text-xs text-white/60 mb-3 block">Layout do vídeo</label>
-                      <div className="flex gap-2">
-                        {([
-                          { id: 'crop' as const, label: '✂️ Corte', desc: 'Preenche o frame cortando as bordas' },
-                          { id: 'blur' as const, label: '🌫️ Fundo embaçado', desc: 'Vídeo completo com blur atrás' },
-                        ]).map(opt => (
-                          <button key={opt.id} type="button" onClick={() => setLayout(opt.id)}
-                            className={`flex-1 flex flex-col items-center py-3 rounded-xl text-sm font-medium border transition-all ${layout === opt.id ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
-                            <span className="font-bold text-base">{opt.label}</span>
-                            <span className="text-xs text-white/50 mt-0.5 text-center">{opt.desc}</span>
-                          </button>
-                        ))}
+                    {/* ── Layout + Duração (lado a lado) ── */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="studio-card">
+                        <div className="section-label">
+                          <span className="section-label-num">2</span>
+                          <span className="section-label-text">Layout</span>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          {([
+                            { id: 'crop' as const, icon: '✂️', label: 'Corte', desc: 'Corta as bordas' },
+                            { id: 'blur' as const, icon: '🌫️', label: 'Embaçado', desc: 'Blur atrás' },
+                          ]).map(opt => (
+                            <button key={opt.id} type="button" onClick={() => setLayout(opt.id)}
+                              className={`opt-btn ${layout === opt.id ? "active" : ""}`} style={{ flexDirection: "row", justifyContent: "flex-start", gap: "8px", padding: "8px 12px" }}>
+                              <span>{opt.icon}</span>
+                              <div style={{ textAlign: "left" }}>
+                                <div>{opt.label}</div>
+                                <div style={{ fontSize: "10px", opacity: 0.5, fontWeight: 400 }}>{opt.desc}</div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="studio-card">
+                        <div className="section-label">
+                          <span className="section-label-num">3</span>
+                          <span className="section-label-text">Duração</span>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          {DURATION_OPTIONS.map(d => (
+                            <button key={d.value} type="button" onClick={() => setTargetDuration(d.value)}
+                              className={`opt-btn ${targetDuration === d.value ? "active" : ""}`} style={{ flexDirection: "row", justifyContent: "flex-start", gap: "8px", padding: "8px 12px" }}>
+                              <span style={{ fontWeight: 800, fontSize: "14px", minWidth: 36 }}>{d.label}</span>
+                              <span style={{ fontSize: "10px", opacity: 0.5, fontWeight: 400 }}>{d.desc}</span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Caption style */}
-                    <div>
-                      <label className="text-xs text-white/60 mb-3 block">Estilo de legenda</label>
+                    {/* ── Estilo de legenda ── */}
+                    <div className="studio-card">
+                      <div className="section-label">
+                        <span className="section-label-num">4</span>
+                        <span className="section-label-text">Estilo de legenda</span>
+                      </div>
                       <div className="grid grid-cols-2 gap-2">
                         {CAPTION_OPTIONS.map((c, index) => {
                           const p = CAPTION_PREVIEW[c.id];
                           return (
                             <button key={c.id} type="button" onClick={() => setCaptionStyle(c.id)}
-                              className={`flex flex-col rounded-xl text-left text-sm border transition-all overflow-hidden ${captionStyle === c.id ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
-                              <div className="w-full h-10 flex items-center justify-center" style={{ background: "#080808" }}>
+                              className={`flex flex-col rounded-xl text-left text-sm border transition-all overflow-hidden ${captionStyle === c.id ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/15 to-violet-500/15 text-white shadow-[0_0_18px_-4px_rgba(217,70,239,0.4)]" : "border-white/[0.07] bg-white/[0.02] text-white/50 hover:bg-white/[0.05] hover:border-white/15"}`}>
+                              <div className="w-full h-10 flex items-center justify-center relative overflow-hidden" style={{ background: "#060609" }}>
+                                {captionStyle === c.id && <div className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-fuchsia-400/40 to-transparent" style={{ animation: "scanline 2s linear infinite", top: 0 }} />}
                                 <span style={{
                                   color: captionColor !== "#FFFFFF" ? captionColor : p.color,
                                   textShadow: p.textShadow, fontFamily: p.fontFamily, fontWeight: 700, fontSize: "11px",
@@ -757,8 +788,8 @@ export default function AppPage() {
                                 }}>{p.text}</span>
                               </div>
                               <div className="px-3 py-2">
-                                <span className="font-semibold">{c.badge} {c.label}</span>
-                                <span className="text-xs text-white/50 mt-0.5 block">{c.desc}</span>
+                                <span className="font-semibold text-[13px]">{c.badge} {c.label}</span>
+                                <span className="text-[11px] text-white/40 mt-0.5 block">{c.desc}</span>
                               </div>
                             </button>
                           );
@@ -766,171 +797,186 @@ export default function AppPage() {
                       </div>
                     </div>
 
-                    {/* Caption color */}
-                    <div>
-                      <label className="text-xs text-white/60 mb-3 block">Cor da legenda</label>
+                    {/* ── Cor da legenda ── */}
+                    <div className="studio-card">
+                      <div className="section-label">
+                        <span className="section-label-num">5</span>
+                        <span className="section-label-text">Cor da legenda</span>
+                        <span className="ml-auto text-[11px]" style={{ color: captionColor, fontWeight: 700 }}>● {CAPTION_COLORS.find(c => c.value === captionColor)?.label ?? captionColor}</span>
+                      </div>
                       <div className="flex gap-2 flex-wrap">
                         {CAPTION_COLORS.map(c => (
                           <button key={c.value} type="button" onClick={() => setCaptionColor(c.value)} title={c.label}
-                            className={`w-8 h-8 rounded-full transition-all ${captionColor === c.value ? "ring-2 ring-white ring-offset-2 ring-offset-black scale-110" : "opacity-70 hover:opacity-100"}`}
-                            style={{ backgroundColor: c.value }} />
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Duration */}
-                    <div>
-                      <label className="text-xs text-white/60 mb-3 block">Duração de cada corte</label>
-                      <div className="flex gap-2">
-                        {DURATION_OPTIONS.map(d => (
-                          <button key={d.value} type="button" onClick={() => setTargetDuration(d.value)}
-                            className={`flex-1 flex flex-col items-center py-3 rounded-xl text-sm font-medium border transition-all ${targetDuration === d.value ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
-                            <span className="font-bold text-base">{d.label}</span>
-                            <span className="text-xs text-white/50 mt-0.5 text-center">{d.desc}</span>
+                            className={`w-8 h-8 rounded-full transition-all relative ${captionColor === c.value ? "scale-110" : "opacity-60 hover:opacity-90"}`}
+                            style={{ backgroundColor: c.value, boxShadow: captionColor === c.value ? `0 0 14px ${c.value}88` : undefined }}>
+                            {captionColor === c.value && <span className="absolute inset-0 rounded-full ring-2 ring-white ring-offset-1 ring-offset-black" />}
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    {/* Mode */}
-                    <div>
-                      <label className="text-xs text-white/60 mb-3 block">Modo de corte</label>
-                      <div className="flex gap-2">
+                    {/* ── Modo de corte + Quantidade ── */}
+                    <div className="studio-card">
+                      <div className="section-label">
+                        <span className="section-label-num">6</span>
+                        <span className="section-label-text">Modo de corte</span>
+                      </div>
+                      <div className="flex gap-2 mb-4">
                         {(["ai", "manual"] as const).map(m => (
                           <button key={m} type="button" onClick={() => setMode(m)}
-                            className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all ${mode === m ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
-                            {m === "ai" ? "🤖 IA escolhe" : "✂️ Dividir igual"}
+                            className={`opt-btn ${mode === m ? "active" : ""}`} style={{ flexDirection: "row", gap: "6px" }}>
+                            <span>{m === "ai" ? "🤖" : "✂️"}</span>
+                            <span>{m === "ai" ? "IA escolhe" : "Dividir igual"}</span>
                           </button>
                         ))}
                       </div>
+
+                      {!isTrial && (
+                        <>
+                          <div className="section-label" style={{ marginBottom: 10 }}>
+                            <span className="section-label-num">7</span>
+                            <span className="section-label-text">Quantidade de clips</span>
+                            <span className="ml-auto text-[10px] text-white/30">máx {planMaxClips}</span>
+                          </div>
+                          <div className="flex gap-2 flex-wrap">
+                            {Array.from({ length: Math.min(planMaxClips, 5) }, (_, i) => i + 1).map(n => (
+                              <button key={n} type="button" onClick={() => setMaxClips(n)}
+                                className={`opt-btn ${maxClips === n ? "active" : ""}`} style={{ flex: "none", width: 48, padding: "8px 0", fontWeight: 800 }}>
+                                {n}
+                              </button>
+                            ))}
+                            {planMaxClips > 5 && (
+                              <button type="button" onClick={() => setMaxClips(planMaxClips)}
+                                className={`opt-btn ${maxClips === planMaxClips ? "active" : ""}`} style={{ flex: "none", padding: "8px 14px" }}>
+                                {planMaxClips} max
+                              </button>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
 
-                    {/* Clip count */}
-                    {!isTrial && (
-                      <div>
-                        <label className="text-xs text-white/60 mb-3 block">
-                          Quantidade de clips <span className="text-white/40">máx {planMaxClips} no seu plano</span>
-                        </label>
-                        <div className="flex gap-2 flex-wrap">
-                          {Array.from({ length: Math.min(planMaxClips, 5) }, (_, i) => i + 1).map(n => (
-                            <button key={n} type="button" onClick={() => setMaxClips(n)}
-                              className={`flex-1 min-w-[52px] py-2 rounded-xl text-sm font-bold border transition-all ${maxClips === n ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
-                              {n}
-                            </button>
-                          ))}
-                          {planMaxClips > 5 && (
-                            <button type="button" onClick={() => setMaxClips(planMaxClips)}
-                              className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${maxClips === planMaxClips ? "border-fuchsia-400/40 bg-gradient-to-br from-fuchsia-500/20 to-violet-500/20 text-white shadow-[0_0_15px_-3px_rgba(217,70,239,0.4)]" : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:border-white/20"}`}>
-                              {planMaxClips} (max)
-                            </button>
-                          )}
+                    {/* ── Opções (Watermark + Legendas) ── */}
+                    <div className="studio-card space-y-3">
+                      {plan !== "trial" && plan !== "gratis" ? (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-base">🏷️</span>
+                            <div>
+                              <span className="text-sm text-white font-semibold">Marca d&apos;água</span>
+                              <p className="text-[11px] text-white/40">Texto no vídeo</p>
+                            </div>
+                          </div>
+                          <button type="button" onClick={() => setAddWatermark(w => !w)}
+                            className={`relative w-11 h-6 rounded-full transition-all ${addWatermark ? "bg-fuchsia-600 shadow-[0_0_10px_rgba(217,70,239,0.4)]" : "bg-white/10"}`}>
+                            <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: addWatermark ? "22px" : "2px" }} />
+                          </button>
                         </div>
-                      </div>
-                    )}
-
-                    {/* Watermark toggle */}
-                    {plan !== "trial" && plan !== "gratis" ? (
-                      <div className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-white/5">
-                        <div>
-                          <span className="text-sm text-white font-medium">Marca d&apos;água</span>
-                          <p className="text-xs text-white/50 mt-0.5">Texto &quot;Viraliza Cortes&quot; no vídeo</p>
+                      ) : (
+                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-amber-500/20 bg-amber-500/5">
+                          <span className="text-amber-400">🏷️</span>
+                          <span className="text-xs text-amber-400/80">Marca d&apos;água no plano Trial. Faça upgrade para remover.</span>
                         </div>
-                        <button type="button" onClick={() => setAddWatermark(w => !w)}
-                          className={`relative w-11 h-6 rounded-full transition-all ${addWatermark ? "bg-purple-600" : "bg-white/10"}`}>
-                          <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all"
-                            style={{ left: addWatermark ? "22px" : "2px" }} />
+                      )}
+                      <div className="h-px bg-white/5" />
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-base">💬</span>
+                          <div>
+                            <span className="text-sm text-white font-semibold">Legendas automáticas</span>
+                            <p className="text-[11px] text-white/40">Burned no vídeo</p>
+                          </div>
+                        </div>
+                        <button type="button" onClick={() => setAddCaptions(c => !c)}
+                          className={`relative w-11 h-6 rounded-full transition-all ${addCaptions ? "bg-fuchsia-600 shadow-[0_0_10px_rgba(217,70,239,0.4)]" : "bg-white/10"}`}>
+                          <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: addCaptions ? "22px" : "2px" }} />
                         </button>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-2 p-3 rounded-xl border border-yellow-500/20 bg-yellow-500/5">
-                        <span className="text-yellow-400 text-sm">🏷️</span>
-                        <span className="text-xs text-yellow-400/80">Marca d&apos;água incluída no plano. Faça upgrade para remover.</span>
-                      </div>
-                    )}
-
-                    {/* Captions toggle */}
-                    <div className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-white/5">
-                      <div>
-                        <span className="text-sm text-white font-medium">Legendas</span>
-                        <p className="text-xs text-white/50 mt-0.5">Adicionar legendas automáticas ao vídeo</p>
-                      </div>
-                      <button type="button" onClick={() => setAddCaptions(c => !c)}
-                        className={`relative w-11 h-6 rounded-full transition-all ${addCaptions ? "bg-purple-600" : "bg-white/10"}`}>
-                        <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all"
-                          style={{ left: addCaptions ? "22px" : "2px" }} />
-                      </button>
                     </div>
 
-                    <button type="submit" disabled={processing}
-                      className="btn-primary w-full py-4 rounded-xl font-bold text-base disabled:opacity-50">
-                      {processing ? "Processando..." : `🚀 Gerar ${isTrial ? "clips grátis" : `${maxClips} clip${maxClips > 1 ? "s" : ""}`}`}
-                    </button>
+                    {/* ── CTA Button ── */}
+                    <div className="relative pt-1 pb-2">
+                      <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-600/20 via-violet-600/20 to-fuchsia-600/20 rounded-2xl blur-xl pointer-events-none" />
+                      <button type="submit" disabled={processing}
+                        className="relative w-full py-4 rounded-2xl font-extrabold text-base text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{
+                          background: processing ? "rgba(139,92,246,0.3)" : "linear-gradient(135deg,#a855f7 0%,#d946ef 50%,#a855f7 100%)",
+                          backgroundSize: "200% 100%",
+                          boxShadow: processing ? "none" : "0 8px 40px -8px rgba(217,70,239,0.65), inset 0 1px 0 rgba(255,255,255,0.15)",
+                          letterSpacing: "0.02em",
+                        }}>
+                        {processing
+                          ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Processando…</span>
+                          : <span className="flex items-center justify-center gap-2">🚀 Gerar {isTrial ? "clips grátis" : `${maxClips} clip${maxClips > 1 ? "s" : ""}`}</span>
+                        }
+                      </button>
+                    </div>
                   </form>
                 )}
 
-                {/* Processing status */}
+                {/* ── Processing status ── */}
                 {job && job.status !== "done" && job.status !== "error" && (() => {
                   const STEPS = [
-                    { id: "downloading",  icon: "⬇️",  label: "Baixando",    sub: "Obtendo o vídeo do YouTube…" },
-                    { id: "transcribing", icon: "🎙️", label: "Transcrevendo", sub: "Convertendo áudio em texto com IA…" },
-                    { id: "analyzing",    icon: "🤖",  label: "Analisando",   sub: "IA identificando os melhores momentos virais…" },
-                    { id: "processing",   icon: "✂️",  label: "Cortando",     sub: "Gerando seus clips e adicionando legendas…" },
+                    { id: "downloading",  icon: "⬇️",  label: "Baixando",     sub: "Obtendo o vídeo do YouTube…",               color: "#22d3ee" },
+                    { id: "transcribing", icon: "🎙️", label: "Transcrevendo", sub: "Convertendo áudio em texto com IA…",         color: "#a78bfa" },
+                    { id: "analyzing",    icon: "🤖",  label: "Analisando",    sub: "IA identificando os melhores momentos…",     color: "#d946ef" },
+                    { id: "processing",   icon: "✂️",  label: "Cortando",      sub: "Gerando clips e adicionando legendas…",      color: "#f97316" },
                   ] as const;
                   const ORDER = ["queued","downloading","transcribing","analyzing","processing"];
                   const curIdx = ORDER.indexOf(job.status);
-                  const stepIdx = Math.max(0, curIdx - 1); // queued fica no step 0
+                  const stepIdx = Math.max(0, curIdx - 1);
                   const cur = STEPS[Math.min(stepIdx, STEPS.length - 1)];
                   return (
-                    <div className="card-glow rounded-2xl p-6 space-y-5">
-                      {/* Stepper */}
-                      <div className="flex items-center justify-center gap-0">
-                        {STEPS.map((s, i) => {
-                          const done = i < stepIdx;
-                          const active = i === stepIdx;
-                          return (
-                            <div key={s.id} className="flex items-center">
-                              <div className={`flex flex-col items-center gap-1 transition-all duration-500 ${active ? "scale-110" : ""}`}>
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm border-2 transition-all duration-500 ${
-                                  done   ? "bg-emerald-500/20 border-emerald-400 text-emerald-300" :
-                                  active ? "bg-fuchsia-500/20 border-fuchsia-400 shadow-[0_0_12px_rgba(217,70,239,0.6)] animate-pulse" :
-                                           "bg-white/5 border-white/15 text-white/30"
-                                }`}>
-                                  {done ? "✓" : s.icon}
+                    <div className="rounded-2xl overflow-hidden border border-white/[0.07]" style={{ background: "linear-gradient(160deg,#0c0814 0%,#08060f 100%)" }}>
+                      {/* Glow top bar */}
+                      <div className="h-[2px]" style={{ background: `linear-gradient(90deg,transparent,${cur.color},transparent)` }} />
+
+                      <div className="p-6 space-y-6">
+                        {/* Stepper */}
+                        <div className="flex items-center justify-center gap-0">
+                          {STEPS.map((s, i) => {
+                            const done = i < stepIdx;
+                            const active = i === stepIdx;
+                            return (
+                              <div key={s.id} className="flex items-center">
+                                <div className={`flex flex-col items-center gap-1.5 transition-all duration-500 ${active ? "scale-110" : ""}`}>
+                                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-base border-2 transition-all duration-500 ${
+                                    done   ? "border-emerald-400/60 bg-emerald-500/10 text-emerald-300" :
+                                    active ? "border-fuchsia-400/70 bg-fuchsia-500/15 animate-pulse" :
+                                             "border-white/10 bg-white/[0.03] text-white/20"
+                                  }`} style={active ? { boxShadow: `0 0 20px -4px ${s.color}80` } : {}}>
+                                    {done ? "✓" : s.icon}
+                                  </div>
+                                  <span className={`text-[9px] font-bold uppercase tracking-widest ${active ? "text-fuchsia-300" : done ? "text-emerald-400" : "text-white/20"}`}>
+                                    {s.label}
+                                  </span>
                                 </div>
-                                <span className={`text-[9px] font-semibold uppercase tracking-wide ${active ? "text-fuchsia-300" : done ? "text-emerald-400" : "text-white/25"}`}>
-                                  {s.label}
-                                </span>
+                                {i < STEPS.length - 1 && (
+                                  <div className={`w-8 h-[1px] mb-5 mx-1 transition-all duration-700 ${i < stepIdx ? "bg-emerald-400/50" : "bg-white/[0.06]"}`} />
+                                )}
                               </div>
-                              {i < STEPS.length - 1 && (
-                                <div className={`w-8 h-[2px] mb-4 rounded-full transition-all duration-700 ${i < stepIdx ? "bg-emerald-400/60" : "bg-white/10"}`} />
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Icon + status */}
-                      <div className="text-center space-y-1.5">
-                        <div className="text-5xl" style={{ animation: "cpop 1.5s ease-in-out infinite" }}>{cur.icon}</div>
-                        <p className="font-bold text-base text-white">{getStatusLabel(job.status)}</p>
-                        <p className="text-xs text-white/50">{cur.sub}</p>
-                      </div>
-
-                      {/* Progress bar */}
-                      <div className="space-y-2">
-                        <div className="h-3 bg-white/5 rounded-full overflow-hidden relative">
-                          <div
-                            className="h-full rounded-full transition-all duration-700 ease-out"
-                            style={{
-                              width: `${job.progress}%`,
-                              background: "linear-gradient(90deg, #a855f7, #d946ef)",
-                              boxShadow: "0 0 12px rgba(217,70,239,0.5)",
-                            }}
-                          />
+                            );
+                          })}
                         </div>
-                        <div className="flex justify-between text-[11px] text-white/40">
-                          <span>Processando seu vídeo…</span>
-                          <span className="font-bold text-white/60">{job.progress}%</span>
+
+                        {/* Central status */}
+                        <div className="text-center space-y-2 py-2">
+                          <div className="text-5xl" style={{ animation: "cpop 1.5s ease-in-out infinite", filter: `drop-shadow(0 0 12px ${cur.color})` }}>{cur.icon}</div>
+                          <p className="font-extrabold text-lg text-white tracking-tight">{getStatusLabel(job.status)}</p>
+                          <p className="text-xs text-white/40">{cur.sub}</p>
+                        </div>
+
+                        {/* Progress bar */}
+                        <div className="space-y-2">
+                          <div className="h-2 bg-white/[0.05] rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-700 ease-out relative" style={{ width: `${job.progress}%`, background: `linear-gradient(90deg,${cur.color}88,${cur.color})`, boxShadow: `0 0 12px ${cur.color}60` }}>
+                              <div className="absolute right-0 top-0 bottom-0 w-4 rounded-full" style={{ background: cur.color, boxShadow: `0 0 8px ${cur.color}` }} />
+                            </div>
+                          </div>
+                          <div className="flex justify-between text-[11px]">
+                            <span className="text-white/30">Processando seu vídeo…</span>
+                            <span className="font-bold" style={{ color: cur.color }}>{job.progress}%</span>
+                          </div>
                         </div>
                       </div>
                     </div>
