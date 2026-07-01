@@ -248,13 +248,13 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
       .setDuration(segment.end - segment.start)
       .videoCodec('libx264')
       .audioCodec('aac')
-      .audioBitrate('128k')
+      .audioBitrate('192k')
       .outputOptions([
-        '-preset ultrafast',
-        '-crf 21',
+        '-preset veryfast',
+        '-crf 18',
         '-movflags +faststart',
         '-pix_fmt yuv420p',
-        '-threads 2',
+        '-threads 0',
         '-map_metadata -1'
       ])
       .output(outputPath)
