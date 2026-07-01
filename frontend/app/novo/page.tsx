@@ -9,33 +9,33 @@ import Loader15 from "@/components/ui/loader-15";
 
 const TIERS: PricingTier[] = [
   {
-    name: "Básico",
+    name: "Starter",
     icon: <Sparkles className="w-6 h-6" />,
     price: 29.9,
-    description: "Pra começar a criar cortes virais",
+    description: "Pra começar a crescer",
     color: "amber",
-    features: ["10 cortes por mês", "Legendas TikTok automáticas", "Download em 9:16", "Suporte por email"],
-    ctaText: "Assinar Básico",
+    features: ["55 cortes por mês", "Sem marca d'água", "TikTok + Reels + Shorts", "8 estilos de legenda", "Histórico de projetos"],
+    ctaText: "Assinar Starter",
     ctaHref: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36710557",
   },
   {
     name: "Pro",
     icon: <Zap className="w-6 h-6" />,
     price: 49.9,
-    description: "Pra criadores que postam toda semana",
+    description: "Pra criadores sérios",
     color: "blue",
-    features: ["20 cortes por mês", "Todos os estilos de legenda", "Seletor de cor da legenda", "Suporte prioritário"],
+    features: ["80 cortes por mês", "Tudo do Starter", "IA escolhe os mais virais", "Check-in diário (+créditos)", "Suporte prioritário"],
     popular: true,
-    ctaText: "Assinar Pro",
+    ctaText: "Quero o Pro",
     ctaHref: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36710590",
   },
   {
     name: "Full",
     icon: <Crown className="w-6 h-6" />,
     price: 99.9,
-    description: "Pra creators profissionais",
+    description: "Pra quem quer escalar",
     color: "purple",
-    features: ["50 cortes por mês", "Análise de viralidade IA", "Download em alta qualidade", "Suporte dedicado"],
+    features: ["140 cortes por mês", "Tudo do Pro", "IA avançada de viralização", "Brand Kit personalizado", "Suporte VIP"],
     ctaText: "Assinar Full",
     ctaHref: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36711838",
   },
@@ -98,7 +98,7 @@ export default function NovoPage() {
           </div>
           <h3 className="text-3xl font-bold">Gerencie múltiplos canais</h3>
           <p className="mt-2 text-zinc-400">
-            100 cortes/mês, dashboard multi-cliente, white label opcional
+            220 cortes/mês · Múltiplos clientes · API de integração · Suporte VIP dedicado
           </p>
           <div className="mt-6 text-5xl font-extrabold">
             R$150<span className="text-base text-zinc-400 font-normal">/mês</span>
@@ -118,7 +118,60 @@ export default function NovoPage() {
         </div>
       </section>
 
-      {/* 5. FINAL CTA */}
+      {/* 5. SEÇÃO PIX — pacotes de créditos */}
+      <section className="py-24 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="section-badge">PAGUE COM PIX</span>
+            <h2 className="mt-4 text-4xl md:text-5xl font-bold tracking-tight">
+              Prefere pagar uma vez?
+            </h2>
+            <p className="mt-4 text-zinc-400 text-lg max-w-xl mx-auto">
+              Compra única via PIX com o <span className="text-green-400 font-semibold">dobro de créditos</span>. Sem assinatura, sem vencimento.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { name: "Starter", credits: 110, price: "R$29,90", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888128" },
+              { name: "Pro", credits: 160, price: "R$49,90", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888178", popular: true },
+              { name: "Full", credits: 280, price: "R$99,90", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888195" },
+              { name: "Agência", credits: 440, price: "R$150", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888217" },
+            ].map((pkg) => (
+              <a
+                key={pkg.name}
+                href={pkg.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`relative flex flex-col rounded-2xl border p-6 text-center transition-all hover:scale-105 ${
+                  pkg.popular
+                    ? "border-green-500/50 bg-green-500/10 shadow-[0_0_30px_rgba(34,197,94,0.15)]"
+                    : "border-white/10 bg-white/5 hover:border-white/20"
+                }`}
+              >
+                {pkg.popular && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-black text-xs font-bold px-3 py-1 rounded-full">
+                    MAIS POPULAR
+                  </span>
+                )}
+                <p className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">{pkg.name}</p>
+                <p className="mt-3 text-4xl font-extrabold text-green-400">{pkg.credits}</p>
+                <p className="text-sm text-zinc-500">créditos de cortes</p>
+                <p className="mt-4 text-2xl font-bold">{pkg.price}</p>
+                <p className="text-xs text-zinc-500 mb-4">pagamento único via PIX</p>
+                <div className="mt-auto pt-4 border-t border-white/10">
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-green-400">
+                    Pagar com PIX →
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+          <p className="text-center text-xs text-zinc-600 mt-6">Créditos não expiram · Acumule e use quando quiser</p>
+        </div>
+      </section>
+
+      {/* 6. FINAL CTA */}
       <section className="py-32 px-4 text-center">
         <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight">
           Bora viralizar?
