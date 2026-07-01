@@ -5,242 +5,97 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence, useInView, useMotionValue, useTransform, animate } from "framer-motion";
 import {
-  Sparkles,
-  Zap,
-  Crown,
-  Building2,
-  Check,
-  Play,
-  Languages,
-  Wand2,
-  Layers,
-  Download,
-  Bot,
-  Palette,
-  ChevronDown,
-  Star,
+  Sparkles, Zap, Crown, Building2, Check, Languages,
+  Wand2, Layers, Download, Bot, Palette, ChevronDown, Star,
 } from "lucide-react";
 import { MagneticButton } from "@/components/ui/magnetic-button";
+import ShaderBackground from "@/components/ui/shader-background";
+import { GlowCard } from "@/components/ui/spotlight-card";
 
-// ───────────── Brand icons (mesmos do site original) ─────────────
-const TikTokIcon = ({ size = 28 }: { size?: number }) => (
+// Caveat já carregada em globals.css como .font-handwritten
+const H = "font-handwritten"; // atalho para headings com Caveat
+
+// ── Reveal animations ─────────────────────────────
+const REVEAL = { once: true, amount: 0.15 } as const;
+const fadeUp = {
+  hidden: { opacity: 0, y: 32 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const } },
+};
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } } };
+
+// ── Brand SVG icons ────────────────────────────────
+const TikTokIcon = ({ size = 24 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
     <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.77a4.85 4.85 0 0 1-1.01-.08z" />
   </svg>
 );
-const InstagramIcon = ({ size = 28 }: { size?: number }) => (
+const InstagramIcon = ({ size = 24 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
     <path fillRule="evenodd" clipRule="evenodd" d="M12 0C8.74 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 3.252.148 4.771 1.691 4.919 4.919.049 1.265.064 1.645.064 4.849 0 3.205-.015 3.585-.074 4.85-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
   </svg>
 );
-const YouTubeIcon = ({ size = 28 }: { size?: number }) => (
+const YouTubeIcon = ({ size = 24 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
     <path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 0 0 .5 6.19 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.81 3.02 3.02 0 0 0 2.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.81zM9.75 15.5V8.5l6.5 3.5-6.5 3.5z" />
   </svg>
 );
-const FacebookIcon = ({ size = 28 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M24 12.073C24 5.446 18.627 0 12 0S0 5.446 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047v-2.66c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97H15.83c-1.491 0-1.956.932-1.956 1.888v2.264h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" />
-  </svg>
-);
 
-const REVEAL = { once: true, amount: 0.2 } as const;
-const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const } },
-};
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
-};
-
-// ───────────── Dados ─────────────
+// ── Data ──────────────────────────────────────────
 const PLANS = [
   {
-    name: "Starter",
-    monthly: 29.9,
-    yearly: 23.92,
-    icon: <Sparkles className="w-5 h-5" />,
-    desc: "Pra começar a crescer",
+    name: "Starter", monthly: 29.9, yearly: 23.92, glow: "orange" as const,
+    icon: <Sparkles className="w-5 h-5" />, desc: "Pra começar a crescer",
     href: "https://viralizacortes.carrinho.app/one-checkout/ocmdf/36710557",
-    cta: "Assinar Starter",
-    features: [
-      "55 cortes por mês",
-      "Sem marca d'água",
-      "TikTok + Reels + Shorts",
-      "8 estilos de legenda",
-      "Histórico de projetos",
-    ],
+    pixHref: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888128",
+    cta: "Assinar Starter", monthlyCortes: 55, pixCredits: 110,
+    features: ["Sem marca d'água", "TikTok + Reels + Shorts", "8 estilos de legenda", "Histórico de projetos"],
   },
   {
-    name: "Pro",
-    monthly: 49.9,
-    yearly: 39.92,
-    icon: <Zap className="w-5 h-5" />,
-    desc: "Pra criadores sérios",
+    name: "Pro", monthly: 49.9, yearly: 39.92, glow: "purple" as const, popular: true,
+    icon: <Zap className="w-5 h-5" />, desc: "Pra criadores sérios",
     href: "https://viralizacortes.carrinho.app/one-checkout/ocmdf/36710590",
-    cta: "Quero o Pro",
-    popular: true,
-    features: [
-      "80 cortes por mês",
-      "Tudo do Starter",
-      "IA escolhe os mais virais",
-      "Check-in diário (+créditos)",
-      "Suporte prioritário",
-    ],
+    pixHref: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888178",
+    cta: "Quero o Pro", monthlyCortes: 80, pixCredits: 160,
+    features: ["Tudo do Starter", "IA escolhe os mais virais", "Check-in diário (+créditos)", "Suporte prioritário"],
   },
   {
-    name: "Full",
-    monthly: 99.9,
-    yearly: 79.92,
-    icon: <Crown className="w-5 h-5" />,
-    desc: "Pra quem quer escalar",
+    name: "Full", monthly: 99.9, yearly: 79.92, glow: "blue" as const,
+    icon: <Crown className="w-5 h-5" />, desc: "Pra quem quer escalar",
     href: "https://viralizacortes.carrinho.app/one-checkout/ocmdf/36711838",
-    cta: "Assinar Full",
-    features: [
-      "140 cortes por mês",
-      "Tudo do Pro",
-      "IA avançada de viralização",
-      "Brand Kit personalizado",
-      "Suporte VIP",
-    ],
+    pixHref: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888195",
+    cta: "Assinar Full", monthlyCortes: 140, pixCredits: 280,
+    features: ["Tudo do Pro", "IA avançada de viralização", "Brand Kit personalizado", "Suporte VIP"],
   },
   {
-    name: "Agência",
-    monthly: 150,
-    yearly: 120,
-    icon: <Building2 className="w-5 h-5" />,
-    desc: "Pra equipes e agências",
+    name: "Agência", monthly: 150, yearly: 120, glow: "green" as const,
+    icon: <Building2 className="w-5 h-5" />, desc: "Pra equipes e agências",
     href: "https://viralizacortes.carrinho.app/one-checkout/ocmdf/36711896",
-    cta: "Falar com vendas",
-    features: [
-      "220 cortes por mês",
-      "Tudo do Full",
-      "Múltiplos clientes",
-      "API de integração",
-      "Suporte VIP dedicado",
-    ],
+    pixHref: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888217",
+    cta: "Falar com vendas", monthlyCortes: 220, pixCredits: 440,
+    features: ["Tudo do Full", "Múltiplos clientes", "API de integração", "Suporte VIP dedicado"],
   },
 ];
 
 const FEATURES = [
-  {
-    title: "IA brasileira treinada",
-    desc: "Nossa IA foi treinada com português brasileiro — entende gírias, contextos e o que viraliza no Brasil.",
-    icon: <Bot className="w-6 h-6" />,
-    size: "lg",
-  },
-  {
-    title: "Legendas TikTok automáticas",
-    desc: "Gravadas no vídeo em 8 estilos.",
-    icon: <Languages className="w-6 h-6" />,
-  },
-  {
-    title: "Sem marca d'água",
-    desc: "Vídeo limpo, pronto pra postar.",
-    icon: <Wand2 className="w-6 h-6" />,
-  },
-  {
-    title: "9:16 vertical perfeito",
-    desc: "Reframing automático centrado no rosto.",
-    icon: <Layers className="w-6 h-6" />,
-  },
-  {
-    title: "Brand Kit",
-    desc: "Logo, cores e fontes da sua marca em cada corte.",
-    icon: <Palette className="w-6 h-6" />,
-  },
-  {
-    title: "Exporta em segundos",
-    desc: "Download direto ou publicação automática.",
-    icon: <Download className="w-6 h-6" />,
-  },
+  { title: "IA brasileira treinada", desc: "Nossa IA foi treinada com português brasileiro — entende gírias, contextos e o que viraliza no Brasil.", icon: <Bot className="w-6 h-6" /> },
+  { title: "Legendas TikTok automáticas", desc: "Gravadas no vídeo em 8 estilos.", icon: <Languages className="w-6 h-6" /> },
+  { title: "Sem marca d'água", desc: "Vídeo limpo, pronto pra postar.", icon: <Wand2 className="w-6 h-6" /> },
+  { title: "9:16 vertical perfeito", desc: "Reframing automático centrado no rosto.", icon: <Layers className="w-6 h-6" /> },
+  { title: "Brand Kit", desc: "Logo, cores e fontes da sua marca em cada corte.", icon: <Palette className="w-6 h-6" /> },
+  { title: "Exporta em segundos", desc: "Download direto ou publicação automática.", icon: <Download className="w-6 h-6" /> },
 ];
 
-type Step = {
-  num: string;
-  title: string;
-  desc: string;
-  icon: React.ReactNode;
-  accentColor: string;
-};
-
-const STEPS: Step[] = [
-  {
-    num: "01",
-    title: "Cole o link do YouTube",
-    desc: "Funciona com qualquer vídeo público — podcasts, lives, aulas.",
-    icon: <span className="text-xl">🔗</span>,
-    accentColor: "#22D3EE",
-  },
-  {
-    num: "02",
-    title: "Nossa IA analisa",
-    desc: "Identifica os melhores momentos, picos de retenção e ganchos.",
-    icon: <Bot className="w-5 h-5" />,
-    accentColor: "#D946EF",
-  },
-  {
-    num: "03",
-    title: "Receba os cortes prontos",
-    desc: "Formato 9:16, legendas, sem marca d'água. Baixe e poste.",
-    icon: <Download className="w-5 h-5" />,
-    accentColor: "#A855F7",
-  },
+const STEPS = [
+  { num: "01", title: "Cole o link do YouTube", desc: "Funciona com qualquer vídeo público — podcasts, lives, aulas.", icon: "🔗", color: "#22D3EE" },
+  { num: "02", title: "Nossa IA analisa", desc: "Identifica os melhores momentos, picos de retenção e ganchos.", icon: "🤖", color: "#D946EF" },
+  { num: "03", title: "Receba os cortes prontos", desc: "Formato 9:16, legendas, sem marca d'água. Baixe e poste.", icon: "⬇️", color: "#A855F7" },
 ];
 
-type Testimonial = {
-  name: string;
-  platform: "TikTok" | "Instagram" | "YouTube";
-  before: string;
-  after: string;
-  metric: string;
-  text: string;
-  avatarBg: string;
-  initials: string;
-};
-
-const TESTIMONIALS: Testimonial[] = [
-  {
-    name: "@cariocando",
-    platform: "TikTok",
-    before: "12K",
-    after: "280K",
-    metric: "seguidores em 3 meses",
-    text: "Saí de 12K pra 280K em 3 meses postando os cortes. É absurdo o quanto economiza tempo.",
-    avatarBg: "from-cyan-400 to-pink-500",
-    initials: "CR",
-  },
-  {
-    name: "@marketing.real",
-    platform: "Instagram",
-    before: "R$2.000",
-    after: "R$50",
-    metric: "que pagava de editor",
-    text: "Antes eu pagava editor R$2k/mês. Agora gasto R$50 e tenho mais clipes que conseguia editar.",
-    avatarBg: "from-pink-400 to-fuchsia-600",
-    initials: "MR",
-  },
-  {
-    name: "@podcast.cast",
-    platform: "YouTube",
-    before: "0",
-    after: "156K",
-    metric: "inscritos do zero",
-    text: "Cortes de podcast longo viram virais sozinhos. A IA acha os momentos certos.",
-    avatarBg: "from-red-400 to-orange-500",
-    initials: "PC",
-  },
-  {
-    name: "@guru.financas",
-    platform: "Instagram",
-    before: "1h/dia",
-    after: "1h/semana",
-    metric: "editando vídeos",
-    text: "Em 1 hora gero conteúdo pra semana inteira. Não vivo mais sem.",
-    avatarBg: "from-violet-400 to-fuchsia-600",
-    initials: "GF",
-  },
+const TESTIMONIALS = [
+  { name: "@cariocando", platform: "TikTok" as const, before: "12K", after: "280K", metric: "seguidores em 3 meses", text: "Saí de 12K pra 280K em 3 meses postando os cortes. É absurdo o quanto economiza tempo.", grad: "from-cyan-400 to-pink-500", initials: "CR" },
+  { name: "@marketing.real", platform: "Instagram" as const, before: "R$2.000", after: "R$50", metric: "que pagava de editor", text: "Antes eu pagava editor R$2k/mês. Agora gasto R$50 e tenho mais clipes que conseguia editar.", grad: "from-pink-400 to-fuchsia-600", initials: "MR" },
+  { name: "@podcast.cast", platform: "YouTube" as const, before: "0", after: "156K", metric: "inscritos do zero", text: "Cortes de podcast longo viram virais sozinhos. A IA acha os momentos certos.", grad: "from-red-400 to-orange-500", initials: "PC" },
+  { name: "@guru.financas", platform: "Instagram" as const, before: "1h/dia", after: "1h/semana", metric: "editando vídeos", text: "Em 1 hora gero conteúdo pra semana inteira. Não vivo mais sem.", grad: "from-violet-400 to-fuchsia-600", initials: "GF" },
 ];
 
 const FAQS = [
@@ -252,953 +107,580 @@ const FAQS = [
   { q: "Quantos cortes vou conseguir gerar?", a: "Depende do vídeo. Em média, um vídeo de 1h gera de 8 a 15 cortes virais." },
 ];
 
-const STATS = [
-  { value: "1.247", label: "criadores ativos" },
-  { value: "73K+", label: "cortes gerados" },
-  { value: "4.9", label: "avaliação média" },
-  { value: "2 min", label: "tempo médio" },
+// ── Animated counter ──────────────────────────────
+function Counter({ value, suffix = "" }: { value: number; suffix?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true });
+  const mv = useMotionValue(0);
+  const display = useTransform(mv, (v) =>
+    value >= 1000 ? Math.round(v).toLocaleString("pt-BR") : v.toFixed(value < 10 ? 1 : 0).replace(".", ","),
+  );
+  useEffect(() => {
+    if (inView) {
+      const c = animate(mv, value, { duration: 2, ease: [0.22, 1, 0.36, 1] });
+      return c.stop;
+    }
+  }, [inView, value, mv]);
+  return <span ref={ref}><motion.span>{display}</motion.span>{suffix}</span>;
+}
+
+// ── Clip cards ────────────────────────────────────
+const CLIPS = [
+  { bg: "/clip1.png", caption: "ELES NÃO\nQUEREM\nQUE VOCÊ SAIBA", captionColor: "#FBBF24", views: "892K", likes: "47.2K", platform: "Reels", score: 9.1, rotate: -8, scale: 0.78, z: 1 },
+  { bg: "/clip2.png", caption: "PLANO DE\nSAÚDE É\nESTE AQUI!", captionColor: "#FFFFFF", views: "1.2M", likes: "234K", platform: "TikTok", score: 9.8, rotate: 0, scale: 1, z: 3 },
+  { bg: "/clip3.png", caption: "ACADEMIA\nNÃO É\nPRO RICO", captionColor: "#22D3EE", views: "634K", likes: "28.9K", platform: "Shorts", score: 8.7, rotate: 8, scale: 0.78, z: 1 },
 ];
 
-// ───────────── Componente: Showcase de cortes verticais 9:16 ─────────────
-type Corte = {
-  bg: string;
-  caption: string;
-  captionColor: string;
-  views: string;
-  likes: string;
-  platform: "TikTok" | "Reels" | "Shorts";
-  score: number;
-  audio: string;
-  rotate: number;
-  scale: number;
-  zIndex: number;
-};
-
-const CORTES: Corte[] = [
-  {
-    // Lateral esquerdo
-    bg: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=720&fit=crop&q=80&auto=format",
-    caption: "ELES NÃO QUEREM\nQUE VOCÊ SAIBA",
-    captionColor: "#FBBF24",
-    views: "892K",
-    likes: "47.2K",
-    platform: "Reels",
-    score: 9.1,
-    audio: "Original • Reels",
-    rotate: -8,
-    scale: 0.78,
-    zIndex: 1,
-  },
-  {
-    // Centro — principal
-    bg: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=540&h=960&fit=crop&q=85&auto=format",
-    caption: "100M DE PESSOAS\nDEPENDEM\nFINANCEIRAMENTE",
-    captionColor: "#FFFFFF",
-    views: "1.2M",
-    likes: "234K",
-    platform: "TikTok",
-    score: 9.8,
-    audio: "Som Original • Viral",
-    rotate: 0,
-    scale: 1,
-    zIndex: 3,
-  },
-  {
-    // Lateral direito
-    bg: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=720&fit=crop&q=80&auto=format",
-    caption: "O SEGREDO\nDOS RICOS",
-    captionColor: "#22D3EE",
-    views: "634K",
-    likes: "28.9K",
-    platform: "Shorts",
-    score: 8.7,
-    audio: "Trending • YT Shorts",
-    rotate: 8,
-    scale: 0.78,
-    zIndex: 1,
-  },
-];
-
-function VerticalClipCard({ corte, index }: { corte: Corte; index: number }) {
-  const overlapClass =
-    index === 0 ? "-mr-10 sm:mr-0" : index === 2 ? "-ml-10 sm:ml-0" : "";
+function ClipCard({ clip, i }: { clip: typeof CLIPS[0]; i: number }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 60, scale: corte.scale * 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: corte.scale, rotate: corte.rotate }}
-      transition={{ duration: 0.9, delay: 0.7 + index * 0.15, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ scale: corte.scale * 1.04, rotate: 0, zIndex: 10, transition: { duration: 0.4 } }}
-      style={{ zIndex: corte.zIndex }}
-      className={`relative w-[140px] sm:w-[230px] md:w-[260px] lg:w-[280px] aspect-[9/16] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-[0_30px_80px_-20px_rgba(168,85,247,0.5)] border-2 sm:border-[3px] border-white/10 flex-shrink-0 ${overlapClass}`}
+      initial={{ opacity: 0, y: 60, scale: clip.scale * 0.88 }}
+      animate={{ opacity: 1, y: 0, scale: clip.scale, rotate: clip.rotate }}
+      transition={{ duration: 0.9, delay: 0.7 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ scale: clip.scale * 1.06, rotate: 0, zIndex: 10 }}
+      style={{ zIndex: clip.z }}
+      className={`relative w-[140px] sm:w-[210px] md:w-[248px] aspect-[9/16] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-[0_30px_80px_-20px_rgba(168,85,247,0.55)] border-2 sm:border-[3px] border-white/10 flex-shrink-0 ${i === 0 ? "-mr-10 sm:mr-0" : i === 2 ? "-ml-10 sm:ml-0" : ""}`}
     >
-      {/* Background image */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={corte.bg} alt="" className="absolute inset-0 w-full h-full object-cover" />
-      {/* Dark vignette */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/80" />
+      <img
+        src={clip.bg}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{
+          filter: "contrast(1.08) saturate(1.15) brightness(1.03)",
+          transform: "scale(1.01)",
+          transformOrigin: "center",
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/75" />
 
-      {/* Top status bar mock */}
-      <div className="absolute top-3 left-4 right-4 flex justify-between items-center text-white text-[10px] font-semibold tracking-tight">
+      <div className="absolute top-3 left-4 right-4 flex justify-between text-white text-[10px] font-semibold">
         <span>9:41</span>
-        <div className="flex items-center gap-1.5">
-          <span>•••</span>
-          <div className="w-5 h-2.5 border border-white rounded-sm flex items-center px-px">
-            <div className="w-3 h-full bg-white rounded-[1px]" />
-          </div>
-        </div>
+        <div className="flex items-center gap-1"><span>•••</span><div className="w-5 h-2.5 border border-white rounded-sm flex items-center px-px"><div className="w-3 h-full bg-white rounded-[1px]" /></div></div>
       </div>
 
-      {/* Score badge */}
       <div className="absolute top-10 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white text-[10px] font-bold shadow-lg">
-        <Star className="w-2.5 h-2.5 fill-white" />
-        {corte.score}/10
+        <Star className="w-2.5 h-2.5 fill-white" />{clip.score}/10
       </div>
+      <div className="absolute top-10 left-3 px-2 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white text-[10px] font-bold border border-white/15">{clip.platform}</div>
 
-      {/* Platform badge */}
-      <div className="absolute top-10 left-3 px-2 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white text-[10px] font-bold border border-white/15">
-        {corte.platform}
-      </div>
-
-      {/* TikTok-style caption — palavra por palavra animada */}
       <motion.div
         className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-2 text-center font-black tracking-tight leading-tight text-base sm:text-2xl"
-        style={{
-          color: corte.captionColor,
-          fontFamily: "'Arial Black', sans-serif",
-          textShadow: "0 0 1px #000, 0 0 1px #000, 0 4px 12px rgba(0,0,0,0.9), 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000",
-          WebkitTextStroke: "1px black",
-        }}
+        style={{ color: clip.captionColor, fontFamily: "'Arial Black',sans-serif", textShadow: "0 0 1px #000, 0 4px 12px rgba(0,0,0,0.9), 2px 2px 0 #000, -2px -2px 0 #000", WebkitTextStroke: "1px black" }}
         animate={{ scale: [1, 1.04, 1] }}
         transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
       >
-        {corte.caption.split("\n").map((line, i) => (
-          <div key={i}>{line}</div>
-        ))}
+        {clip.caption.split("\n").map((l, j) => <div key={j}>{l}</div>)}
       </motion.div>
 
-      {/* Right side actions */}
       <div className="absolute right-3 bottom-24 flex flex-col items-center gap-4 text-white">
-        <div className="flex flex-col items-center">
-          <div className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-sm border border-white/25 flex items-center justify-center">
-            <span className="text-base">❤️</span>
+        {["❤️", "💬", "📤"].map((em, j) => (
+          <div key={j} className="flex flex-col items-center">
+            <div className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-sm border border-white/25 flex items-center justify-center text-base">{em}</div>
+            {j === 0 && <span className="text-[10px] font-bold mt-1 drop-shadow">{clip.likes}</span>}
           </div>
-          <span className="text-[10px] font-bold mt-1 drop-shadow">{corte.likes}</span>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-sm border border-white/25 flex items-center justify-center">
-            <span className="text-base">💬</span>
-          </div>
-          <span className="text-[10px] font-bold mt-1 drop-shadow">{(parseFloat(corte.likes) * 0.07).toFixed(1)}K</span>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-sm border border-white/25 flex items-center justify-center">
-            <span className="text-base">📤</span>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Bottom info */}
       <div className="absolute bottom-3 left-3 right-16 text-white">
         <div className="text-[11px] font-bold mb-1 flex items-center gap-1.5">
           <span className="opacity-90">@viralizacortes</span>
-          <span className="px-1.5 py-px rounded-sm bg-white/15 text-[8px] font-semibold tracking-wide">SEGUIR</span>
+          <span className="px-1.5 py-px rounded-sm bg-white/15 text-[8px] font-semibold">SEGUIR</span>
         </div>
-        <div className="flex items-center gap-1.5 text-[10px] opacity-80">
-          <span>👁</span>
-          <span className="font-semibold">{corte.views} views</span>
-        </div>
+        <div className="flex items-center gap-1.5 text-[10px] opacity-80"><span>👁</span><span className="font-semibold">{clip.views} views</span></div>
         <div className="flex items-center gap-1.5 text-[10px] opacity-80 mt-0.5">
           <motion.span animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }}>🎵</motion.span>
-          <span className="font-medium truncate">{corte.audio}</span>
+          <span className="font-medium truncate">Som Original • Viral</span>
         </div>
       </div>
 
-      {/* Progress bar */}
       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/15">
-        <motion.div
-          className="h-full bg-white"
-          animate={{ width: ["0%", "100%"] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear", delay: index * 0.5 }}
-        />
+        <motion.div className="h-full bg-white" animate={{ width: ["0%", "100%"] }} transition={{ duration: 8, repeat: Infinity, ease: "linear", delay: i * 0.5 }} />
       </div>
     </motion.div>
   );
 }
 
-function ProductMockup() {
-  return (
-    <div className="relative mx-auto max-w-5xl">
-      {/* Glow externo */}
-      <div className="absolute inset-0 -m-12 rounded-[4rem] bg-gradient-to-br from-fuchsia-500/25 via-violet-500/20 to-cyan-500/15 blur-3xl" />
-
-      {/* Floating label "Gerados pela IA em 2:14" */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.6, duration: 0.6 }}
-        className="relative z-10 mx-auto mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-md shadow-lg"
-      >
-        <Sparkles className="w-3.5 h-3.5 text-fuchsia-400" />
-        <span className="text-xs font-medium text-white">
-          <span className="text-fuchsia-300 font-semibold">3 cortes</span> gerados pela IA em
-          <span className="text-fuchsia-300 font-semibold"> 2 minutos</span>
-        </span>
-      </motion.div>
-
-      {/* Grid de cortes verticais */}
-      <div className="relative flex justify-center items-end gap-0 sm:gap-6 md:gap-8 px-2 sm:px-4 py-6">
-        {CORTES.map((corte, i) => (
-          <VerticalClipCard key={i} corte={corte} index={i} />
-        ))}
-      </div>
-
-      {/* Linha de plataformas — com ícones reais maiores */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.9, duration: 0.8 }}
-        className="relative mt-12"
-      >
-        <p className="text-center text-[11px] font-semibold tracking-[0.25em] uppercase text-zinc-500 mb-5">
-          Exporta direto para
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
-          {[
-            { name: "TikTok", color: "#fff", bg: "rgba(255,255,255,0.06)", Icon: TikTokIcon },
-            { name: "Instagram Reels", color: "#E1306C", bg: "rgba(225,48,108,0.1)", Icon: InstagramIcon },
-            { name: "YouTube Shorts", color: "#FF0000", bg: "rgba(255,0,0,0.1)", Icon: YouTubeIcon },
-            { name: "Facebook", color: "#1877F2", bg: "rgba(24,119,242,0.1)", Icon: FacebookIcon },
-          ].map(({ name, color, bg, Icon }) => (
-            <motion.div
-              key={name}
-              whileHover={{ y: -3, scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-              className="flex items-center gap-2.5 px-5 py-2.5 rounded-full border border-white/10 backdrop-blur-sm"
-              style={{ background: bg }}
-            >
-              <span style={{ color }}>
-                <Icon size={22} />
-              </span>
-              <span className="text-base md:text-lg font-bold tracking-tight" style={{ color }}>
-                {name}
-              </span>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
-// ───────────── Sticker flutuante (hero) ─────────────
-interface StickerProps {
-  text: string;
-  color: string;
-  position: string;
-  rotate: number;
-  delay: number;
-  duration: number;
-  mono?: boolean;
-}
-function Sticker({ text, color, position, rotate, delay, duration, mono }: StickerProps) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.5, rotate: rotate - 20 }}
-      animate={{ opacity: 1, scale: 1, rotate }}
-      transition={{ duration: 0.7, delay, type: "spring", stiffness: 120, damping: 12 }}
-      className={`absolute ${position} z-10 hidden sm:block select-none pointer-events-none`}
-    >
-      <motion.div
-        animate={{ y: [0, -8, 0] }}
-        transition={{ duration, repeat: Infinity, ease: "easeInOut" }}
-        className={`px-3 py-1.5 rounded-xl border backdrop-blur-md text-xs md:text-sm font-bold whitespace-nowrap shadow-[0_8px_25px_-5px] ${mono ? "font-mono" : ""}`}
-        style={{
-          background: `${color}26`,
-          borderColor: `${color}66`,
-          color,
-          boxShadow: `0 8px 25px -5px ${color}50`,
-        }}
-      >
-        {text}
-      </motion.div>
-    </motion.div>
-  );
-}
-
-// ───────────── Stats com contador animado ─────────────
-function AnimatedNumber({ value, suffix = "", duration = 2 }: { value: number; suffix?: string; duration?: number }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.5 });
-  const motionValue = useMotionValue(0);
-  const rounded = useTransform(motionValue, (v) =>
-    value >= 1000 ? Math.round(v).toLocaleString("pt-BR") : v.toFixed(1).replace(".", ","),
-  );
-
-  useEffect(() => {
-    if (inView) {
-      const controls = animate(motionValue, value, { duration, ease: [0.22, 1, 0.36, 1] });
-      return controls.stop;
-    }
-  }, [inView, value, duration, motionValue]);
-
-  return (
-    <span ref={ref}>
-      <motion.span>{rounded}</motion.span>
-      {suffix}
-    </span>
-  );
-}
-
-const STAT_CARDS = [
-  { icon: "👥", value: 1247, suffix: "", label: "Criadores ativos" },
-  { icon: "✂️", value: 73000, suffix: "+", label: "Cortes gerados" },
-  { icon: "⭐", value: 4.9, suffix: "", label: "Avaliação média" },
-  { icon: "⚡", value: 2, suffix: " min", label: "Tempo médio" },
-];
-
-function SocialProofSection() {
-  return (
-    <motion.section
-      className="relative z-10 px-6 pt-24 pb-12 max-w-6xl mx-auto"
-      initial="hidden"
-      whileInView="show"
-      viewport={REVEAL}
-      variants={stagger}
-    >
-      <motion.p variants={fadeUp} className="text-center text-xs text-zinc-500 uppercase tracking-[0.25em] font-semibold mb-12">
-        Usado por +1.200 criadores brasileiros
-      </motion.p>
-      <motion.div variants={stagger} className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        {STAT_CARDS.map((s) => (
-          <motion.div
-            key={s.label}
-            variants={fadeUp}
-            whileHover={{ y: -4 }}
-            className="relative p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-sm overflow-hidden group"
-          >
-            <div className="absolute -top-4 -right-4 text-5xl opacity-15 group-hover:opacity-25 transition-opacity">{s.icon}</div>
-            <div className="relative">
-              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-b from-white to-zinc-400 bg-clip-text text-transparent tracking-tight">
-                <AnimatedNumber value={s.value} suffix={s.suffix} />
-              </div>
-              <div className="text-[11px] text-zinc-500 uppercase tracking-wider mt-2 font-semibold">{s.label}</div>
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
-    </motion.section>
-  );
-}
-
-// ───────────── Pricing Card ─────────────
-function PricingCard({ plan, yearly }: { plan: typeof PLANS[number]; yearly: boolean }) {
-  const price = yearly ? plan.yearly : plan.monthly;
-  return (
-    <motion.div
-      variants={fadeUp}
-      whileHover={{ y: -6, transition: { duration: 0.2 } }}
-      className={`relative rounded-2xl p-7 flex flex-col ${
-        plan.popular
-          ? "bg-gradient-to-b from-fuchsia-500/15 to-violet-500/5 border border-fuchsia-400/30 shadow-[0_30px_80px_-20px_rgba(217,70,239,0.4)]"
-          : "bg-white/[0.03] border border-white/10"
-      }`}
-    >
-      {plan.popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white text-xs font-bold tracking-wider whitespace-nowrap">
-          MAIS POPULAR
-        </div>
-      )}
-      <div className="flex items-center gap-2 mb-3">
-        <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${plan.popular ? "bg-fuchsia-500/20 text-fuchsia-300" : "bg-white/5 text-zinc-400"}`}>
-          {plan.icon}
-        </div>
-        <span className="text-sm font-semibold tracking-tight">{plan.name}</span>
-      </div>
-
-      <p className="text-zinc-500 text-sm mb-5">{plan.desc}</p>
-
-      <div className="mb-6">
-        <div className="flex items-baseline gap-1">
-          <span className="text-4xl font-bold tracking-tight">
-            R${price.toString().replace(".", ",")}
-          </span>
-          <span className="text-zinc-500 text-sm">/mês</span>
-        </div>
-        {yearly && (
-          <p className="text-xs text-emerald-400 mt-1">
-            R${(plan.monthly - plan.yearly).toFixed(2).replace(".", ",")} de desconto
-          </p>
-        )}
-      </div>
-
-      <ul className="space-y-2.5 mb-7 flex-1">
-        {plan.features.map((f) => (
-          <li key={f} className="flex items-start gap-2 text-sm text-zinc-300">
-            <Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
-
-      <MagneticButton distance={0.2}>
-        <a
-          href={plan.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`block text-center py-3 rounded-xl font-semibold text-sm transition-all ${
-            plan.popular
-              ? "bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white hover:shadow-[0_10px_40px_-10px_rgba(217,70,239,0.7)]"
-              : "bg-white/5 border border-white/10 text-white hover:bg-white/10"
-          }`}
-        >
-          {plan.cta}
-        </a>
-      </MagneticButton>
-    </motion.div>
-  );
-}
-
-// ───────────── Página ─────────────
-export default function LandingPage() {
+// ── Main page ─────────────────────────────────────
+export default function HomePage() {
   const [yearly, setYearly] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [url, setUrl] = useState("");
+  const [demoTab, setDemoTab] = useState<"config" | "processing">("config");
 
   return (
-    <div className="min-h-screen bg-[#050507] text-white overflow-x-hidden font-sans antialiased">
-      {/* Background glows finos */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-300px] left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-fuchsia-500/15 rounded-full blur-[120px]" />
-        <div className="absolute top-[40%] left-[-300px] w-[600px] h-[600px] bg-violet-500/10 rounded-full blur-[100px]" />
-        <div className="absolute bottom-[20%] right-[-200px] w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[100px]" />
-      </div>
+    <div className="min-h-screen text-white overflow-x-hidden">
+      <ShaderBackground />
+      {/* Overlay escuro para legibilidade */}
+      <div className="fixed inset-0 bg-black/40 -z-[5] pointer-events-none" />
 
-      {/* FAIXA DE URGÊNCIA (sticky no topo, antes da nav) */}
-      <div
-        className="relative z-[60] sticky top-0 py-2.5 px-4 text-center text-xs font-bold text-white flex items-center justify-center gap-2 flex-wrap"
-        style={{ background: "linear-gradient(90deg, #6B21A8 0%, #7C3AED 50%, #6B21A8 100%)", borderBottom: "1px solid rgba(255,255,255,0.12)" }}
-      >
+      {/* ── Banner urgência ── */}
+      <div className="relative z-[60] sticky top-0 py-2.5 px-4 text-center text-xs font-bold text-white flex items-center justify-center gap-2 flex-wrap"
+        style={{ background: "linear-gradient(90deg,#5b21b6 0%,#7c3aed 50%,#5b21b6 100%)", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
         <span><strong>1.247 criadores</strong> geraram clips hoje —</span>
-        <Link href="/app" className="underline underline-offset-2 hover:no-underline text-yellow-300 font-bold">
-          Comece grátis agora →
-        </Link>
+        <Link href="/app" className="underline text-yellow-300 font-bold hover:no-underline">Comece grátis agora →</Link>
       </div>
 
-      {/* NAV */}
-      <nav className="relative z-50 sticky top-9 backdrop-blur-xl bg-[#050507]/80 border-b border-white/5">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3.5">
+      {/* ── Nav (pill flutuante) ── */}
+      <div className="relative z-50 sticky top-9 px-4 py-2">
+        <nav className="max-w-4xl mx-auto flex items-center justify-between px-5 py-2.5 rounded-full backdrop-blur-xl bg-black/60 border border-white/[0.12] shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo-viraliza-cortes.png" alt="Viraliza Cortes" width={36} height={36} className="rounded-lg" />
-            <span className="font-bold text-base hidden sm:block">Viraliza Cortes</span>
+            <Image src="/logo-viraliza-cortes.png" alt="Viraliza Cortes" width={28} height={28} className="rounded-md" />
+            <span className="font-bold text-sm hidden sm:block">Viraliza Cortes</span>
           </Link>
-          <div className="hidden md:flex items-center gap-7">
-            {[
-              { l: "Recursos", h: "#recursos" },
-              { l: "Como funciona", h: "#como-funciona" },
-              { l: "Planos", h: "#planos" },
-              { l: "FAQ", h: "#faq" },
-            ].map((i) => (
-              <a key={i.l} href={i.h} className="text-sm text-zinc-400 hover:text-white transition-colors">
-                {i.l}
-              </a>
+          <div className="hidden md:flex items-center gap-6">
+            {[["Recursos","#recursos"],["Como funciona","#como-funciona"],["Planos","#planos"],["FAQ","#faq"]].map(([l, h]) => (
+              <a key={l} href={h} className="text-sm text-zinc-300 hover:text-white transition-colors">{l}</a>
             ))}
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/entrar" className="text-sm text-zinc-400 hover:text-white hidden sm:block">
-              Entrar
+            <Link href="/entrar" className="text-sm text-zinc-400 hover:text-white hidden sm:block">Entrar</Link>
+            <Link href="/app" className="px-4 py-1.5 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white text-sm font-bold shadow-[0_4px_20px_rgba(168,85,247,0.4)] hover:scale-105 transition-transform">
+              Começar grátis
             </Link>
-            <MagneticButton distance={0.2}>
-              <Link href="/app" className="px-4 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white text-sm font-semibold">
-                Começar grátis
-              </Link>
-            </MagneticButton>
           </div>
-        </div>
-      </nav>
+        </nav>
+      </div>
 
-      {/* ━━━━━━━━━━━━━━━━ HERO ━━━━━━━━━━━━━━━━ */}
-      <section className="relative z-10 px-6 pt-20 pb-12 max-w-6xl mx-auto text-center">
-
-        {/* Timeline lines decorativas no fundo do hero (referência a régua de vídeo) */}
-        <div className="absolute inset-x-0 top-32 bottom-0 -z-10 overflow-hidden pointer-events-none">
-          <svg className="absolute inset-0 w-full h-full opacity-[0.07]" viewBox="0 0 1200 600" preserveAspectRatio="none" aria-hidden="true">
-            {/* Linhas verticais — timeline */}
-            {Array.from({ length: 60 }).map((_, i) => (
-              <line
-                key={i}
-                x1={i * 20}
-                x2={i * 20}
-                y1="0"
-                y2={i % 5 === 0 ? "32" : "16"}
-                stroke="white"
-                strokeWidth="1"
-              />
-            ))}
-            {/* Linha horizontal régua */}
-            <line x1="0" x2="1200" y1="0" y2="0" stroke="white" strokeWidth="1" opacity="0.5" />
-          </svg>
-        </div>
-
-        {/* Badge IA 100% Brasileira com bandeira mini */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-sm mb-8"
-        >
-          {/* Mini bandeira BR */}
-          <svg width="18" height="13" viewBox="0 0 18 13" aria-hidden="true" className="rounded-sm overflow-hidden flex-shrink-0">
+      {/* ── HERO ── */}
+      <section className="relative z-10 px-6 pt-24 pb-16 max-w-6xl mx-auto text-center">
+        {/* Badge */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 backdrop-blur-sm mb-8">
+          <svg width="18" height="13" viewBox="0 0 18 13" className="rounded-sm" aria-hidden>
             <rect width="18" height="13" fill="#009C3B" />
             <polygon points="9,1.5 16.5,6.5 9,11.5 1.5,6.5" fill="#FFDF00" />
             <circle cx="9" cy="6.5" r="2.8" fill="#002776" />
             <path d="M 6.5 6.8 Q 9 4.5 11.5 6.8" stroke="white" strokeWidth="0.6" fill="none" />
           </svg>
-          <span className="text-xs font-semibold text-zinc-200 tracking-wide">IA 100% Brasileira</span>
+          <span className="text-xs font-semibold text-fuchsia-200 tracking-wide">IA 100% Brasileira</span>
           <span className="w-1 h-1 rounded-full bg-fuchsia-400 animate-pulse" />
         </motion.div>
 
-        {/* Container do título com stickers ao redor */}
-        <div className="relative inline-block">
-
-          {/* Stickers flutuantes em volta do título */}
-          <Sticker
-            text="✂️ Corte #1"
-            color="#00C896"
-            position="top-2 -left-12 md:-left-32"
-            rotate={-8}
-            delay={1.2}
-            duration={3.5}
-          />
-          <Sticker
-            text="🔥 VIRAL"
-            color="#FF6B35"
-            position="-top-4 -right-6 md:-right-24"
-            rotate={10}
-            delay={1.5}
-            duration={4}
-          />
-          <Sticker
-            text="9:16"
-            color="#22D3EE"
-            position="top-32 -left-8 md:-left-40"
-            rotate={-12}
-            delay={1.8}
-            duration={3.2}
-            mono
-          />
-          <Sticker
-            text="▶ 1.2M views"
-            color="#D946EF"
-            position="bottom-8 -right-10 md:-right-36"
-            rotate={6}
-            delay={2.1}
-            duration={3.8}
-          />
-          <Sticker
-            text="100% PT-BR 🇧🇷"
-            color="#A855F7"
-            position="-bottom-2 -left-6 md:-left-28"
-            rotate={-6}
-            delay={2.4}
-            duration={3.6}
-          />
-
-          <motion.h1
-            initial="hidden"
-            animate="show"
-            variants={{
-              hidden: {},
-              show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
-            }}
-            className="relative text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-bold tracking-[-0.04em] leading-[1.02] mb-6"
-          >
-            <motion.span variants={fadeUp} className="inline-block">1</motion.span>{" "}
-            <motion.span variants={fadeUp} className="inline-block">link.</motion.span>
-            <br />
-            <motion.span variants={fadeUp} className="inline-block bg-gradient-to-r from-fuchsia-300 via-pink-300 to-violet-300 bg-clip-text text-transparent">
-              Dezenas
-            </motion.span>{" "}
-            <motion.span variants={fadeUp} className="inline-block bg-gradient-to-r from-fuchsia-300 via-pink-300 to-violet-300 bg-clip-text text-transparent">
-              de
-            </motion.span>{" "}
-            <motion.span variants={fadeUp} className="inline-block bg-gradient-to-r from-fuchsia-300 via-pink-300 to-violet-300 bg-clip-text text-transparent">
-              cortes
-            </motion.span>{" "}
-            <motion.span variants={fadeUp} className="inline-block bg-gradient-to-r from-fuchsia-300 via-pink-300 to-violet-300 bg-clip-text text-transparent">
-              virais.
-            </motion.span>
-          </motion.h1>
-        </div>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.25 }}
-          className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
+        {/* Title */}
+        <motion.h1
+          initial="hidden" animate="show"
+          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } } }}
+          className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-extrabold tracking-[-0.04em] leading-[1.0] mb-7"
         >
-          Cole o link do YouTube. Nossa IA brasileira identifica os melhores momentos, corta no 9:16,
-          adiciona legendas e entrega pronto para TikTok, Reels e Shorts. Em menos de 3 minutos.
+          <motion.span variants={fadeUp} className="inline-block">1 link.</motion.span>
+          <br />
+          <motion.span variants={fadeUp} className="inline-block bg-gradient-to-r from-fuchsia-300 via-pink-300 to-violet-300 bg-clip-text text-transparent">
+            Dezenas de cortes
+          </motion.span>
+          <br />
+          <motion.span variants={fadeUp} className="inline-block bg-gradient-to-r from-fuchsia-300 via-pink-300 to-violet-300 bg-clip-text text-transparent">
+            virais.
+          </motion.span>
+        </motion.h1>
+
+        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.7 }}
+          className="text-zinc-300 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+          Cole o link do YouTube. Nossa IA brasileira identifica os melhores momentos,
+          corta no 9:16, adiciona legendas e entrega pronto para TikTok, Reels e Shorts.{" "}
+          <span className="text-fuchsia-300 font-semibold">Em menos de 3 minutos.</span>
         </motion.p>
 
-        {/* INPUT URL + CTA primário */}
-        <motion.form
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.4 }}
-          onSubmit={(e) => {
-            e.preventDefault();
-            window.location.href = url
-              ? `/app?url=${encodeURIComponent(url)}`
-              : "/app";
-          }}
-          className="flex flex-col sm:flex-row items-stretch justify-center gap-3 max-w-2xl mx-auto mb-4"
-        >
-          <div className="flex items-center gap-3 flex-1 px-5 py-3.5 rounded-xl border border-white/10 bg-white/[0.03] backdrop-blur-sm hover:border-white/20 focus-within:border-fuchsia-400/50 focus-within:bg-white/[0.05] transition-colors">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-500 flex-shrink-0">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-            </svg>
-            <input
-              type="url"
-              placeholder="Cole o link do YouTube aqui..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="flex-1 bg-transparent text-sm md:text-base text-white placeholder-zinc-500 outline-none min-w-0 font-medium"
-              aria-label="Link do YouTube"
-            />
-          </div>
-          <MagneticButton distance={0.35}>
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white font-semibold text-base shadow-[0_10px_40px_-10px_rgba(217,70,239,0.6)] hover:scale-[1.02] transition-transform whitespace-nowrap"
-            >
-              Viralizar agora <span aria-hidden>→</span>
+        {/* Form integrado (estilo opus.pro) */}
+        <motion.form initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.6 }}
+          onSubmit={(e) => { e.preventDefault(); window.location.href = url ? `/app?url=${encodeURIComponent(url)}` : "/app"; }}
+          className="max-w-2xl mx-auto mb-5">
+          <div className="flex items-center gap-2 p-2 rounded-2xl border border-white/15 bg-black/40 backdrop-blur-xl focus-within:border-fuchsia-400/60 hover:border-white/25 transition-colors shadow-[0_20px_60px_-20px_rgba(0,0,0,0.7)]">
+            <div className="flex items-center gap-3 flex-1 px-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-500 flex-shrink-0">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+              <input type="url" placeholder="Cole o link do YouTube aqui..." value={url} onChange={(e) => setUrl(e.target.value)}
+                className="flex-1 bg-transparent text-sm md:text-base text-white placeholder-zinc-500 outline-none min-w-0 py-2" aria-label="Link do YouTube" />
+            </div>
+            <button type="submit" className="flex-shrink-0 px-7 py-3.5 rounded-xl bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white font-bold text-sm shadow-[0_8px_30px_-8px_rgba(217,70,239,0.7)] hover:scale-[1.02] transition-transform whitespace-nowrap">
+              Viralizar →
             </button>
-          </MagneticButton>
+          </div>
         </motion.form>
 
-        {/* Linha de trust + link "como funciona" */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-zinc-500 mb-8"
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
+          className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-zinc-400 mb-10">
           <span className="flex items-center gap-1"><Check className="w-3 h-3 text-emerald-400" /> Sem cartão de crédito</span>
           <span className="flex items-center gap-1"><Check className="w-3 h-3 text-emerald-400" /> 10 cortes grátis</span>
-          <a href="#como-funciona" className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors font-medium">
-            Ver como funciona ↓
-          </a>
+          <a href="#como-funciona" className="text-fuchsia-300 hover:text-fuchsia-200 font-medium">Ver como funciona ↓</a>
         </motion.div>
 
-        {/* Google Play badge "em breve" */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="flex justify-center"
-        >
-          <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl border border-white/10 bg-white/[0.03] backdrop-blur-sm">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="flex-shrink-0">
-              <path d="M3.18 23.76c.31.17.67.19 1 .07l11.9-6.87-2.58-2.58-10.32 9.38z" fill="#EA4335" />
-              <path d="M20.82 10.01c-.54-.31-5.74-3.32-7.05-4.07L3.18.24C2.85.12 2.49.14 2.18.31L13.14 11.27l7.68-1.26z" fill="#FBBC05" />
-              <path d="M2.18.31A1.2 1.2 0 0 0 1.6 1.4v21.2c0 .44.22.84.58 1.16L13.14 11.27 2.18.31z" fill="#4285F4" />
-              <path d="M20.82 10.01l-7.68 1.26 2.58 2.58 5.1-2.95c.75-.43.75-1.46 0-1.89z" fill="#34A853" />
-            </svg>
-            <div className="text-left">
-              <div className="text-[10px] text-zinc-400 leading-none mb-0.5 uppercase tracking-wider font-semibold">Em breve no</div>
-              <div className="text-sm font-bold text-white leading-none">Google Play</div>
-            </div>
+        {/* Clips mockup */}
+        <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.55, ease: [0.22, 1, 0.36, 1] }} className="mt-8">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.6, duration: 0.6 }}
+            className="relative z-10 mx-auto mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-black/40 backdrop-blur-md">
+            <Sparkles className="w-3.5 h-3.5 text-fuchsia-400" />
+            <span className="text-xs font-medium text-white">
+              <span className="text-fuchsia-300 font-semibold">3 cortes</span> gerados pela IA em
+              <span className="text-fuchsia-300 font-semibold"> 2 minutos</span>
+            </span>
+          </motion.div>
+
+          <div className="flex justify-center items-end gap-0 sm:gap-6 px-2 sm:px-4 py-6">
+            {CLIPS.map((c, i) => <ClipCard key={i} clip={c} i={i} />)}
           </div>
-        </motion.div>
 
-        {/* MOCKUP DO PRODUTO */}
-        <motion.div
-          initial={{ opacity: 0, y: 60 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-20"
-        >
-          <ProductMockup />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2, duration: 0.7 }} className="mt-10">
+            <p className="text-center text-[11px] font-semibold tracking-[0.25em] uppercase text-zinc-500 mb-5">Exporta direto para</p>
+            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
+              {[
+                { name: "TikTok", color: "#fff", bg: "rgba(255,255,255,0.06)", Icon: TikTokIcon },
+                { name: "Instagram Reels", color: "#E1306C", bg: "rgba(225,48,108,0.1)", Icon: InstagramIcon },
+                { name: "YouTube Shorts", color: "#FF0000", bg: "rgba(255,0,0,0.1)", Icon: YouTubeIcon },
+              ].map(({ name, color, bg, Icon }) => (
+                <motion.div key={name} whileHover={{ y: -3, scale: 1.05 }} className="flex items-center gap-2.5 px-5 py-2.5 rounded-full border border-white/10 backdrop-blur-sm" style={{ background: bg }}>
+                  <span style={{ color }}><Icon size={20} /></span>
+                  <span className="text-base font-bold" style={{ color }}>{name}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         </motion.div>
       </section>
 
-      {/* ━━━━━━━━━━━━━━━━ SOCIAL PROOF (stats com contador) ━━━━━━━━━━━━━━━━ */}
-      <SocialProofSection />
-
-      {/* ━━━━━━━━━━━━━━━━ COMO FUNCIONA (steps com linha conectora) ━━━━━━━━━━━━━━━━ */}
-      <motion.section
-        id="como-funciona"
-        className="relative z-10 px-6 py-32 max-w-6xl mx-auto"
-        initial="hidden"
-        whileInView="show"
-        viewport={REVEAL}
-        variants={stagger}
-      >
-        <motion.div variants={fadeUp} className="text-center mb-20">
-          <p className="text-xs text-fuchsia-400 uppercase tracking-[0.2em] font-semibold mb-3">Como funciona</p>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
-            Do link ao clip em 3 passos.
-          </h2>
-          <p className="text-zinc-500 mt-4 max-w-xl mx-auto">
-            Não precisa instalar nada, não precisa saber editar. Tudo é automático.
-          </p>
-        </motion.div>
-
-        {/* Linha conectora desktop */}
-        <div className="relative">
-          <svg
-            className="absolute top-12 left-[16%] right-[16%] hidden md:block z-0 pointer-events-none"
-            viewBox="0 0 100 4"
-            preserveAspectRatio="none"
-            style={{ height: 2 }}
-          >
-            <defs>
-              <linearGradient id="connector-grad" x1="0%" x2="100%">
-                <stop offset="0%" stopColor="#22D3EE" stopOpacity="0.5" />
-                <stop offset="50%" stopColor="#D946EF" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="#A855F7" stopOpacity="0.5" />
-              </linearGradient>
-            </defs>
-            <motion.path
-              d="M 0 2 L 100 2"
-              stroke="url(#connector-grad)"
-              strokeWidth="0.4"
-              strokeDasharray="2 1.5"
-              fill="none"
-              initial={{ pathLength: 0 }}
-              whileInView={{ pathLength: 1 }}
-              viewport={REVEAL}
-              transition={{ duration: 1.8, ease: "easeInOut", delay: 0.3 }}
-            />
-          </svg>
-
-          <motion.div variants={stagger} className="grid md:grid-cols-3 gap-6 relative z-10">
-            {STEPS.map((s, i) => (
-              <motion.div
-                key={s.num}
-                variants={fadeUp}
-                whileHover={{ y: -6 }}
-                className="relative"
-              >
-                {/* Círculo grande com ícone + número */}
-                <div className="flex flex-col items-center text-center">
-                  <div className="relative mb-6">
-                    {/* Halo glow */}
-                    <div
-                      className="absolute inset-0 -m-4 rounded-full blur-2xl opacity-60"
-                      style={{ background: s.accentColor }}
-                    />
-                    <div
-                      className="relative w-24 h-24 rounded-full border-2 flex items-center justify-center text-white shadow-[0_15px_50px_-10px] backdrop-blur-sm"
-                      style={{
-                        background: `linear-gradient(135deg, ${s.accentColor}30, transparent)`,
-                        borderColor: `${s.accentColor}80`,
-                        boxShadow: `0 15px 50px -10px ${s.accentColor}60`,
-                      }}
-                    >
-                      <div className="text-2xl">{s.icon}</div>
-                    </div>
-                    <div
-                      className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-bold tracking-wider text-black"
-                      style={{ background: s.accentColor }}
-                    >
-                      {s.num}
-                    </div>
+      {/* ── Stats ── */}
+      <motion.section className="relative z-10 px-6 pt-24 pb-12 max-w-6xl mx-auto" initial="hidden" whileInView="show" viewport={REVEAL} variants={stagger}>
+        <motion.p variants={fadeUp} className="text-center text-xs text-zinc-500 uppercase tracking-[0.25em] font-semibold mb-10">Usado por +1.200 criadores brasileiros</motion.p>
+        <motion.div variants={stagger} className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { icon: "👥", value: 1247, suffix: "", label: "Criadores ativos" },
+            { icon: "✂️", value: 73000, suffix: "+", label: "Cortes gerados" },
+            { icon: "⭐", value: 4.9, suffix: "", label: "Avaliação média" },
+            { icon: "⚡", value: 2, suffix: " min", label: "Tempo médio" },
+          ].map((s) => (
+            <motion.div key={s.label} variants={fadeUp} whileHover={{ y: -4 }}>
+              <GlowCard customSize glowColor="purple" className="p-6 overflow-hidden group relative">
+                <div className="absolute -top-4 -right-4 text-5xl opacity-15 group-hover:opacity-25 transition-opacity">{s.icon}</div>
+                <div className="relative">
+                  <div className="text-3xl md:text-4xl font-bold tracking-tight">
+                    <Counter value={s.value} suffix={s.suffix} />
                   </div>
-
-                  <h3 className="text-xl font-semibold mb-2.5 tracking-tight">{s.title}</h3>
-                  <p className="text-zinc-400 text-sm leading-relaxed max-w-xs">{s.desc}</p>
+                  <div className="text-[11px] text-zinc-400 uppercase tracking-wider mt-2 font-semibold">{s.label}</div>
                 </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
+              </GlowCard>
+            </motion.div>
+          ))}
+        </motion.div>
       </motion.section>
 
-      {/* ━━━━━━━━━━━━━━━━ FEATURES BENTO ━━━━━━━━━━━━━━━━ */}
-      <motion.section
-        id="recursos"
-        className="relative z-10 px-6 py-32 max-w-6xl mx-auto"
-        initial="hidden"
-        whileInView="show"
-        viewport={REVEAL}
-        variants={stagger}
-      >
-        <motion.div variants={fadeUp} className="text-center mb-16">
-          <p className="text-xs text-fuchsia-400 uppercase tracking-[0.2em] font-semibold mb-3">Recursos</p>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
-            Tudo o que você precisa
-            <br />
-            <span className="text-zinc-500">pra viralizar.</span>
+      {/* ── Como funciona ── */}
+      <motion.section id="como-funciona" className="relative z-10 px-6 py-32 max-w-6xl mx-auto" initial="hidden" whileInView="show" viewport={REVEAL} variants={stagger}>
+        <motion.div variants={fadeUp} className="text-center mb-20">
+          <p className="text-xs text-fuchsia-300 uppercase tracking-[0.2em] font-semibold mb-3">Como funciona</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+            Do link ao clip em 3 passos.
+          </h2>
+          <p className="text-zinc-400 mt-4 max-w-xl mx-auto">Não precisa instalar nada, não precisa saber editar. Tudo é automático.</p>
+        </motion.div>
+
+        <motion.div variants={stagger} className="grid md:grid-cols-3 gap-6">
+          {STEPS.map((s, i) => (
+            <motion.div key={s.num} variants={fadeUp}>
+              <GlowCard customSize glowColor={i === 0 ? "blue" : i === 1 ? "purple" : "orange"} className="p-8 flex flex-col items-center text-center h-full">
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 -m-4 rounded-full blur-2xl opacity-50" style={{ background: s.color }} />
+                  <div className="relative w-20 h-20 rounded-full border-2 flex items-center justify-center text-2xl"
+                    style={{ background: `linear-gradient(135deg,${s.color}25,transparent)`, borderColor: `${s.color}70` }}>
+                    {s.icon}
+                  </div>
+                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-bold text-black" style={{ background: s.color }}>
+                    {s.num}
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold mb-2 tracking-tight">{s.title}</h3>
+                <p className="text-zinc-400 text-sm leading-relaxed">{s.desc}</p>
+              </GlowCard>
+            </motion.div>
+          ))}
+        </motion.div>
+      </motion.section>
+
+      {/* ── App Demo (futurista) ── */}
+      <motion.section className="relative z-10 px-6 py-24 max-w-6xl mx-auto" initial="hidden" whileInView="show" viewport={REVEAL} variants={stagger}>
+        <motion.div variants={fadeUp} className="text-center mb-14">
+          <p className="text-xs text-cyan-400 uppercase tracking-[0.2em] font-semibold mb-3">O app por dentro</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+            Interface simples.<br /><span className="bg-gradient-to-r from-cyan-300 to-violet-300 bg-clip-text text-transparent">Resultado profissional.</span>
+          </h2>
+          <p className="text-zinc-400 mt-4 max-w-lg mx-auto">Cole o link, escolha as opções e deixa a IA fazer o resto. Veja como é fácil.</p>
+        </motion.div>
+
+        <motion.div variants={fadeUp} className="relative max-w-4xl mx-auto">
+          {/* Glow atrás do frame */}
+          <div className="absolute inset-0 -m-10 bg-violet-600/10 rounded-[3rem] blur-3xl pointer-events-none" />
+          <div className="absolute inset-0 -m-6 bg-cyan-500/5 rounded-[3rem] blur-2xl pointer-events-none" />
+
+          {/* Browser frame */}
+          <div className="relative rounded-2xl overflow-hidden border border-violet-500/25 shadow-[0_0_120px_rgba(168,85,247,0.12),inset_0_1px_0_rgba(255,255,255,0.05)]"
+            style={{ background: "linear-gradient(180deg,#0c0c1e 0%,#07071a 100%)" }}>
+
+            {/* Browser top bar */}
+            <div className="flex items-center gap-4 px-5 py-3 border-b border-white/[0.06]" style={{ background: "#09091c" }}>
+              <div className="flex gap-1.5 flex-shrink-0">
+                <div className="w-3 h-3 rounded-full bg-red-500/70" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
+                <div className="w-3 h-3 rounded-full bg-green-500/70" />
+              </div>
+              {/* URL bar */}
+              <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] max-w-xs mx-auto">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+                <span className="text-[11px] text-zinc-500 font-mono truncate">viralizacortes.com.br/app</span>
+              </div>
+              {/* Tab switcher */}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {([["config", "⚙️ Configurar"], ["processing", "⚡ Processando"]] as const).map(([id, label]) => (
+                  <button key={id} onClick={() => setDemoTab(id)}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ${demoTab === id
+                      ? "bg-violet-500/25 text-violet-200 border border-violet-400/30 shadow-[0_0_10px_rgba(167,139,250,0.2)]"
+                      : "text-zinc-500 hover:text-zinc-300"}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Screenshot area */}
+            <div className="relative overflow-hidden" style={{ minHeight: 320 }}>
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={demoTab}
+                  src={demoTab === "config" ? "/app-config.png" : "/app-processing.png"}
+                  alt={demoTab === "config" ? "App Viraliza — Configuração" : "App Viraliza — Processando"}
+                  className="w-full object-cover object-top"
+                  style={{ maxHeight: 520, filter: "brightness(1.05) contrast(1.05)" }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.25 }}
+                />
+              </AnimatePresence>
+
+              {/* Scanline animada */}
+              <motion.div
+                className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-violet-400/30 to-transparent pointer-events-none"
+                animate={{ y: [0, 520] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+              />
+              {/* Fade bottom */}
+              <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+                style={{ background: "linear-gradient(to top,#07071a,transparent)" }} />
+            </div>
+
+            {/* Status bar */}
+            <div className="flex items-center justify-between px-5 py-2.5 border-t border-white/[0.04]" style={{ background: "#09091c" }}>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px] text-zinc-500 font-mono">Sistema operacional</span>
+              </div>
+              <div className="flex items-center gap-4 text-[10px] text-zinc-600 font-mono">
+                <span>IA v3.2</span>
+                <span className="text-violet-500">●</span>
+                <span>PT-BR</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Floating badges */}
+          <motion.div animate={{ y: [0, -7, 0] }} transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -left-6 top-20 hidden lg:flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-violet-500/30 shadow-[0_8px_30px_rgba(168,85,247,0.2)]"
+            style={{ background: "rgba(10,10,28,0.95)", backdropFilter: "blur(12px)" }}>
+            <span className="text-xl">⚡</span>
+            <div><div className="text-xs font-black text-white">Pronto em 2 min</div><div className="text-[10px] text-zinc-500">por hora de vídeo</div></div>
+          </motion.div>
+
+          <motion.div animate={{ y: [0, -9, 0] }} transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+            className="absolute -right-6 top-16 hidden lg:flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-cyan-500/25 shadow-[0_8px_30px_rgba(34,211,238,0.12)]"
+            style={{ background: "rgba(10,10,28,0.95)", backdropFilter: "blur(12px)" }}>
+            <span className="text-xl">🤖</span>
+            <div><div className="text-xs font-black text-white">IA Brasileira</div><div className="text-[10px] text-zinc-500">PT-BR nativo</div></div>
+          </motion.div>
+
+          <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
+            className="absolute -right-6 bottom-24 hidden lg:flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-emerald-500/25 shadow-[0_8px_30px_rgba(52,211,153,0.12)]"
+            style={{ background: "rgba(10,10,28,0.95)", backdropFilter: "blur(12px)" }}>
+            <span className="text-xl">✨</span>
+            <div><div className="text-xs font-black text-white">Sem marca d'água</div><div className="text-[10px] text-zinc-500">vídeo limpo</div></div>
+          </motion.div>
+        </motion.div>
+      </motion.section>
+
+      {/* ── Features bento ── */}
+      <motion.section id="recursos" className="relative z-10 px-6 py-24 max-w-6xl mx-auto" initial="hidden" whileInView="show" viewport={REVEAL} variants={stagger}>
+        <motion.div variants={fadeUp} className="text-center mb-14">
+          <p className="text-xs text-fuchsia-300 uppercase tracking-[0.2em] font-semibold mb-3">Recursos</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+            Tudo o que você precisa<br /><span className="text-zinc-500">pra viralizar.</span>
           </h2>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-4">
-          {/* Feature destaque */}
-          <motion.div
-            variants={fadeUp}
-            whileHover={{ y: -4 }}
-            className="md:col-span-2 md:row-span-2 p-8 rounded-2xl border border-white/10 bg-gradient-to-br from-fuchsia-500/10 via-violet-500/5 to-transparent relative overflow-hidden"
-          >
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-fuchsia-500/20 rounded-full blur-3xl" />
-            <div className="relative">
-              <div className="w-12 h-12 rounded-xl bg-fuchsia-500/20 text-fuchsia-300 flex items-center justify-center mb-5">
-                {FEATURES[0].icon}
-              </div>
+          <motion.div variants={fadeUp} className="md:col-span-2 md:row-span-2">
+            <GlowCard customSize glowColor="purple" className="p-8 h-full">
+              <div className="w-12 h-12 rounded-xl bg-fuchsia-500/20 text-fuchsia-300 flex items-center justify-center mb-5">{FEATURES[0].icon}</div>
               <h3 className="text-2xl font-bold mb-3">{FEATURES[0].title}</h3>
               <p className="text-zinc-400 text-base leading-relaxed max-w-md">{FEATURES[0].desc}</p>
               <div className="mt-6 flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star key={i} className="w-4 h-4 fill-fuchsia-400 text-fuchsia-400" />
-                ))}
+                {[1,2,3,4,5].map((i) => <Star key={i} className="w-4 h-4 fill-fuchsia-400 text-fuchsia-400" />)}
                 <span className="text-sm text-zinc-300 ml-2">4.9 — 287 avaliações</span>
               </div>
-            </div>
+            </GlowCard>
           </motion.div>
 
-          {FEATURES.slice(1).map((f) => (
-            <motion.div
-              key={f.title}
-              variants={fadeUp}
-              whileHover={{ y: -4 }}
-              className="p-7 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/20 transition-colors"
-            >
-              <div className="w-10 h-10 rounded-lg bg-white/5 text-fuchsia-300 flex items-center justify-center mb-4">
-                {f.icon}
-              </div>
-              <h3 className="text-lg font-semibold mb-2">{f.title}</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">{f.desc}</p>
+          {FEATURES.slice(1).map((f, i) => (
+            <motion.div key={f.title} variants={fadeUp}>
+              <GlowCard customSize glowColor={i % 2 === 0 ? "blue" : "orange"} className="p-7 h-full">
+                <div className="w-10 h-10 rounded-lg bg-white/5 text-fuchsia-300 flex items-center justify-center mb-4">{f.icon}</div>
+                <h3 className="text-lg font-bold mb-2">{f.title}</h3>
+                <p className="text-zinc-400 text-sm leading-relaxed">{f.desc}</p>
+              </GlowCard>
             </motion.div>
           ))}
         </div>
       </motion.section>
 
-      {/* ━━━━━━━━━━━━━━━━ DEPOIMENTOS ━━━━━━━━━━━━━━━━ */}
-      <motion.section
-        className="relative z-10 px-6 py-32 max-w-6xl mx-auto"
-        initial="hidden"
-        whileInView="show"
-        viewport={REVEAL}
-        variants={stagger}
-      >
-        <motion.div variants={fadeUp} className="text-center mb-16">
-          <p className="text-xs text-fuchsia-400 uppercase tracking-[0.2em] font-semibold mb-3">Depoimentos</p>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
-            Criadores reais.
-            <br />
-            <span className="text-zinc-500">Resultados reais.</span>
+      {/* ── Depoimentos ── */}
+      <motion.section className="relative z-10 px-6 py-24 max-w-6xl mx-auto" initial="hidden" whileInView="show" viewport={REVEAL} variants={stagger}>
+        <motion.div variants={fadeUp} className="text-center mb-14">
+          <p className="text-xs text-fuchsia-300 uppercase tracking-[0.2em] font-semibold mb-3">Depoimentos</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+            Criadores reais.<br /><span className="text-zinc-500">Resultados reais.</span>
           </h2>
         </motion.div>
-        <motion.div variants={stagger} className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {TESTIMONIALS.map((t) => {
-            const PlatformIcon =
-              t.platform === "TikTok" ? TikTokIcon : t.platform === "Instagram" ? InstagramIcon : YouTubeIcon;
-            const platformColor =
-              t.platform === "TikTok" ? "#fff" : t.platform === "Instagram" ? "#E1306C" : "#FF0000";
-            return (
-              <motion.div
-                key={t.name}
-                variants={fadeUp}
-                whileHover={{ y: -6 }}
-                className="relative p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] overflow-hidden group"
-              >
-                {/* Quote decoration */}
-                <div className="absolute top-2 right-3 text-7xl font-serif leading-none text-white/[0.04] select-none">&ldquo;</div>
 
-                {/* Avatar + nome + plataforma */}
-                <div className="relative flex items-center gap-3 mb-4">
-                  <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${t.avatarBg} flex items-center justify-center text-white font-bold text-sm shadow-lg`}>
-                    {t.initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold truncate">{t.name}</div>
-                    <div className="flex items-center gap-1 mt-0.5 text-[11px] text-zinc-500">
-                      <span style={{ color: platformColor }}><PlatformIcon size={12} /></span>
-                      <span>{t.platform}</span>
+        <motion.div variants={stagger} className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {TESTIMONIALS.map((t, i) => {
+            const Icon = t.platform === "TikTok" ? TikTokIcon : t.platform === "Instagram" ? InstagramIcon : YouTubeIcon;
+            const color = t.platform === "TikTok" ? "#fff" : t.platform === "Instagram" ? "#E1306C" : "#FF0000";
+            return (
+              <motion.div key={t.name} variants={fadeUp}>
+                <GlowCard customSize glowColor={i % 2 === 0 ? "purple" : "blue"} className="p-6 flex flex-col h-full">
+                  <div className="absolute top-2 right-3 text-7xl font-serif leading-none text-white/[0.04] select-none">&ldquo;</div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${t.grad} flex items-center justify-center text-white font-bold text-sm shadow-lg`}>{t.initials}</div>
+                    <div>
+                      <div className="text-sm font-semibold">{t.name}</div>
+                      <div className="flex items-center gap-1 mt-0.5 text-[11px] text-zinc-500"><span style={{ color }}><Icon size={12} /></span><span>{t.platform}</span></div>
                     </div>
                   </div>
-                </div>
-
-                {/* Stats Before/After */}
-                <div className="relative flex items-center gap-2 mb-4 p-2.5 rounded-lg bg-white/[0.03] border border-white/5">
-                  <div className="flex-1 text-center">
-                    <div className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold">Antes</div>
-                    <div className="text-sm font-bold text-zinc-400 mt-0.5">{t.before}</div>
+                  <div className="flex items-center gap-2 mb-4 p-2.5 rounded-lg bg-white/[0.04] border border-white/5">
+                    <div className="flex-1 text-center"><div className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold">Antes</div><div className="text-sm font-bold text-zinc-400 mt-0.5">{t.before}</div></div>
+                    <div className="text-fuchsia-400">→</div>
+                    <div className="flex-1 text-center"><div className="text-[9px] uppercase tracking-wider text-emerald-300 font-bold">Depois</div><div className="text-base font-bold bg-gradient-to-r from-fuchsia-300 to-violet-300 bg-clip-text text-transparent mt-0.5">{t.after}</div></div>
                   </div>
-                  <div className="text-fuchsia-400 text-base">→</div>
-                  <div className="flex-1 text-center">
-                    <div className="text-[9px] uppercase tracking-wider text-emerald-300 font-bold">Depois</div>
-                    <div className="text-base font-bold bg-gradient-to-r from-fuchsia-300 to-violet-300 bg-clip-text text-transparent mt-0.5">{t.after}</div>
-                  </div>
-                </div>
-                <div className="text-[10px] text-zinc-500 text-center mb-4">{t.metric}</div>
-
-                {/* Stars */}
-                <div className="relative flex gap-0.5 mb-3">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-
-                {/* Quote */}
-                <p className="relative text-zinc-300 text-sm leading-relaxed">{t.text}</p>
+                  <div className="text-[10px] text-zinc-500 text-center mb-3">{t.metric}</div>
+                  <div className="flex gap-0.5 mb-3">{[1,2,3,4,5].map((j) => <Star key={j} className="w-3 h-3 fill-yellow-400 text-yellow-400" />)}</div>
+                  <p className="text-zinc-300 text-sm leading-relaxed mt-auto">{t.text}</p>
+                </GlowCard>
               </motion.div>
             );
           })}
         </motion.div>
       </motion.section>
 
-      {/* ━━━━━━━━━━━━━━━━ PRICING ━━━━━━━━━━━━━━━━ */}
-      <motion.section
-        id="planos"
-        className="relative z-10 px-6 py-32 max-w-7xl mx-auto"
-        initial="hidden"
-        whileInView="show"
-        viewport={REVEAL}
-        variants={stagger}
-      >
-        <motion.div variants={fadeUp} className="text-center mb-12">
-          <p className="text-xs text-fuchsia-400 uppercase tracking-[0.2em] font-semibold mb-3">Planos</p>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
-            Comece grátis.
-            <br />
-            <span className="text-zinc-500">Escale quando quiser.</span>
+      {/* ── Pricing + PIX Combinados ── */}
+      <motion.section id="planos" className="relative z-10 px-6 py-24 max-w-7xl mx-auto" initial="hidden" whileInView="show" viewport={REVEAL} variants={stagger}>
+        <motion.div variants={fadeUp} className="text-center mb-10">
+          <p className="text-xs text-fuchsia-300 uppercase tracking-[0.2em] font-semibold mb-3">Planos</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
+            Assine ou pague uma vez.
           </h2>
-
-          {/* Toggle Mensal / Anual */}
-          <div className="inline-flex items-center gap-1 p-1 rounded-xl border border-white/10 bg-white/[0.03]">
-            <button
-              onClick={() => setYearly(false)}
-              className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
-                !yearly ? "bg-white text-black" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Mensal
-            </button>
-            <button
-              onClick={() => setYearly(true)}
-              className={`px-5 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-                yearly ? "bg-white text-black" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Anual
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${yearly ? "bg-emerald-500/20 text-emerald-700" : "bg-emerald-500/20 text-emerald-300"}`}>
-                -20%
-              </span>
-            </button>
-          </div>
+          <p className="text-zinc-400 max-w-xl mx-auto text-base">
+            Cada plano tem opção mensal ou <span className="text-green-400 font-semibold">PIX com o dobro de cortes</span> — compare e escolha.
+          </p>
         </motion.div>
+
+        {/* Toggle Mensal/Anual */}
+        <div className="flex justify-center mb-10">
+          <div className="inline-flex items-center gap-1 p-1 rounded-xl border border-white/10 bg-black/30 backdrop-blur-sm">
+            {[["Mensal", false], ["Anual", true]].map(([l, v]) => (
+              <button key={String(l)} onClick={() => setYearly(v as boolean)}
+                className={`px-5 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${yearly === v ? "bg-white text-black" : "text-zinc-400 hover:text-white"}`}>
+                {l}
+                {v && <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${yearly ? "bg-emerald-500/20 text-emerald-700" : "bg-emerald-500/20 text-emerald-300"}`}>-20%</span>}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <motion.div variants={stagger} className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
-          {PLANS.map((plan) => (
-            <PricingCard key={plan.name} plan={plan} yearly={yearly} />
-          ))}
+          {PLANS.map((plan) => {
+            const price = yearly ? plan.yearly : plan.monthly;
+            return (
+              <motion.div key={plan.name} variants={fadeUp} className="flex flex-col">
+                <GlowCard customSize glowColor={plan.glow} className="flex flex-col flex-1 relative overflow-hidden">
+                  {/* Linha de destaque no topo do card popular */}
+                  {plan.popular && (
+                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-fuchsia-500 via-violet-400 to-transparent" />
+                  )}
+                  {plan.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white text-[11px] font-black tracking-widest whitespace-nowrap uppercase shadow-[0_4px_20px_rgba(168,85,247,0.5)]">
+                      Mais Popular
+                    </div>
+                  )}
+
+                  <div className="p-6 flex flex-col flex-1">
+                    {/* Plan header — nome impactante */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-white/[0.07] text-fuchsia-300 flex-shrink-0">
+                        {plan.icon}
+                      </div>
+                      <div>
+                        <div className="text-[22px] font-black tracking-tight leading-tight">{plan.name}</div>
+                        <p className="text-zinc-500 text-[12px] leading-tight">{plan.desc}</p>
+                      </div>
+                    </div>
+
+                    {/* Features */}
+                    <ul className="space-y-2 mb-6 flex-1">
+                      {plan.features.map((f) => (
+                        <li key={f} className="flex items-start gap-2 text-[13px] text-zinc-300">
+                          <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-[3px]" />{f}
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* Comparação Mensal vs PIX */}
+                    <div className="grid grid-cols-2 gap-2.5 border-t border-white/10 pt-5">
+                      {/* Assinatura mensal */}
+                      <div className="rounded-2xl bg-violet-500/10 border border-violet-500/25 p-4 flex flex-col items-center text-center">
+                        <span className="text-[9px] text-violet-400 font-black uppercase tracking-[0.18em] mb-3 block">Mensal</span>
+                        <div className="text-[28px] font-black tracking-tight leading-none">R${price.toString().replace(".", ",")}</div>
+                        <div className="text-[11px] text-zinc-500 mt-1">/mês</div>
+                        <div className="text-[13px] text-violet-300 mt-2 mb-4 font-bold">{plan.monthlyCortes} cortes</div>
+                        {yearly && <div className="text-[10px] text-emerald-400 -mt-2 mb-2 font-semibold">-20% off</div>}
+                        <a href={plan.href} target="_blank" rel="noopener noreferrer"
+                          className={`mt-auto w-full py-2 rounded-xl text-[12px] font-bold text-center block transition-all ${plan.popular
+                            ? "bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white shadow-[0_4px_20px_rgba(168,85,247,0.35)]"
+                            : "bg-violet-500/20 text-violet-300 hover:bg-violet-500/30"}`}>
+                          Assinar →
+                        </a>
+                      </div>
+
+                      {/* PIX único */}
+                      <div className="rounded-2xl bg-green-500/10 border border-green-500/25 p-4 flex flex-col items-center text-center relative">
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] bg-green-500 text-black font-black px-2.5 py-0.5 rounded-full whitespace-nowrap">2× CORTES</span>
+                        <span className="text-[9px] text-green-400 font-black uppercase tracking-[0.18em] mb-3 mt-1 block">PIX Único</span>
+                        <div className="text-[28px] font-black tracking-tight leading-none">R${plan.monthly.toString().replace(".", ",")}</div>
+                        <div className="text-[11px] text-zinc-500 mt-1">único</div>
+                        <div className="text-[13px] text-green-300 mt-2 mb-4 font-bold">{plan.pixCredits} créditos</div>
+                        <a href={plan.pixHref} target="_blank" rel="noopener noreferrer"
+                          className="mt-auto w-full py-2 rounded-xl text-[12px] font-bold bg-green-500/20 text-green-300 hover:bg-green-500/30 transition-all text-center block border border-green-500/20">
+                          Pagar PIX →
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </GlowCard>
+              </motion.div>
+            );
+          })}
         </motion.div>
 
-        <p className="text-center text-xs text-zinc-500 mt-8">
-          7 dias de garantia · Cancele quando quiser · Sem fidelidade
+        <p className="text-center text-xs text-zinc-500 mt-6">
+          Assinatura: 7 dias de garantia · Cancele quando quiser &nbsp;·&nbsp; PIX: créditos não expiram · acumule quando quiser
         </p>
 
         {/* Créditos extras */}
@@ -1207,224 +689,87 @@ export default function LandingPage() {
             <span className="text-lg">⚡</span>
             <span className="text-xs font-bold tracking-wider text-amber-200 uppercase">Acabaram os cortes do mês?</span>
           </div>
-          <p className="text-zinc-400 text-sm mb-8">
-            Compre créditos extras a qualquer momento, sem trocar de plano.
-          </p>
+          <p className="text-zinc-400 text-sm mb-8">Compre créditos extras a qualquer momento, sem trocar de plano.</p>
           <div className="grid grid-cols-3 gap-3 max-w-xl mx-auto">
-            {[
-              { clips: "10 cortes", price: "R$15", icon: "🔋" },
-              { clips: "25 cortes", price: "R$30", icon: "⚡" },
-              { clips: "50 cortes", price: "R$50", icon: "🚀" },
-            ].map((pack) => (
-              <motion.div
-                key={pack.clips}
-                whileHover={{ y: -4 }}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-5 cursor-pointer hover:border-amber-400/30 transition-colors"
-              >
-                <div className="text-3xl mb-2">{pack.icon}</div>
-                <div className="text-xl font-bold bg-gradient-to-b from-white to-zinc-400 bg-clip-text text-transparent">{pack.price}</div>
-                <div className="text-xs text-zinc-500 mt-1">{pack.clips}</div>
+            {[{ clips: "10 cortes", price: "R$15", icon: "🔋" }, { clips: "25 cortes", price: "R$30", icon: "⚡" }, { clips: "50 cortes", price: "R$50", icon: "🚀" }].map((p) => (
+              <motion.div key={p.clips} whileHover={{ y: -4 }}>
+                <GlowCard customSize glowColor="orange" className="p-5 text-center cursor-pointer">
+                  <div className="text-3xl mb-2">{p.icon}</div>
+                  <div className="text-xl font-bold">{p.price}</div>
+                  <div className="text-xs text-zinc-500 mt-1">{p.clips}</div>
+                </GlowCard>
               </motion.div>
             ))}
           </div>
-          <p className="text-[11px] text-zinc-600 mt-5">
-            Disponíveis para compra dentro da plataforma após o login
-          </p>
+          <p className="text-[11px] text-zinc-600 mt-5">Disponíveis para compra dentro da plataforma após o login</p>
         </motion.div>
       </motion.section>
 
-      {/* ━━━━━━━━━━━━━━━━ PIX CREDITS ━━━━━━━━━━━━━━━━ */}
-      <motion.section
-        className="relative z-10 px-6 py-24 max-w-5xl mx-auto"
-        initial="hidden"
-        whileInView="show"
-        viewport={REVEAL}
-        variants={stagger}
-      >
+      {/* ── FAQ ── */}
+      <motion.section id="faq" className="relative z-10 px-6 py-24 max-w-3xl mx-auto" initial="hidden" whileInView="show" viewport={REVEAL} variants={stagger}>
         <motion.div variants={fadeUp} className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-400/30 bg-green-500/10 mb-4">
-            <span className="text-xs font-bold tracking-wider text-green-300 uppercase">Pague com PIX</span>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Prefere pagar uma vez?</h2>
-          <p className="mt-4 text-zinc-400 text-lg max-w-xl mx-auto">
-            Compra única via PIX com o <span className="text-green-400 font-semibold">dobro de créditos</span>. Sem assinatura, sem vencimento.
-          </p>
+          <p className="text-xs text-fuchsia-300 uppercase tracking-[0.2em] font-semibold mb-3">Perguntas frequentes</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Ainda tem dúvida?</h2>
         </motion.div>
-        <motion.div variants={stagger} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { name: "Starter", credits: 110, price: "R$29,90", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888128" },
-            { name: "Pro", credits: 160, price: "R$49,90", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888178", popular: true },
-            { name: "Full", credits: 280, price: "R$99,90", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888195" },
-            { name: "Agência", credits: 440, price: "R$150", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888217" },
-          ].map((pkg) => (
-            <motion.a
-              key={pkg.name}
-              variants={fadeUp}
-              href={pkg.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ y: -4 }}
-              className={`relative flex flex-col rounded-2xl border p-6 text-center transition-colors ${
-                pkg.popular
-                  ? "border-green-500/50 bg-green-500/10 shadow-[0_0_30px_rgba(34,197,94,0.12)]"
-                  : "border-white/10 bg-white/[0.03] hover:border-white/20"
-              }`}
-            >
-              {pkg.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-black text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">
-                  MAIS POPULAR
-                </span>
-              )}
-              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{pkg.name}</p>
-              <p className="mt-3 text-4xl font-extrabold text-green-400">{pkg.credits}</p>
-              <p className="text-xs text-zinc-500">créditos de cortes</p>
-              <p className="mt-4 text-xl font-bold">{pkg.price}</p>
-              <p className="text-xs text-zinc-600 mb-4">pagamento único via PIX</p>
-              <div className="mt-auto pt-4 border-t border-white/10">
-                <span className="text-sm font-semibold text-green-400">Pagar com PIX →</span>
-              </div>
-            </motion.a>
-          ))}
-        </motion.div>
-        <p className="text-center text-xs text-zinc-600 mt-6">Créditos não expiram · Acumule e use quando quiser</p>
-      </motion.section>
-
-      {/* ━━━━━━━━━━━━━━━━ FAQ ━━━━━━━━━━━━━━━━ */}
-      <motion.section
-        id="faq"
-        className="relative z-10 px-6 py-32 max-w-3xl mx-auto"
-        initial="hidden"
-        whileInView="show"
-        viewport={REVEAL}
-        variants={stagger}
-      >
-        <motion.div variants={fadeUp} className="text-center mb-12">
-          <p className="text-xs text-fuchsia-400 uppercase tracking-[0.2em] font-semibold mb-3">Perguntas frequentes</p>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Ainda tem dúvida?</h2>
-        </motion.div>
-
         <motion.div variants={stagger} className="space-y-2">
           {FAQS.map((faq, i) => {
             const open = openFaq === i;
             return (
-              <motion.div
-                key={faq.q}
-                variants={fadeUp}
-                className="border border-white/10 bg-white/[0.02] rounded-xl overflow-hidden"
-              >
-                <button
-                  onClick={() => setOpenFaq(open ? null : i)}
-                  className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left hover:bg-white/[0.02] transition-colors"
-                >
-                  <span className="font-medium text-base">{faq.q}</span>
-                  <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                    <ChevronDown className="w-5 h-5 text-zinc-500" />
-                  </motion.div>
-                </button>
-                <AnimatePresence initial={false}>
-                  {open && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25, ease: "easeInOut" }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-6 pb-5 text-zinc-400 text-sm leading-relaxed">{faq.a}</div>
+              <motion.div key={faq.q} variants={fadeUp}>
+                <GlowCard customSize glowColor="purple" className="overflow-hidden">
+                  <button onClick={() => setOpenFaq(open ? null : i)} className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+                    <span className="font-semibold text-base">{faq.q}</span>
+                    <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                      <ChevronDown className="w-5 h-5 text-zinc-500" />
                     </motion.div>
-                  )}
-                </AnimatePresence>
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {open && (
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+                        <div className="px-6 pb-5 text-zinc-400 text-sm leading-relaxed">{faq.a}</div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </GlowCard>
               </motion.div>
             );
           })}
         </motion.div>
       </motion.section>
 
-      {/* ━━━━━━━━━━━━━━━━ CTA FINAL ━━━━━━━━━━━━━━━━ */}
-      <motion.section
-        className="relative z-10 px-6 py-32"
-        initial="hidden"
-        whileInView="show"
-        viewport={REVEAL}
-        variants={stagger}
-      >
-        <motion.div
-          variants={fadeUp}
-          className="max-w-4xl mx-auto text-center p-12 md:p-20 rounded-3xl border border-white/10 relative overflow-hidden"
-          style={{ background: "linear-gradient(135deg, rgba(217,70,239,0.08) 0%, rgba(168,85,247,0.04) 50%, rgba(34,211,238,0.06) 100%)" }}
-        >
-          {/* Mesh gradient blobs animados */}
-          <motion.div
-            className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-fuchsia-500/25 rounded-full blur-3xl"
-            animate={{ x: [0, 40, 0], y: [0, 30, 0], scale: [1, 1.1, 1] }}
-            transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute -bottom-40 -right-40 w-[500px] h-[500px] bg-violet-500/25 rounded-full blur-3xl"
-            animate={{ x: [0, -50, 0], y: [0, -30, 0], scale: [1, 1.15, 1] }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-3xl"
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          />
-
-          {/* Grid overlay sutil */}
-          <div
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage: "linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)",
-              backgroundSize: "32px 32px",
-            }}
-          />
+      {/* ── CTA final ── */}
+      <motion.section className="relative z-10 px-6 py-32" initial="hidden" whileInView="show" viewport={REVEAL} variants={stagger}>
+        <motion.div variants={fadeUp} className="max-w-4xl mx-auto text-center p-12 md:p-20 rounded-3xl relative overflow-hidden"
+          style={{ background: "linear-gradient(135deg,rgba(217,70,239,0.12) 0%,rgba(168,85,247,0.06) 50%,rgba(34,211,238,0.08) 100%)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <motion.div className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-fuchsia-500/20 rounded-full blur-3xl pointer-events-none"
+            animate={{ x: [0, 40, 0], y: [0, 30, 0] }} transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }} />
+          <motion.div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] bg-violet-500/20 rounded-full blur-3xl pointer-events-none"
+            animate={{ x: [0, -50, 0], y: [0, -30, 0] }} transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }} />
 
           <div className="relative">
-            {/* Live counter */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={REVEAL}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 backdrop-blur-sm mb-8"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-              </span>
-              <span className="text-xs font-semibold text-emerald-200">
-                23 criadores começaram hoje
-              </span>
-            </motion.div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 mb-8">
+              <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" /></span>
+              <span className="text-xs font-semibold text-emerald-200">23 criadores começaram hoje</span>
+            </div>
 
-            <h2 className="text-5xl md:text-7xl font-bold tracking-[-0.04em] mb-6 leading-[1.02]">
-              Pronto pra
-              <br />
-              <span className="bg-gradient-to-r from-fuchsia-300 via-pink-300 to-violet-300 bg-clip-text text-transparent">
-                viralizar?
-              </span>
+            <h2 className="text-5xl md:text-7xl font-extrabold tracking-[-0.04em] mb-6 leading-[1.0]">
+              Pronto pra<br />
+              <span className="bg-gradient-to-r from-fuchsia-300 via-pink-300 to-violet-300 bg-clip-text text-transparent">viralizar?</span>
             </h2>
             <p className="text-zinc-300 text-lg md:text-xl max-w-xl mx-auto mb-10">
-              10 cortes grátis no primeiro mês.
-              <br className="md:hidden" />
+              10 cortes grátis no primeiro mês.<br className="md:hidden" />
               <span className="text-zinc-500"> Sem cartão. Sem cadastro chato.</span>
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
               <MagneticButton distance={0.35}>
-                <Link
-                  href="/app"
-                  className="inline-flex items-center gap-2 px-9 py-4 rounded-xl bg-white text-black font-bold text-base shadow-[0_15px_60px_-10px_rgba(255,255,255,0.6)] hover:scale-[1.03] transition-transform"
-                >
-                  Começar agora — é grátis <span aria-hidden>→</span>
+                <Link href="/app" className="inline-flex items-center gap-2 px-9 py-4 rounded-xl bg-white text-black font-bold text-base shadow-[0_15px_60px_-10px_rgba(255,255,255,0.6)] hover:scale-[1.03] transition-transform">
+                  Começar agora — é grátis →
                 </Link>
               </MagneticButton>
-              <a href="#planos" className="text-sm text-zinc-400 hover:text-white transition-colors font-medium">
-                Ver planos →
-              </a>
+              <a href="#planos" className="text-sm text-zinc-400 hover:text-white transition-colors font-medium">Ver planos →</a>
             </div>
 
-            {/* Trust row */}
             <div className="flex flex-wrap items-center justify-center gap-5 text-xs text-zinc-500">
               <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-400" /> Garantia 7 dias</span>
               <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-400" /> Pix, cartão ou boleto</span>
@@ -1434,45 +779,31 @@ export default function LandingPage() {
         </motion.div>
       </motion.section>
 
-      {/* ━━━━━━━━━━━━━━━━ FOOTER ━━━━━━━━━━━━━━━━ */}
-      <footer className="relative z-10 px-6 pt-16 pb-10 border-t border-white/5">
+      {/* ── Footer ── */}
+      <footer className="relative z-10 px-6 pt-16 pb-10 border-t border-white/[0.06]">
         <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-10">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Image src="/logo-viraliza-cortes.png" alt="Viraliza Cortes" width={28} height={28} className="rounded-md" />
               <span className="font-bold text-sm">Viraliza Cortes</span>
             </div>
-            <p className="text-xs text-zinc-500 leading-relaxed">
-              IA 100% brasileira pra transformar vídeos longos em cortes virais.
-            </p>
+            <p className="text-xs text-zinc-500 leading-relaxed">IA 100% brasileira pra transformar vídeos longos em cortes virais.</p>
           </div>
-          <div>
-            <h4 className="text-xs uppercase tracking-wider text-zinc-500 font-bold mb-3">Produto</h4>
-            <ul className="space-y-2 text-sm text-zinc-400">
-              <li><a href="#recursos" className="hover:text-white transition-colors">Recursos</a></li>
-              <li><a href="#planos" className="hover:text-white transition-colors">Planos</a></li>
-              <li><a href="#como-funciona" className="hover:text-white transition-colors">Como funciona</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-xs uppercase tracking-wider text-zinc-500 font-bold mb-3">Empresa</h4>
-            <ul className="space-y-2 text-sm text-zinc-400">
-              <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-              <li><a href="mailto:contato@viralizacortes.com.br" className="hover:text-white transition-colors">Contato</a></li>
-              <li><a href="#faq" className="hover:text-white transition-colors">FAQ</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-xs uppercase tracking-wider text-zinc-500 font-bold mb-3">Legal</h4>
-            <ul className="space-y-2 text-sm text-zinc-400">
-              <li><Link href="/privacidade" className="hover:text-white transition-colors">Privacidade</Link></li>
-              <li><Link href="/excluir-conta" className="hover:text-white transition-colors">Excluir conta</Link></li>
-            </ul>
-          </div>
+          {[
+            { title: "Produto", links: [["Recursos","#recursos"],["Planos","#planos"],["Como funciona","#como-funciona"]] },
+            { title: "Empresa", links: [["Blog","/blog"],["Contato","mailto:contato@viralizacortes.com.br"],["FAQ","#faq"]] },
+            { title: "Legal", links: [["Privacidade","/privacidade"],["Excluir conta","/excluir-conta"]] },
+          ].map((col) => (
+            <div key={col.title}>
+              <h4 className="text-xs uppercase tracking-wider text-zinc-500 font-bold mb-3">{col.title}</h4>
+              <ul className="space-y-2 text-sm text-zinc-400">
+                {col.links.map(([l, h]) => <li key={l}><a href={h} className="hover:text-white transition-colors">{l}</a></li>)}
+              </ul>
+            </div>
+          ))}
         </div>
         <div className="max-w-6xl mx-auto mt-12 pt-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-3">
           <p className="text-xs text-zinc-600">© 2026 Viraliza Cortes. Feito no Brasil 🇧🇷</p>
-          <p className="text-xs text-zinc-600">viralizacortes.com.br</p>
         </div>
       </footer>
     </div>

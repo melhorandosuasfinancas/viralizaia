@@ -206,6 +206,7 @@ export default function V2Page() {
   const [yearly, setYearly] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [url, setUrl] = useState("");
+  const [demoTab, setDemoTab] = useState<"config" | "processing">("config");
 
   return (
     <div className="min-h-screen text-white overflow-x-hidden">
@@ -394,6 +395,115 @@ export default function V2Page() {
               </GlowCard>
             </motion.div>
           ))}
+        </motion.div>
+      </motion.section>
+
+      {/* ── App Demo (futurista) ── */}
+      <motion.section className="relative z-10 px-6 py-24 max-w-6xl mx-auto" initial="hidden" whileInView="show" viewport={REVEAL} variants={stagger}>
+        <motion.div variants={fadeUp} className="text-center mb-14">
+          <p className="text-xs text-cyan-400 uppercase tracking-[0.2em] font-semibold mb-3">O app por dentro</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+            Interface simples.<br /><span className="bg-gradient-to-r from-cyan-300 to-violet-300 bg-clip-text text-transparent">Resultado profissional.</span>
+          </h2>
+          <p className="text-zinc-400 mt-4 max-w-lg mx-auto">Cole o link, escolha as opções e deixa a IA fazer o resto. Veja como é fácil.</p>
+        </motion.div>
+
+        <motion.div variants={fadeUp} className="relative max-w-4xl mx-auto">
+          {/* Glow atrás do frame */}
+          <div className="absolute inset-0 -m-10 bg-violet-600/10 rounded-[3rem] blur-3xl pointer-events-none" />
+          <div className="absolute inset-0 -m-6 bg-cyan-500/5 rounded-[3rem] blur-2xl pointer-events-none" />
+
+          {/* Browser frame */}
+          <div className="relative rounded-2xl overflow-hidden border border-violet-500/25 shadow-[0_0_120px_rgba(168,85,247,0.12),inset_0_1px_0_rgba(255,255,255,0.05)]"
+            style={{ background: "linear-gradient(180deg,#0c0c1e 0%,#07071a 100%)" }}>
+
+            {/* Browser top bar */}
+            <div className="flex items-center gap-4 px-5 py-3 border-b border-white/[0.06]" style={{ background: "#09091c" }}>
+              <div className="flex gap-1.5 flex-shrink-0">
+                <div className="w-3 h-3 rounded-full bg-red-500/70" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
+                <div className="w-3 h-3 rounded-full bg-green-500/70" />
+              </div>
+              {/* URL bar */}
+              <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] max-w-xs mx-auto">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+                <span className="text-[11px] text-zinc-500 font-mono truncate">viralizacortes.com.br/app</span>
+              </div>
+              {/* Tab switcher */}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {([["config", "⚙️ Configurar"], ["processing", "⚡ Processando"]] as const).map(([id, label]) => (
+                  <button key={id} onClick={() => setDemoTab(id)}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ${demoTab === id
+                      ? "bg-violet-500/25 text-violet-200 border border-violet-400/30 shadow-[0_0_10px_rgba(167,139,250,0.2)]"
+                      : "text-zinc-500 hover:text-zinc-300"}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Screenshot area */}
+            <div className="relative overflow-hidden" style={{ minHeight: 320 }}>
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={demoTab}
+                  src={demoTab === "config" ? "/app-config.png" : "/app-processing.png"}
+                  alt={demoTab === "config" ? "App Viraliza — Configuração" : "App Viraliza — Processando"}
+                  className="w-full object-cover object-top"
+                  style={{ maxHeight: 520, filter: "brightness(1.05) contrast(1.05)" }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.25 }}
+                />
+              </AnimatePresence>
+
+              {/* Scanline animada */}
+              <motion.div
+                className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-violet-400/30 to-transparent pointer-events-none"
+                animate={{ y: [0, 520] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+              />
+              {/* Fade bottom */}
+              <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+                style={{ background: "linear-gradient(to top,#07071a,transparent)" }} />
+            </div>
+
+            {/* Status bar */}
+            <div className="flex items-center justify-between px-5 py-2.5 border-t border-white/[0.04]" style={{ background: "#09091c" }}>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px] text-zinc-500 font-mono">Sistema operacional</span>
+              </div>
+              <div className="flex items-center gap-4 text-[10px] text-zinc-600 font-mono">
+                <span>IA v3.2</span>
+                <span className="text-violet-500">●</span>
+                <span>PT-BR</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Floating badges */}
+          <motion.div animate={{ y: [0, -7, 0] }} transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -left-6 top-20 hidden lg:flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-violet-500/30 shadow-[0_8px_30px_rgba(168,85,247,0.2)]"
+            style={{ background: "rgba(10,10,28,0.95)", backdropFilter: "blur(12px)" }}>
+            <span className="text-xl">⚡</span>
+            <div><div className="text-xs font-black text-white">Pronto em 2 min</div><div className="text-[10px] text-zinc-500">por hora de vídeo</div></div>
+          </motion.div>
+
+          <motion.div animate={{ y: [0, -9, 0] }} transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+            className="absolute -right-6 top-16 hidden lg:flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-cyan-500/25 shadow-[0_8px_30px_rgba(34,211,238,0.12)]"
+            style={{ background: "rgba(10,10,28,0.95)", backdropFilter: "blur(12px)" }}>
+            <span className="text-xl">🤖</span>
+            <div><div className="text-xs font-black text-white">IA Brasileira</div><div className="text-[10px] text-zinc-500">PT-BR nativo</div></div>
+          </motion.div>
+
+          <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
+            className="absolute -right-6 bottom-24 hidden lg:flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-emerald-500/25 shadow-[0_8px_30px_rgba(52,211,153,0.12)]"
+            style={{ background: "rgba(10,10,28,0.95)", backdropFilter: "blur(12px)" }}>
+            <span className="text-xl">✨</span>
+            <div><div className="text-xs font-black text-white">Sem marca d'água</div><div className="text-[10px] text-zinc-500">vídeo limpo</div></div>
+          </motion.div>
         </motion.div>
       </motion.section>
 
