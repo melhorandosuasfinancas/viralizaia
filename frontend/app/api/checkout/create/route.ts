@@ -11,10 +11,10 @@ const PLAN_PRODUCT_IDS: Record<string, string> = {
 };
 
 const PLAN_PAYMENT_LINKS: Record<string, string> = {
-  basico:  process.env.APPMAX_BASICO_LINK  || "https://pay.finaliza.shop/pl/cf81361a6d",
-  pro:     process.env.APPMAX_PRO_LINK     || "https://pay.finaliza.shop/pl/9391b0d5c5",
-  full:    process.env.APPMAX_FULL_LINK    || "https://pay.finaliza.shop/pl/1fac0eef10",
-  agencia: process.env.APPMAX_AGENCIA_LINK || "https://pay.finaliza.shop/pl/71a2cf32b6",
+  basico:  process.env.APPMAX_BASICO_LINK  || "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36710557",
+  pro:     process.env.APPMAX_PRO_LINK     || "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36710590",
+  full:    process.env.APPMAX_FULL_LINK    || "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36711838",
+  agencia: process.env.APPMAX_AGENCIA_LINK || "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36711896",
 };
 
 export async function POST(req: NextRequest) {

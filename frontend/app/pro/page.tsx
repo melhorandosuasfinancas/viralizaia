@@ -62,7 +62,7 @@ const PLANS = [
     yearly: 23.92,
     icon: <Sparkles className="w-5 h-5" />,
     desc: "Pra começar a crescer",
-    href: "https://pay.finaliza.shop/pl/cf81361a6d",
+    href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36710557",
     cta: "Assinar Starter",
     features: [
       "35 cortes por mês",
@@ -78,7 +78,7 @@ const PLANS = [
     yearly: 39.92,
     icon: <Zap className="w-5 h-5" />,
     desc: "Pra criadores sérios",
-    href: "https://pay.finaliza.shop/pl/9391b0d5c5",
+    href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36710590",
     cta: "Quero o Pro",
     popular: true,
     features: [
@@ -95,7 +95,7 @@ const PLANS = [
     yearly: 79.92,
     icon: <Crown className="w-5 h-5" />,
     desc: "Pra quem quer escalar",
-    href: "https://pay.finaliza.shop/pl/1fac0eef10",
+    href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36711838",
     cta: "Assinar Full",
     features: [
       "120 cortes por mês",
@@ -111,7 +111,7 @@ const PLANS = [
     yearly: 120,
     icon: <Building2 className="w-5 h-5" />,
     desc: "Pra equipes e agências",
-    href: "https://pay.finaliza.shop/pl/71a2cf32b6",
+    href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36711896",
     cta: "Falar com vendas",
     features: [
       "200 cortes por mês",

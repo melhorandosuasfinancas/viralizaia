@@ -16,7 +16,7 @@ const TIERS: PricingTier[] = [
     color: "amber",
     features: ["10 cortes por mês", "Legendas TikTok automáticas", "Download em 9:16", "Suporte por email"],
     ctaText: "Assinar Básico",
-    ctaHref: "https://pay.finaliza.shop/pl/cf81361a6d",
+    ctaHref: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36710557",
   },
   {
     name: "Pro",
@@ -27,7 +27,7 @@ const TIERS: PricingTier[] = [
     features: ["20 cortes por mês", "Todos os estilos de legenda", "Seletor de cor da legenda", "Suporte prioritário"],
     popular: true,
     ctaText: "Assinar Pro",
-    ctaHref: "https://pay.finaliza.shop/pl/9391b0d5c5",
+    ctaHref: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36710590",
   },
   {
     name: "Full",
@@ -37,7 +37,7 @@ const TIERS: PricingTier[] = [
     color: "purple",
     features: ["50 cortes por mês", "Análise de viralidade IA", "Download em alta qualidade", "Suporte dedicado"],
     ctaText: "Assinar Full",
-    ctaHref: "https://pay.finaliza.shop/pl/1fac0eef10",
+    ctaHref: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36711838",
   },
 ];
 
@@ -106,7 +106,7 @@ export default function NovoPage() {
           <div className="mt-6 flex justify-center">
             <MagneticButton>
               <a
-                href="https://pay.finaliza.shop/pl/71a2cf32b6"
+                href="https://viralizacortes.carrinho.app/one-checkout/ocmtb/36711896"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white font-semibold shadow-[0_8px_30px_rgba(168,85,247,0.4)] hover:shadow-[0_12px_40px_rgba(168,85,247,0.6)] transition-shadow"

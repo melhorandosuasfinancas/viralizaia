@@ -241,7 +241,7 @@ const PLANS = [
       "Histórico de projetos",
     ],
     cta: "Assinar Starter",
-    href: "https://pay.finaliza.shop/pl/cf81361a6d",
+    href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36710557",
     highlight: false,
   },
   {
@@ -259,7 +259,7 @@ const PLANS = [
       "Suporte prioritário",
     ],
     cta: "Quero o Pro",
-    href: "https://pay.finaliza.shop/pl/9391b0d5c5",
+    href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36710590",
     highlight: true,
     badge: "MAIS POPULAR",
   },
@@ -278,7 +278,7 @@ const PLANS = [
       "Suporte VIP",
     ],
     cta: "Assinar Full",
-    href: "https://pay.finaliza.shop/pl/1fac0eef10",
+    href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36711838",
     highlight: false,
   },
   {
@@ -295,7 +295,7 @@ const PLANS = [
       "Suporte VIP dedicado",
     ],
     cta: "Falar com vendas",
-    href: "https://pay.finaliza.shop/pl/71a2cf32b6",
+    href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36711896",
     highlight: false,
   },
 ];

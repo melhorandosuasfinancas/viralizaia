@@ -6,10 +6,10 @@ import Link from "next/link";
 import Image from "next/image";
 
 const APPMAX_URLS: Record<string, string> = {
-  basico:  "https://pay.finaliza.shop/pl/cf81361a6d",
-  pro:     "https://pay.finaliza.shop/pl/9391b0d5c5",
-  full:    "https://pay.finaliza.shop/pl/1fac0eef10",
-  agencia: "https://pay.finaliza.shop/pl/71a2cf32b6",
+  basico:  "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36710557",
+  pro:     "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36710590",
+  full:    "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36711838",
+  agencia: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36711896",
 };
 
 export default function CheckoutPage() {
