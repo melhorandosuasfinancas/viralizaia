@@ -23,7 +23,7 @@ jobs:
         with:
           host: ${{ secrets.WORKER_HOST }}
           username: ${{ secrets.WORKER_USER }}
-          key: ${{ secrets.WORKER_SSH_KEY }}
+          password: ${{ secrets.WORKER_SSH_PASS }}
           timeout: 60s
           script: |
             cd /root/viralizaia
