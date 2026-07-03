@@ -253,13 +253,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${montserrat.className} min-h-full bg-[#050507] text-[#f9f9f9]`}>
         <Providers>{children}</Providers>
+        <Script src="https://www.googletagmanager.com/gtag/js?id=AW-18297418601" strategy="afterInteractive" />
+        <Script id="google-ads" strategy="afterInteractive">
+          {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','AW-18297418601');`}
+        </Script>
         {GA_ID && (
-          <>
-            <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}',{page_path:window.location.pathname});`}
-            </Script>
-          </>
+          <Script id="google-analytics" strategy="afterInteractive">
+            {`gtag('config','${GA_ID}',{page_path:window.location.pathname});`}
+          </Script>
         )}
       </body>
     </html>
