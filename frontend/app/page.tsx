@@ -256,6 +256,64 @@ function MobileFloatingCTA() {
   );
 }
 
+// ── Lead Capture WhatsApp ──────────────────────────
+function LeadCaptureForm() {
+  const [phone, setPhone] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+
+  function formatPhone(value: string) {
+    const n = value.replace(/\D/g, "").slice(0, 11);
+    if (n.length <= 2) return n;
+    if (n.length <= 7) return `(${n.slice(0, 2)}) ${n.slice(2)}`;
+    return `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}`;
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const raw = phone.replace(/\D/g, "");
+    if (raw.length < 10) return;
+    setStatus("loading");
+    try {
+      const res = await fetch("https://viralizaia.duckdns.org/api/auth/leads/capture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: raw }),
+      });
+      setStatus(res.ok ? "done" : "error");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  if (status === "done") {
+    return (
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+        className="max-w-sm mx-auto mt-3 mb-4 flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-semibold">
+        <Check className="w-4 h-4 flex-shrink-0" />
+        Perfeito! Vou te mandar o link no WhatsApp agora.
+      </motion.div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit}
+      className="max-w-sm mx-auto mt-3 mb-4 flex items-center gap-2 px-3 py-2 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
+      <span className="text-lg flex-shrink-0">📱</span>
+      <input
+        type="tel"
+        value={phone}
+        onChange={(e) => setPhone(formatPhone(e.target.value))}
+        placeholder="Seu WhatsApp com DDD"
+        className="flex-1 bg-transparent text-sm text-white placeholder-zinc-500 outline-none min-w-0"
+      />
+      <button type="submit" disabled={status === "loading" || phone.replace(/\D/g, "").length < 10}
+        className="flex-shrink-0 px-4 py-2 rounded-xl bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white text-xs font-bold disabled:opacity-40 transition-opacity whitespace-nowrap">
+        {status === "loading" ? "..." : "Receber grátis"}
+      </button>
+    </form>
+  );
+}
+
 // ── Main page ─────────────────────────────────────
 export default function HomePage() {
   const [yearly, setYearly] = useState(false);
@@ -345,6 +403,13 @@ export default function HomePage() {
             Começar Grátis Agora →
           </Link>
         </motion.div>
+
+        {/* Captura WhatsApp */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55, duration: 0.5 }}>
+          <p className="text-center text-xs text-zinc-500 mb-1.5">ou receba o link no WhatsApp</p>
+          <LeadCaptureForm />
+        </motion.div>
+
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-center text-xs text-zinc-600 mb-4">
           Crie sua conta em 30 segundos · cole o link · receba os cortes
         </motion.p>
