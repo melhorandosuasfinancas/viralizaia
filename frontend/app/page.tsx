@@ -678,16 +678,17 @@ export default function HomePage() {
           {PLANS.map((plan) => {
             const price = yearly ? plan.yearly : plan.monthly;
             return (
-              <motion.div key={plan.name} variants={fadeUp} className="flex flex-col">
+              <motion.div key={plan.name} variants={fadeUp} className="flex flex-col relative">
+                {/* Badge fora do overflow-hidden para não ser cortado */}
+                {plan.popular && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10 px-4 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white text-[11px] font-black tracking-widest whitespace-nowrap uppercase shadow-[0_4px_20px_rgba(168,85,247,0.5)]">
+                    Mais Popular
+                  </div>
+                )}
                 <GlowCard customSize glowColor={plan.glow} className="flex flex-col flex-1 relative overflow-hidden">
                   {/* Linha de destaque no topo do card popular */}
                   {plan.popular && (
                     <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-fuchsia-500 via-violet-400 to-transparent" />
-                  )}
-                  {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white text-[11px] font-black tracking-widest whitespace-nowrap uppercase shadow-[0_4px_20px_rgba(168,85,247,0.5)]">
-                      Mais Popular
-                    </div>
                   )}
 
                   <div className="p-6 flex flex-col flex-1">

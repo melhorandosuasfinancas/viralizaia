@@ -112,6 +112,18 @@ export default async function BlogPostPage({ params }: Props) {
             <p className="text-xl text-gray-400 leading-relaxed">{post.description}</p>
           </header>
 
+          {/* CTA topo do artigo */}
+          <div className="my-8 flex items-center gap-4 p-4 rounded-xl border border-purple-500/20 bg-purple-500/5">
+            <div className="text-2xl flex-shrink-0">✂️</div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-gray-300 font-semibold">Automatize seus cortes virais com IA</p>
+              <p className="text-xs text-gray-500 mt-0.5">10 cortes grátis · sem cartão de crédito</p>
+            </div>
+            <Link href="/app" className="flex-shrink-0 bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors whitespace-nowrap">
+              Testar grátis →
+            </Link>
+          </div>
+
           {/* Article content */}
           <div
             className="prose-viraliza"
@@ -128,15 +140,15 @@ export default async function BlogPostPage({ params }: Props) {
           </div>
         </article>
 
-        {/* CTA inline */}
+        {/* CTA pós-artigo */}
         <div className="my-12 bg-gradient-to-br from-purple-900/40 to-blue-900/20 border border-purple-500/30 rounded-2xl p-8 text-center">
           <div className="text-3xl mb-3">✂️</div>
           <h2 className="text-2xl font-black text-white mb-3">Experimente gratuitamente</h2>
           <p className="text-gray-400 mb-6 max-w-md mx-auto">
-            Transforme seu próximo vídeo em cortes virais com IA. 2 cortes grátis, sem cartão de crédito.
+            Transforme seu próximo vídeo em cortes virais com IA. <strong className="text-purple-300">10 cortes grátis</strong>, sem cartão de crédito.
           </p>
           <Link href="/app" className="inline-block bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-bold px-6 py-3 rounded-xl transition-all duration-200">
-            Começar Grátis Agora
+            Começar Grátis Agora →
           </Link>
         </div>
 
