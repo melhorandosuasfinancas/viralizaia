@@ -333,7 +333,7 @@ export default function HomePage() {
           className="text-zinc-300 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
           Cole o link do YouTube. Nossa IA brasileira identifica os melhores momentos,
           corta no 9:16, adiciona legendas e entrega pronto para TikTok, Reels e Shorts.{" "}
-          <span className="text-fuchsia-300 font-semibold">Em menos de 3 minutos.</span>
+          <span className="text-fuchsia-300 font-semibold">Em menos de 2 minutos.</span>
         </motion.p>
 
         {/* CTA principal */}
