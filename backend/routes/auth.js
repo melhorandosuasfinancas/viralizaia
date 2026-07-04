@@ -138,52 +138,90 @@ router.post('/webhook/appmax', express.json(), (req, res) => {
   const event = (body.event || body.type || '').toLowerCase().replace(/-/g, '_');
   const data  = body.data || body;
 
+  // Extrai email de todos os lugares possíveis que o AppMax pode enviar
   const email =
     (data.customer && data.customer.email) ||
     data.email ||
     (body.customer && body.customer.email) ||
-    body.email;
+    body.email ||
+    (data.buyer && data.buyer.email) ||
+    (body.buyer && body.buyer.email);
 
-  if (!email) return res.status(400).json({ error: 'Email nao encontrado.' });
+  console.log('[APPMAX WEBHOOK] event_raw:', body.event || body.type, '| event_normalized:', event, '| email:', email || 'NAO_ENCONTRADO', '| body_keys:', Object.keys(body).join(','));
+
+  if (!email) {
+    console.error('[APPMAX WEBHOOK] ERRO: email nao encontrado no payload. Body:', JSON.stringify(body).slice(0, 500));
+    return res.status(400).json({ error: 'Email nao encontrado.' });
+  }
 
   const productId =
     String((data.products && data.products[0] && data.products[0].id) || '') ||
     String((data.subscription && data.subscription.plan_id) || '') ||
     String(data.product_id || '') ||
-    String(body.product_id || '');
+    String(body.product_id || '') ||
+    String((data.order && data.order.product_id) || '');
   const productName =
     (data.products && data.products[0] && data.products[0].name) ||
     (data.subscription && data.subscription.plan_name) ||
     (body.products && body.products[0] && body.products[0].name) ||
+    (data.order && data.order.product_name) ||
     '';
 
-  switch (event) {
-    case 'order_approved':
-    case 'order_paid':
-    case 'payment_approved':
-    case 'subscription_activated':
-    case 'subscription_active':
-    case 'subscription_new': {
-      const avulsoQty = getAvulsoCreditsFromProduct(productId, productName);
-      if (avulsoQty > 0) {
-        addAvulsoCredits(email, avulsoQty);
-        console.log('[AVULSO] Adicionado', avulsoQty, 'creditos para', email);
-      } else {
-        activateUser(email, productId, productName);
-      }
-      break;
+  // Eventos de APROVAÇÃO/PAGAMENTO — cobre cartão, PIX, boleto e assinaturas
+  const APPROVAL_EVENTS = new Set([
+    'order_approved',
+    'order_paid',
+    'order_complete',
+    'order_completed',
+    'payment_approved',
+    'payment_confirmed',
+    'payment_complete',
+    'payment_completed',
+    'pix_payment_confirmed',
+    'pix_confirmed',
+    'pix_paid',
+    'pix_approved',
+    'boleto_paid',
+    'boleto_confirmed',
+    'subscription_activated',
+    'subscription_active',
+    'subscription_new',
+    'subscription_renewed',
+    'subscription_renewal',
+    'purchase_approved',
+    'purchase_complete',
+    'purchase_completed',
+  ]);
+
+  // Eventos de CANCELAMENTO/CHARGEBACK
+  const CANCEL_EVENTS = new Set([
+    'subscription_canceled',
+    'subscription_cancelled',
+    'subscription_overdue',
+    'subscription_suspended',
+    'chargeback',
+    'refund',
+    'order_refunded',
+    'payment_refunded',
+    'purchase_refunded',
+    'purchase_canceled',
+    'purchase_cancelled',
+  ]);
+
+  if (APPROVAL_EVENTS.has(event)) {
+    const avulsoQty = getAvulsoCreditsFromProduct(productId, productName);
+    if (avulsoQty > 0) {
+      addAvulsoCredits(email, avulsoQty);
+      console.log('[WEBHOOK OK] Avulso +' + avulsoQty + ' créditos para', email, '| produto:', productId || productName);
+    } else {
+      activateUser(email, productId, productName);
+      console.log('[WEBHOOK OK] Usuário ativado:', email, '| produto:', productId || productName);
     }
-    case 'subscription_canceled':
-    case 'subscription_cancelled':
-    case 'subscription_overdue':
-    case 'subscription_suspended':
-    case 'chargeback':
-    case 'refund':
-    case 'order_refunded':
-      deactivateUser(email);
-      break;
-    default:
-      break;
+  } else if (CANCEL_EVENTS.has(event)) {
+    deactivateUser(email);
+    console.log('[WEBHOOK OK] Usuário desativado:', email);
+  } else {
+    console.log('[WEBHOOK IGNORADO] Evento não mapeado:', event, '| email:', email);
   }
 
   res.json({ received: true });
