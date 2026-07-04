@@ -709,8 +709,6 @@ export const posts: BlogPost[] = [
 <p>Acesse <a href="https://viralizacortes.com.br">viralizacortes.com.br</a>, crie sua conta e teste com 2 cortes completos grátis — sem cartão de crédito.</p>
     `
   },
-];
-
   {
     slug: "como-viralizar-no-tiktok",
     title: "Como Viralizar no TikTok em 2026: O Guia Definitivo (Sem Pagar por Anúncios)",
