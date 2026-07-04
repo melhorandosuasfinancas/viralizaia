@@ -878,112 +878,244 @@ export default function HomePage() {
       </motion.section>
 
       {/* ── SEO Section ── */}
-      <section className="relative z-10 px-6 py-20 max-w-5xl mx-auto">
-        <div className="space-y-16 text-left">
+      <section className="relative z-10 px-6 py-24 max-w-5xl mx-auto">
+        <div className="space-y-20 text-left">
 
-          {/* Bloco 1: IA para criar vídeos */}
-          <div className="grid md:grid-cols-2 gap-10 items-start">
-            <div>
-              <h2 className="text-3xl font-extrabold tracking-tight mb-4 text-white">
-                Criar vídeos com IA ficou mais simples
-              </h2>
-              <p className="text-zinc-400 leading-relaxed text-base">
-                A Viraliza Cortes é uma <strong className="text-white">IA para criar vídeos</strong> curtos a partir de conteúdo longo. Você não precisa saber editar: cole o link do YouTube, e nossa <strong className="text-white">IA de vídeo</strong> identifica os momentos mais impactantes, gera os cortes em formato 9:16 e entrega pronto pra postar. É a forma mais rápida de <strong className="text-white">criar vídeo com IA</strong> no Brasil — sem editor, sem software, sem complicação.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold mb-3 text-white">Por que usar IA de vídeo?</h3>
-              <ul className="space-y-2 text-zinc-400 text-sm">
-                {[
-                  "Economiza horas de edição manual por semana",
-                  "A IA escolhe os momentos de maior retenção",
-                  "Gera cortes de vídeo no formato ideal para cada plataforma",
-                  "Legendas automáticas em PT-BR incluídas",
-                  "Criar vídeo com IA custa menos que contratar editor",
-                ].map((item) => (
-                  <li key={item} className="flex gap-2 items-start">
-                    <span className="text-fuchsia-400 flex-shrink-0 mt-0.5">✦</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Bloco 2: Corte de vídeo */}
-          <div className="p-8 rounded-2xl border border-white/[0.08] bg-white/[0.02]">
-            <h2 className="text-2xl font-extrabold mb-4 text-white">Corte de vídeo automático com IA</h2>
-            <p className="text-zinc-400 leading-relaxed mb-4">
-              Fazer um <strong className="text-white">corte de vídeo</strong> manualmente é cansativo. Com a Viraliza Cortes, o processo é 100% automático: nossa IA analisa seu vídeo do YouTube e faz todos os <strong className="text-white">cortes de vídeos</strong> por você, priorizando os trechos com maior chance de viralizar. Funciona para TikTok, Reels e YouTube Shorts — três plataformas, um único processo.
-            </p>
-            <p className="text-zinc-400 leading-relaxed">
-              Seja um <strong className="text-white">criador de clipes</strong> profissional sem precisar aprender programas de edição. Nossa ferramenta é o <strong className="text-white">site para cortar vídeos</strong> mais inteligente do Brasil — combina IA de detecção de momentos virais com exportação automática em segundos.
-            </p>
-          </div>
-
-          {/* Bloco 3: Cards de uso */}
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                title: "Cortes de vídeos online",
-                desc: "Faça seus cortes de vídeos online sem instalar nada. Acesse pela internet, cole o link e pronto. Disponível 24h, de qualquer dispositivo.",
-                keywords: ["cortes de video online", "cortes de videos online"],
-              },
-              {
-                title: "Vídeos com IA para YouTube",
-                desc: "Transforme cortes de vídeos do YouTube em shorts virais. Perfeito para cortes de vídeos de podcasts, lives e tutoriais longos.",
-                keywords: ["video com ia", "videos com ia", "ia cria videos"],
-              },
-              {
-                title: "IA que cria vídeos",
-                desc: "Nossa IA cria vídeos curtos a partir do seu conteúdo longo. O resultado são vídeos com IA prontos para engajar e crescer sua audiência.",
-                keywords: ["ia video", "ia criar videos", "video da ia"],
-              },
-            ].map(({ title, desc }) => (
-              <div key={title} className="p-6 rounded-xl border border-white/[0.08] bg-white/[0.02]">
-                <h3 className="text-lg font-bold mb-2 text-white">{title}</h3>
-                <p className="text-zinc-400 text-sm leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Bloco 4: Como fazer cortes */}
+          {/* ── Bloco 1: Como viralizar no TikTok com IA ── */}
           <div>
-            <h2 className="text-2xl font-extrabold mb-6 text-white">Como fazer cortes em vídeos com IA</h2>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <p className="text-zinc-400 leading-relaxed mb-4">
-                  <strong className="text-white">Fazer cortes em vídeos</strong> nunca foi tão simples. Antes, você precisava de um <strong className="text-white">clipador de vídeo</strong> pago e horas de trabalho manual. Hoje, com a Viraliza Cortes, você pode <strong className="text-white">cortar vídeo grátis</strong> nos primeiros créditos — sem cartão de crédito e sem precisar aprender edição.
+            <p className="text-xs text-fuchsia-400 uppercase tracking-[0.2em] font-semibold mb-3">Guia completo</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-6 text-white">
+              Como viralizar no TikTok em 2026 usando IA
+            </h2>
+            <div className="grid md:grid-cols-2 gap-8 items-start">
+              <div className="space-y-4">
+                <p className="text-zinc-400 leading-relaxed text-base">
+                  A pergunta que todo criador de conteúdo faz é sempre a mesma: <strong className="text-white">como viralizar no TikTok</strong>? A resposta mudou nos últimos dois anos. Não basta mais postar com frequência ou usar as hashtags certas — o algoritmo do TikTok prioriza vídeos com alta taxa de retenção nos primeiros 3 segundos. É exatamente aí que a inteligência artificial entra como vantagem competitiva.
                 </p>
-                <p className="text-zinc-400 leading-relaxed">
-                  Nossa plataforma funciona como um <strong className="text-white">recorte de vídeos</strong> inteligente: identifica automaticamente os momentos de pico de atenção, corta, formata para 9:16 e adiciona legendas. Você também pode usar para <strong className="text-white">corte de vídeo grátis</strong> do YouTube — qualquer vídeo público funciona, incluindo <strong className="text-white">cortes de vídeos do YouTube</strong> e <strong className="text-white">cortes de vídeos para YouTube Shorts</strong>.
+                <p className="text-zinc-400 leading-relaxed text-base">
+                  Quando você quer entender <strong className="text-white">como viralizar um vídeo no TikTok</strong>, precisa entender o que faz o usuário parar o scroll. Pesquisas do próprio TikTok mostram que vídeos com cortes rápidos, ganchos fortes e legendas visíveis têm 3x mais chance de alcançar a For You Page. Nossa IA foi treinada exatamente para identificar esses momentos dentro de vídeos longos e transformá-los em <strong className="text-white">cortes para TikTok</strong> prontos para viralizar.
+                </p>
+                <p className="text-zinc-400 leading-relaxed text-base">
+                  Se você já tentou entender <strong className="text-white">como fazer um vídeo viralizar no TikTok</strong> e não conseguiu resultado, provavelmente o problema está na edição. Vídeos gravados ao natural, sem cortes dinâmicos, perdem o espectador em menos de 5 segundos. Com a Viraliza Cortes, você <strong className="text-white">faz cortes para TikTok</strong> automaticamente — a IA seleciona os trechos mais impactantes do seu conteúdo e entrega no formato certo, sem que você precise aprender a editar.
                 </p>
               </div>
               <div className="space-y-3">
-                {[
-                  { title: "IA para criar vídeos", desc: "Cole o link de qualquer vídeo público do YouTube." },
-                  { title: "Análise automática de IA", desc: "Nossa IA de vídeo analisa e seleciona os melhores trechos." },
-                  { title: "Cortes de vídeos prontos", desc: "Receba seus clips virais em minutos, sem edição manual." },
-                  { title: "Cortar vídeo grátis", desc: "Comece com 10 cortes grátis, sem precisar de cartão." },
-                ].map(({ title, desc }) => (
-                  <div key={title} className="flex gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.05]">
-                    <span className="w-5 h-5 rounded-full bg-fuchsia-500/20 flex items-center justify-center text-fuchsia-400 text-xs flex-shrink-0 mt-0.5">✓</span>
-                    <div>
-                      <div className="text-sm font-semibold text-white">{title}</div>
-                      <div className="text-xs text-zinc-500">{desc}</div>
-                    </div>
-                  </div>
-                ))}
+                <div className="p-5 rounded-xl border border-white/[0.07] bg-white/[0.02]">
+                  <h3 className="text-base font-bold text-white mb-2">Por que cortes curtos viralizam mais?</h3>
+                  <p className="text-zinc-500 text-sm leading-relaxed">O TikTok mede o "watch time" — quanto do vídeo cada usuário assiste. Cortes de 30 a 90 segundos com alto ritmo de edição mantêm a atenção e sinalizam qualidade para o algoritmo, que então amplia o alcance organicamente.</p>
+                </div>
+                <div className="p-5 rounded-xl border border-white/[0.07] bg-white/[0.02]">
+                  <h3 className="text-base font-bold text-white mb-2">Frequência é a chave</h3>
+                  <p className="text-zinc-500 text-sm leading-relaxed">Criadores que postam 3 a 5 vezes por semana têm 4x mais chance de aparecer para novos usuários. Nossa IA transforma 1 vídeo longo em até 15 cortes — ou seja, conteúdo suficiente para uma semana inteira em menos de 10 minutos.</p>
+                </div>
+                <div className="p-5 rounded-xl border border-white/[0.07] bg-white/[0.02]">
+                  <h3 className="text-base font-bold text-white mb-2">Legendas são obrigatórias</h3>
+                  <p className="text-zinc-500 text-sm leading-relaxed">85% dos usuários do TikTok assistem com o som desligado. Todo corte gerado pela Viraliza Cortes já vem com legendas em português automáticas — você não precisa digitar nada.</p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Bloco 5: Criar vídeo IA cortes */}
-          <div className="p-8 rounded-2xl border border-fuchsia-500/10 bg-fuchsia-500/[0.03]">
-            <h2 className="text-2xl font-extrabold mb-3 text-white">Criar vídeo IA — cortes de vídeos que viralizam</h2>
-            <p className="text-zinc-400 leading-relaxed">
-              A diferença entre um criador que cresce e um que fica estagnado está na frequência de publicação. Com nossa ferramenta de <strong className="text-white">criar vídeo IA</strong>, você transforma 1 hora de conteúdo em até 15 <strong className="text-white">cortes de vídeos</strong> virais. Isso significa mais conteúdo, mais alcance e mais seguidores — sem trabalhar mais horas. Nossa <strong className="text-white">IA cria vídeos</strong> que seguem as tendências do TikTok, Reels e Shorts automaticamente, incluindo legendas, enquadramento 9:16 e seleção dos momentos mais impactantes.
-            </p>
+          {/* ── Bloco 2: Como aumentar seguidores ── */}
+          <div className="p-8 md:p-10 rounded-2xl border border-white/[0.08] bg-white/[0.02]">
+            <p className="text-xs text-violet-400 uppercase tracking-[0.2em] font-semibold mb-3">Crescimento real</p>
+            <h2 className="text-2xl md:text-3xl font-extrabold mb-6 text-white">
+              Como aumentar seguidores no Instagram e TikTok com IA
+            </h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <p className="text-zinc-400 leading-relaxed">
+                  Existe uma grande diferença entre saber <strong className="text-white">como ganhar seguidores no TikTok</strong> e realmente fazer isso acontecer de forma consistente. A teoria é simples: conteúdo relevante, postado com frequência, no formato correto para cada plataforma. Na prática, a maioria dos criadores trava na produção — editar vídeos é demorado, cansativo e exige habilidade técnica.
+                </p>
+                <p className="text-zinc-400 leading-relaxed">
+                  A resposta para <strong className="text-white">como aumentar seguidores no Instagram</strong> em 2026 está diretamente ligada aos Reels. O algoritmo do Instagram prioriza Reels que mantêm o usuário assistindo até o final — e o segredo para isso é exatamente a edição dinâmica. Se você quer saber <strong className="text-white">como fazer um Reels viralizar</strong>, a resposta é: comece com o gancho certo, mantenha o ritmo e termine com um CTA claro. Nossa IA faz exatamente isso ao gerar seus cortes.
+                </p>
+                <p className="text-zinc-400 leading-relaxed">
+                  Muita gente pesquisa <strong className="text-white">como viralizar no Instagram</strong> ou <strong className="text-white">como viralizar no insta</strong> e encontra dezenas de dicas contraditórias. A verdade é que não existe fórmula mágica — mas existe um processo: consistência de postagem, qualidade de edição e conteúdo que resolve uma dúvida ou provoca uma emoção. Com a Viraliza Cortes, você automatiza a parte técnica e foca no que realmente importa: criar conteúdo relevante.
+                </p>
+              </div>
+              <div className="space-y-4">
+                <p className="text-zinc-400 leading-relaxed">
+                  Se você já se perguntou <strong className="text-white">como aumentar os seguidores no Instagram</strong> sem gastar com anúncios, a resposta está na consistência de Reels virais. Criadores que postam de 5 a 7 Reels por semana crescem em média 40% mais rápido que quem posta 1 por semana. Com nossa ferramenta, você tem conteúdo para todos os dias da semana.
+                </p>
+                <p className="text-zinc-400 leading-relaxed">
+                  Entender <strong className="text-white">como fazer um vídeo viralizar no Instagram</strong> também passa pelo horário de publicação e pela primeira hora após postar. Quanto mais engajamento (curtidas, comentários, compartilhamentos) o vídeo receber nas primeiras 60 minutos, mais o algoritmo vai distribuí-lo. Vídeos editados profissionalmente com cortes dinâmicos naturalmente geram mais engajamento inicial.
+                </p>
+                <p className="text-zinc-400 leading-relaxed">
+                  Para quem quer saber <strong className="text-white">como fazer o Reels viralizar depois de postado</strong>, a estratégia é responder comentários nas primeiras horas, compartilhar nos Stories e usar o áudio no momento de tendência. Com mais tempo livre por não precisar editar, você consegue fazer esse trabalho de distribuição com muito mais eficiência.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Bloco 3: IA para criar vídeos ── */}
+          <div>
+            <p className="text-xs text-emerald-400 uppercase tracking-[0.2em] font-semibold mb-3">Tecnologia</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-6 text-white">
+              O que é uma IA para criar vídeos e como ela funciona
+            </h2>
+            <div className="space-y-4 mb-10">
+              <p className="text-zinc-400 leading-relaxed text-base max-w-3xl">
+                Uma <strong className="text-white">IA para criar vídeos</strong> é um sistema de inteligência artificial treinado para analisar conteúdo audiovisual e tomar decisões editoriais automaticamente — as mesmas decisões que um editor humano levaria horas para fazer. A Viraliza Cortes usa modelos de linguagem e visão computacional para entender o contexto do que está sendo falado, identificar picos de energia, mudanças de tema e momentos de maior impacto emocional.
+              </p>
+              <p className="text-zinc-400 leading-relaxed text-base max-w-3xl">
+                Quando você usa nossa plataforma para <strong className="text-white">criar vídeos com IA</strong>, o processo funciona assim: você cola o link de um vídeo do YouTube, nossa <strong className="text-white">IA de vídeo</strong> baixa e analisa o conteúdo em segundos, identifica os 10 a 15 melhores trechos para clips, corta cada um no tempo certo, adiciona legendas em português e exporta em formato 9:16 — o padrão do TikTok, Reels e Shorts. Tudo isso sem você precisar tocar em nenhum software de edição.
+              </p>
+              <p className="text-zinc-400 leading-relaxed text-base max-w-3xl">
+                A grande diferença do <strong className="text-white">vídeo com IA</strong> gerado pela Viraliza Cortes em relação a cortes manuais está na escala. Um editor humano consegue fazer 3 a 5 cortes por hora. Nossa <strong className="text-white">IA cria vídeos</strong> — até 15 clipes — em menos de 5 minutos. Isso não é só uma questão de velocidade: é uma mudança completa na forma como criadores de conteúdo conseguem manter presença diária nas redes sem sacrificar qualidade.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-5">
+              {[
+                {
+                  icon: "🧠",
+                  title: "IA de vídeo que entende contexto",
+                  desc: "Nossa IA de vídeo não apenas detecta silêncios — ela entende o conteúdo. Identifica momentos de revelação, histórias, argumentos e picos emocionais para criar cortes que fazem sentido narrativo.",
+                },
+                {
+                  icon: "⚡",
+                  title: "Criar vídeo com IA em minutos",
+                  desc: "Cole o link, escolha a duração dos clips e aguarde. Em menos de 5 minutos você tem vídeos com IA prontos para postar no TikTok, Reels e Shorts — sem instalar nada, sem assinar Adobe.",
+                },
+                {
+                  icon: "🎯",
+                  title: "IA criar vídeos para cada plataforma",
+                  desc: "O vídeo da IA já sai no formato 9:16 para TikTok e Reels, ou 16:9 para YouTube. Legendas automáticas em PT-BR incluídas em todos os clips gerados.",
+                },
+              ].map(({ icon, title, desc }) => (
+                <div key={title} className="p-6 rounded-xl border border-white/[0.07] bg-white/[0.02]">
+                  <div className="text-2xl mb-3">{icon}</div>
+                  <h3 className="text-base font-bold text-white mb-2">{title}</h3>
+                  <p className="text-zinc-500 text-sm leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Bloco 4: Corte de vídeo automático ── */}
+          <div className="grid md:grid-cols-2 gap-10 items-start">
+            <div>
+              <p className="text-xs text-pink-400 uppercase tracking-[0.2em] font-semibold mb-3">Ferramenta</p>
+              <h2 className="text-3xl font-extrabold tracking-tight mb-5 text-white">
+                Corte de vídeo automático: do YouTube ao TikTok em minutos
+              </h2>
+              <div className="space-y-4">
+                <p className="text-zinc-400 leading-relaxed">
+                  O <strong className="text-white">corte de vídeo</strong> manual é um dos maiores gargalos para criadores de conteúdo. Podcasters com episódios de 1 hora, coaches que gravam aulas longas, streamers com lives de 3 horas — todos têm conteúdo de altíssimo valor preso em formatos que as redes sociais não priorizam. A Viraliza Cortes resolve isso: fazemos o <strong className="text-white">corte de vídeo do YouTube</strong> automaticamente, transformando qualquer vídeo longo em dezenas de clips curtos prontos para as redes.
+                </p>
+                <p className="text-zinc-400 leading-relaxed">
+                  Quando você precisa de um <strong className="text-white">corte de vídeo grátis</strong>, nossa plataforma oferece 10 clips nos primeiros créditos — sem cartão de crédito e sem compromisso. É a forma mais rápida de testar se vale a pena usar <strong className="text-white">cortes de vídeos online</strong> para escalar seu conteúdo antes de assinar um plano pago.
+                </p>
+                <p className="text-zinc-400 leading-relaxed">
+                  Nossa ferramenta funciona como um <strong className="text-white">clipador de vídeo</strong> inteligente: você não precisa marcar onde começar e onde terminar cada clip. A IA analisa o áudio, detecta o conteúdo falado, identifica os trechos com maior densidade de informação ou emoção e faz o <strong className="text-white">recorte de vídeos</strong> de forma completamente autônoma. O resultado é uma coleção de <strong className="text-white">cortes de vídeos</strong> que parecem editados à mão — mas prontos em minutos.
+                </p>
+                <p className="text-zinc-400 leading-relaxed">
+                  Para quem precisa de um <strong className="text-white">site para cortar vídeos</strong> sem instalar software, a Viraliza Cortes é a solução mais completa do Brasil. Todo o processamento acontece na nuvem — você só precisa de um navegador e do link do YouTube. Funciona no celular, no tablet e no computador, sem necessidade de conta no Adobe, DaVinci ou qualquer outro editor profissional.
+                </p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="p-5 rounded-xl border border-fuchsia-500/15 bg-fuchsia-500/[0.04]">
+                <h3 className="text-base font-bold text-white mb-3">Cortes de vídeos online — como funciona</h3>
+                <div className="space-y-3">
+                  {[
+                    { step: "01", title: "Cole o link do YouTube", desc: "Qualquer vídeo público funciona — podcasts, aulas, entrevistas, lives, tutoriais." },
+                    { step: "02", title: "IA analisa o conteúdo", desc: "Em segundos, nossa IA de vídeo processa o áudio e identifica os melhores trechos para clips virais." },
+                    { step: "03", title: "Cortes de vídeos prontos", desc: "Você recebe até 15 cortes no formato 9:16, com legendas automáticas em PT-BR." },
+                    { step: "04", title: "Baixe e poste", desc: "Cada corte de vídeo já vem no tamanho ideal para TikTok, Reels e YouTube Shorts." },
+                  ].map(({ step, title, desc }) => (
+                    <div key={step} className="flex gap-3 items-start">
+                      <span className="text-xs font-black text-fuchsia-500 w-6 flex-shrink-0 mt-0.5">{step}</span>
+                      <div>
+                        <div className="text-sm font-semibold text-white">{title}</div>
+                        <div className="text-xs text-zinc-500 mt-0.5">{desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="p-5 rounded-xl border border-white/[0.07] bg-white/[0.02]">
+                <h3 className="text-base font-bold text-white mb-2">Corte de vídeo YouTube — formatos suportados</h3>
+                <div className="grid grid-cols-2 gap-2 mt-3">
+                  {[
+                    "Podcasts e entrevistas",
+                    "Aulas e tutoriais",
+                    "Lives e streams",
+                    "Palestras e eventos",
+                    "Conteúdo educacional",
+                    "Vlogs e documentários",
+                  ].map((item) => (
+                    <div key={item} className="flex items-center gap-2 text-xs text-zinc-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-500 flex-shrink-0" />
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Bloco 5: Fazer cortes em vídeos + crescer seguidores ── */}
+          <div className="p-8 md:p-10 rounded-2xl border border-violet-500/10 bg-violet-500/[0.03]">
+            <p className="text-xs text-violet-400 uppercase tracking-[0.2em] font-semibold mb-3">Estratégia de crescimento</p>
+            <h2 className="text-2xl md:text-3xl font-extrabold mb-6 text-white">
+              Fazer cortes em vídeos é a estratégia mais eficiente para ganhar seguidores grátis
+            </h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <p className="text-zinc-400 leading-relaxed">
+                  A maioria dos criadores que pesquisam <strong className="text-white">como ganhar seguidores grátis</strong> está pensando em atalhos — comprar seguidores falsos, usar bots, participar de grupos de engajamento. Nenhuma dessas estratégias funciona a longo prazo. O único caminho que realmente <strong className="text-white">aumenta o número de seguidores no Instagram</strong> e no TikTok de forma sustentável é conteúdo de qualidade postado com consistência.
+                </p>
+                <p className="text-zinc-400 leading-relaxed">
+                  O problema é que <strong className="text-white">fazer cortes em vídeos</strong> de qualidade consome tempo. Um único clip bem editado pode levar 1 a 2 horas para ser produzido manualmente. Com nossa IA, esse tempo cai para menos de 5 minutos por lote de clips. Isso libera horas da sua semana para focar em gravar conteúdo novo, responder comentários e construir relacionamento com a audiência — as coisas que realmente fazem <strong className="text-white">os seguidores aumentarem</strong>.
+                </p>
+                <p className="text-zinc-400 leading-relaxed">
+                  Se você quer saber <strong className="text-white">como fazer para ter mais seguidores no Instagram</strong> sem gastar fortunas em anúncios, a resposta está no volume de conteúdo de qualidade. Criadores que postam Reels todos os dias crescem em média 4x mais rápido que os que postam uma vez por semana. Com a Viraliza Cortes, você consegue esse volume sem contratar uma equipe de produção.
+                </p>
+              </div>
+              <div className="space-y-4">
+                <p className="text-zinc-400 leading-relaxed">
+                  Para entender <strong className="text-white">como aumentar seguidores no TikTok</strong>, é preciso entender a lógica do algoritmo: ele dá chances iguais para contas pequenas e grandes. Um vídeo bem editado de uma conta com 100 seguidores pode alcançar 100.000 pessoas se o watch time for alto. Isso significa que a barreira para crescer não é o tamanho da conta — é a qualidade da edição e a frequência de postagem.
+                </p>
+                <p className="text-zinc-400 leading-relaxed">
+                  Quem quer descobrir <strong className="text-white">como viralizar no TikTok de graça</strong> precisa entender que viral não é sorte — é resultado de formato correto (9:16, legendas, gancho nos primeiros 3 segundos), conteúdo relevante e consistência. Nossa IA cuida dos três aspectos técnicos automaticamente. Você só precisa gravar o conteúdo e colar o link.
+                </p>
+                <p className="text-zinc-400 leading-relaxed">
+                  Para <strong className="text-white">aumentar meus seguidores no Instagram</strong> ou no TikTok sem pagar por anúncios, a estratégia mais eficaz é o alcance orgânico via Reels e clips virais. Cada clip gerado pela Viraliza Cortes é uma nova chance de aparecer para novos usuários — e quanto mais você posta, mais dados o algoritmo coleta sobre o que funciona para o seu perfil.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Bloco 6: Criar vídeo IA — síntese ── */}
+          <div>
+            <h2 className="text-2xl md:text-3xl font-extrabold mb-5 text-white">
+              Criar vídeo IA: a revolução do conteúdo para criadores brasileiros
+            </h2>
+            <div className="space-y-4 max-w-3xl mb-8">
+              <p className="text-zinc-400 leading-relaxed">
+                <strong className="text-white">Criar vídeo IA</strong> deixou de ser uma novidade para se tornar uma necessidade competitiva. Criadores que ainda editam tudo à mão estão em desvantagem frente a quem usa ferramentas de <strong className="text-white">IA criar vídeos</strong> em escala. A Viraliza Cortes democratiza esse acesso: qualquer criador brasileiro, independentemente de ter equipe ou orçamento, pode <strong className="text-white">criar videos com IA</strong> de qualidade profissional pelo preço de um almoço.
+              </p>
+              <p className="text-zinc-400 leading-relaxed">
+                O <strong className="text-white">vídeo da IA</strong> gerado pela nossa plataforma não é um vídeo genérico — é um clip selecionado especificamente do seu conteúdo, com os seus momentos mais impactantes, nas suas palavras, com legendas na sua língua. A IA serve como um assistente de edição que conhece o que funciona nas redes sociais e aplica esse conhecimento ao seu material.
+              </p>
+              <p className="text-zinc-400 leading-relaxed">
+                Se você chegou até aqui pesquisando <strong className="text-white">cortes de vídeos online</strong>, <strong className="text-white">corte de vídeo grátis</strong>, <strong className="text-white">como viralizar no TikTok</strong> ou <strong className="text-white">como aumentar seguidores no Instagram</strong>, a resposta para todas essas perguntas passa pelo mesmo lugar: conteúdo curto, bem editado, postado com consistência. A Viraliza Cortes é a ferramenta que torna isso possível — sem precisar ser editor, sem precisar de equipe, e sem precisar de horas disponíveis por dia.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-4 gap-4">
+              {[
+                { number: "15x", label: "mais clips por hora com IA vs. edição manual" },
+                { number: "10", label: "cortes grátis no primeiro mês, sem cartão" },
+                { number: "9:16", label: "formato ideal para TikTok, Reels e Shorts" },
+                { number: "5min", label: "tempo médio para gerar um lote de clips virais" },
+              ].map(({ number, label }) => (
+                <div key={number} className="p-5 rounded-xl border border-white/[0.07] bg-white/[0.02] text-center">
+                  <div className="text-3xl font-black text-fuchsia-400 mb-1">{number}</div>
+                  <div className="text-xs text-zinc-500 leading-relaxed">{label}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
         </div>
