@@ -877,6 +877,118 @@ export default function HomePage() {
         </motion.div>
       </motion.section>
 
+      {/* ── SEO Section ── */}
+      <section className="relative z-10 px-6 py-20 max-w-5xl mx-auto">
+        <div className="space-y-16 text-left">
+
+          {/* Bloco 1: IA para criar vídeos */}
+          <div className="grid md:grid-cols-2 gap-10 items-start">
+            <div>
+              <h2 className="text-3xl font-extrabold tracking-tight mb-4 text-white">
+                Criar vídeos com IA ficou mais simples
+              </h2>
+              <p className="text-zinc-400 leading-relaxed text-base">
+                A Viraliza Cortes é uma <strong className="text-white">IA para criar vídeos</strong> curtos a partir de conteúdo longo. Você não precisa saber editar: cole o link do YouTube, e nossa <strong className="text-white">IA de vídeo</strong> identifica os momentos mais impactantes, gera os cortes em formato 9:16 e entrega pronto pra postar. É a forma mais rápida de <strong className="text-white">criar vídeo com IA</strong> no Brasil — sem editor, sem software, sem complicação.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold mb-3 text-white">Por que usar IA de vídeo?</h3>
+              <ul className="space-y-2 text-zinc-400 text-sm">
+                {[
+                  "Economiza horas de edição manual por semana",
+                  "A IA escolhe os momentos de maior retenção",
+                  "Gera cortes de vídeo no formato ideal para cada plataforma",
+                  "Legendas automáticas em PT-BR incluídas",
+                  "Criar vídeo com IA custa menos que contratar editor",
+                ].map((item) => (
+                  <li key={item} className="flex gap-2 items-start">
+                    <span className="text-fuchsia-400 flex-shrink-0 mt-0.5">✦</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Bloco 2: Corte de vídeo */}
+          <div className="p-8 rounded-2xl border border-white/[0.08] bg-white/[0.02]">
+            <h2 className="text-2xl font-extrabold mb-4 text-white">Corte de vídeo automático com IA</h2>
+            <p className="text-zinc-400 leading-relaxed mb-4">
+              Fazer um <strong className="text-white">corte de vídeo</strong> manualmente é cansativo. Com a Viraliza Cortes, o processo é 100% automático: nossa IA analisa seu vídeo do YouTube e faz todos os <strong className="text-white">cortes de vídeos</strong> por você, priorizando os trechos com maior chance de viralizar. Funciona para TikTok, Reels e YouTube Shorts — três plataformas, um único processo.
+            </p>
+            <p className="text-zinc-400 leading-relaxed">
+              Seja um <strong className="text-white">criador de clipes</strong> profissional sem precisar aprender programas de edição. Nossa ferramenta é o <strong className="text-white">site para cortar vídeos</strong> mais inteligente do Brasil — combina IA de detecção de momentos virais com exportação automática em segundos.
+            </p>
+          </div>
+
+          {/* Bloco 3: Cards de uso */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                title: "Cortes de vídeos online",
+                desc: "Faça seus cortes de vídeos online sem instalar nada. Acesse pela internet, cole o link e pronto. Disponível 24h, de qualquer dispositivo.",
+                keywords: ["cortes de video online", "cortes de videos online"],
+              },
+              {
+                title: "Vídeos com IA para YouTube",
+                desc: "Transforme cortes de vídeos do YouTube em shorts virais. Perfeito para cortes de vídeos de podcasts, lives e tutoriais longos.",
+                keywords: ["video com ia", "videos com ia", "ia cria videos"],
+              },
+              {
+                title: "IA que cria vídeos",
+                desc: "Nossa IA cria vídeos curtos a partir do seu conteúdo longo. O resultado são vídeos com IA prontos para engajar e crescer sua audiência.",
+                keywords: ["ia video", "ia criar videos", "video da ia"],
+              },
+            ].map(({ title, desc }) => (
+              <div key={title} className="p-6 rounded-xl border border-white/[0.08] bg-white/[0.02]">
+                <h3 className="text-lg font-bold mb-2 text-white">{title}</h3>
+                <p className="text-zinc-400 text-sm leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Bloco 4: Como fazer cortes */}
+          <div>
+            <h2 className="text-2xl font-extrabold mb-6 text-white">Como fazer cortes em vídeos com IA</h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <p className="text-zinc-400 leading-relaxed mb-4">
+                  <strong className="text-white">Fazer cortes em vídeos</strong> nunca foi tão simples. Antes, você precisava de um <strong className="text-white">clipador de vídeo</strong> pago e horas de trabalho manual. Hoje, com a Viraliza Cortes, você pode <strong className="text-white">cortar vídeo grátis</strong> nos primeiros créditos — sem cartão de crédito e sem precisar aprender edição.
+                </p>
+                <p className="text-zinc-400 leading-relaxed">
+                  Nossa plataforma funciona como um <strong className="text-white">recorte de vídeos</strong> inteligente: identifica automaticamente os momentos de pico de atenção, corta, formata para 9:16 e adiciona legendas. Você também pode usar para <strong className="text-white">corte de vídeo grátis</strong> do YouTube — qualquer vídeo público funciona, incluindo <strong className="text-white">cortes de vídeos do YouTube</strong> e <strong className="text-white">cortes de vídeos para YouTube Shorts</strong>.
+                </p>
+              </div>
+              <div className="space-y-3">
+                {[
+                  { title: "IA para criar vídeos", desc: "Cole o link de qualquer vídeo público do YouTube." },
+                  { title: "Análise automática de IA", desc: "Nossa IA de vídeo analisa e seleciona os melhores trechos." },
+                  { title: "Cortes de vídeos prontos", desc: "Receba seus clips virais em minutos, sem edição manual." },
+                  { title: "Cortar vídeo grátis", desc: "Comece com 10 cortes grátis, sem precisar de cartão." },
+                ].map(({ title, desc }) => (
+                  <div key={title} className="flex gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.05]">
+                    <span className="w-5 h-5 rounded-full bg-fuchsia-500/20 flex items-center justify-center text-fuchsia-400 text-xs flex-shrink-0 mt-0.5">✓</span>
+                    <div>
+                      <div className="text-sm font-semibold text-white">{title}</div>
+                      <div className="text-xs text-zinc-500">{desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Bloco 5: Criar vídeo IA cortes */}
+          <div className="p-8 rounded-2xl border border-fuchsia-500/10 bg-fuchsia-500/[0.03]">
+            <h2 className="text-2xl font-extrabold mb-3 text-white">Criar vídeo IA — cortes de vídeos que viralizam</h2>
+            <p className="text-zinc-400 leading-relaxed">
+              A diferença entre um criador que cresce e um que fica estagnado está na frequência de publicação. Com nossa ferramenta de <strong className="text-white">criar vídeo IA</strong>, você transforma 1 hora de conteúdo em até 15 <strong className="text-white">cortes de vídeos</strong> virais. Isso significa mais conteúdo, mais alcance e mais seguidores — sem trabalhar mais horas. Nossa <strong className="text-white">IA cria vídeos</strong> que seguem as tendências do TikTok, Reels e Shorts automaticamente, incluindo legendas, enquadramento 9:16 e seleção dos momentos mais impactantes.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
       {/* ── CTA final ── */}
       <motion.section className="relative z-10 px-6 py-32" initial="hidden" whileInView="show" viewport={REVEAL} variants={stagger}>
         <motion.div variants={fadeUp} className="max-w-4xl mx-auto text-center p-12 md:p-20 rounded-3xl relative overflow-hidden"
