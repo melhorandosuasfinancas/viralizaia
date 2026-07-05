@@ -3,6 +3,25 @@ const { sendWelcomeEmail, sendCancellationEmail } = require('../services/mailer'
 const router = express.Router();
 const fs = require('fs-extra');
 const path = require('path');
+const axios = require('axios');
+
+// ─── Notificação para o bot WhatsApp ──────────────────────────────────────────
+async function notifyBot(endpoint, data) {
+  const botUrl = process.env.BOT_URL;
+  if (!botUrl) return;
+  try {
+    await axios.post(`${botUrl}${endpoint}`, data, { timeout: 6000 });
+  } catch (e) {
+    console.log('[Bot] Aviso ao chamar', endpoint, ':', e.message);
+  }
+}
+
+function getNextRenewalDate(resetDay) {
+  const now = new Date();
+  let d = new Date(now.getFullYear(), now.getMonth(), resetDay);
+  if (d.getTime() <= now.getTime()) d = new Date(now.getFullYear(), now.getMonth() + 1, resetDay);
+  return d;
+}
 
 const DATA_FILE = path.join(__dirname, '../data/users.json');
 
@@ -318,10 +337,17 @@ router.post('/whatsapp', express.json(), (req, res) => {
   if (!email || !phone) return res.status(400).json({ error: 'Email e telefone obrigatorios.' });
   const key = email.toLowerCase();
   if (!store.users[key]) store.users[key] = { active: false, plan: 'trial', createdAt: new Date().toISOString() };
+  const isFirstTime = !store.users[key].whatsapp;
   store.users[key].whatsapp = phone.replace(/\D/g, '');
   store.users[key].whatsappUpdatedAt = new Date().toISOString();
   saveStore();
   console.log('WhatsApp registrado:', email, phone);
+  // Envia boas-vindas apenas na primeira vez que o número é salvo
+  if (isFirstTime && !store.users[key].boasVindasSent) {
+    store.users[key].boasVindasSent = true;
+    saveStore();
+    notifyBot('/disparar/boas-vindas', { phone: store.users[key].whatsapp, name: store.users[key].name });
+  }
   res.json({ ok: true });
 });
 
@@ -396,6 +422,16 @@ function activateUser(email, productId, productName) {
   saveStore();
   console.log('Usuario ativado:', email, plan);
   sendWelcomeEmail(email, plan).catch(function() {});
+  // Notifica bot WhatsApp se usuário tem número cadastrado
+  const user = store.users[key];
+  if (user && user.whatsapp) {
+    const resetDay = new Date(now).getDate();
+    const nextRenewal = getNextRenewalDate(resetDay);
+    const renewalDate = nextRenewal.toLocaleDateString('pt-BR');
+    notifyBot('/disparar/pagamento-aprovado', {
+      phone: user.whatsapp, name: user.name, plan, renewalDate,
+    });
+  }
 }
 
 function deactivateUser(email) {

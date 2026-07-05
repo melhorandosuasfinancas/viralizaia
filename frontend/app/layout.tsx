@@ -3,6 +3,7 @@ import { Montserrat } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Providers } from "./providers";
+import { WhatsAppFloat } from "@/components/ui/whatsapp-float";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -253,6 +254,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${montserrat.className} min-h-full bg-[#050507] text-[#f9f9f9]`}>
         <Providers>{children}</Providers>
+        <WhatsAppFloat />
         <Script src="https://www.googletagmanager.com/gtag/js?id=AW-18297418601" strategy="afterInteractive" />
         <Script id="google-ads" strategy="afterInteractive">
           {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','AW-18297418601');`}

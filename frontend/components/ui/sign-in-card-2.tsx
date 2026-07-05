@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { Mail, User, ArrowRight, AlertCircle } from 'lucide-react';
+import { Mail, User, ArrowRight, AlertCircle, Smartphone } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { checkEmail, getAuthToken, getTrialToken } from "@/lib/api";
+import { checkEmail, getAuthToken, getTrialToken, saveWhatsapp } from "@/lib/api";
 
 type Mode = "login" | "signup";
 
@@ -36,6 +36,7 @@ export function ViralizaSignInCard() {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
@@ -70,6 +71,10 @@ export function ViralizaSignInCard() {
       if (mode === "signup") {
         const result = await getTrialToken(cleanEmail, name.trim() || undefined);
         persistSession(result.token, result.plan, cleanEmail, result.credits);
+        const cleanPhone = phone.replace(/\D/g, "");
+        if (cleanPhone.length >= 10) {
+          saveWhatsapp(cleanEmail, cleanPhone, result.token).catch(() => {});
+        }
         router.push("/app");
         return;
       }
@@ -210,28 +215,52 @@ export function ViralizaSignInCard() {
                 <div className="space-y-3">
                   <AnimatePresence initial={false}>
                     {isSignup && (
-                      <motion.div
-                        key="name-field"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className={`relative ${focusedInput === "name" ? 'z-10' : ''}`}
-                      >
-                        <div className="relative flex items-center overflow-hidden rounded-lg">
-                          <User className={`absolute left-3 w-4 h-4 transition-all duration-300 ${focusedInput === "name" ? 'text-white' : 'text-white/40'}`} />
-                          <Input
-                            type="text"
-                            placeholder="Seu nome (opcional)"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            onFocus={() => setFocusedInput("name")}
-                            onBlur={() => setFocusedInput(null)}
-                            autoComplete="name"
-                            className="w-full bg-white/5 border-transparent text-white h-10 pl-10 pr-3 focus:bg-white/10"
-                          />
-                        </div>
-                      </motion.div>
+                      <>
+                        <motion.div
+                          key="name-field"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className={`relative ${focusedInput === "name" ? 'z-10' : ''}`}
+                        >
+                          <div className="relative flex items-center overflow-hidden rounded-lg">
+                            <User className={`absolute left-3 w-4 h-4 transition-all duration-300 ${focusedInput === "name" ? 'text-white' : 'text-white/40'}`} />
+                            <Input
+                              type="text"
+                              placeholder="Seu nome (opcional)"
+                              value={name}
+                              onChange={(e) => setName(e.target.value)}
+                              onFocus={() => setFocusedInput("name")}
+                              onBlur={() => setFocusedInput(null)}
+                              autoComplete="name"
+                              className="w-full bg-white/5 border-transparent text-white h-10 pl-10 pr-3 focus:bg-white/10"
+                            />
+                          </div>
+                        </motion.div>
+                        <motion.div
+                          key="phone-field"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.25, delay: 0.05 }}
+                          className={`relative ${focusedInput === "phone" ? 'z-10' : ''}`}
+                        >
+                          <div className="relative flex items-center overflow-hidden rounded-lg">
+                            <Smartphone className={`absolute left-3 w-4 h-4 transition-all duration-300 ${focusedInput === "phone" ? 'text-white' : 'text-white/40'}`} />
+                            <Input
+                              type="tel"
+                              placeholder="WhatsApp (opcional)"
+                              value={phone}
+                              onChange={(e) => setPhone(e.target.value)}
+                              onFocus={() => setFocusedInput("phone")}
+                              onBlur={() => setFocusedInput(null)}
+                              autoComplete="tel"
+                              className="w-full bg-white/5 border-transparent text-white h-10 pl-10 pr-3 focus:bg-white/10"
+                            />
+                          </div>
+                        </motion.div>
+                      </>
                     )}
                   </AnimatePresence>
 

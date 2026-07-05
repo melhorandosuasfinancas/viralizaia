@@ -12,6 +12,7 @@ const videoRoutes = require('./routes/video');
 const authRoutes = require('./routes/auth');
 const { cleanupOldFiles } = require('./services/cleanup');
 const { startAbandonedCartJob } = require('./jobs/abandonedCart');
+const { startLifecycleJob } = require('./jobs/lifecycle');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -124,6 +125,7 @@ setInterval(cleanupOldFiles, 2 * 60 * 60 * 1000);
 
 // Carrinho abandonado — dispara WhatsApp após 8 horas sem conversão
 startAbandonedCartJob();
+startLifecycleJob();
 
 
 // ─── Backup automático de users.json ─────────────────────────────────────────
