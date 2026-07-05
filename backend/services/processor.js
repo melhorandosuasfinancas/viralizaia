@@ -172,7 +172,7 @@ function slugify(title) {
     .replace(/\s+/g, '_')
     .slice(0, 60) || 'clip';
 }
-async function createClips(videoPath, segments, platforms, outputDir, jobId, onProgress, transcriptSegs, captionStyle, addWatermark = false, captionColor = null, clipOffset = 0) {
+async function createClips(videoPath, segments, platforms, outputDir, jobId, onProgress, transcriptSegs, captionStyle, addWatermark = false, captionColor = null, clipOffset = 0, layout = 'crop') {
   const clips = [];
   const configs = getConfigs(platforms);
   const total = segments.length * configs.length;
@@ -207,7 +207,7 @@ async function createClips(videoPath, segments, platforms, outputDir, jobId, onP
       }
 
       try {
-        await renderClip(videoPath, segment, config, outputPath, assPath, addWatermark);
+        await renderClip(videoPath, segment, config, outputPath, assPath, addWatermark, layout);
         return {
           clipNumber: clipOffset + i + 1,
           platform: configKey,
@@ -236,7 +236,7 @@ async function createClips(videoPath, segments, platforms, outputDir, jobId, onP
   return clips;
 }
 
-function renderClip(videoPath, segment, config, outputPath, assPath, addWatermark = false) {
+function renderClip(videoPath, segment, config, outputPath, assPath, addWatermark = false, layout = 'crop') {
   const { width, height } = config;
   const isVertical = height > width;
   const isSquare = width === height;
@@ -250,8 +250,8 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
       .audioCodec('aac')
       .audioBitrate('192k')
       .outputOptions([
-        '-preset veryfast',
-        '-crf 18',
+        '-preset ultrafast',
+        '-crf 22',
         '-movflags +faststart',
         '-pix_fmt yuv420p',
         '-threads 0',
@@ -263,12 +263,17 @@ function renderClip(videoPath, segment, config, outputPath, assPath, addWatermar
       .on('error', (err) => reject(new Error(err.message + (stderrLog ? '\nFFmpeg: ' + stderrLog.slice(-600) : ''))));
 
     if (isVertical || isSquare) {
-      // Blurred background: full content visible (no aggressive crop) + blurred fill
-      // Same technique used by Opus Clip, Klap, Submagic for 16:9 → 9:16 conversion
-      // Center crop: escala para preencher o frame e corta o centro
-      const filterParts = [
-        `[0:v]scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height}[base]`
-      ];
+      const filterParts = [];
+      if (layout === 'blur') {
+        // Blur background: vídeo original visível inteiro + fundo embaçado preenchendo o frame
+        filterParts.push(`[0:v]split=2[fg_raw][bg_raw]`);
+        filterParts.push(`[fg_raw]scale=${width}:${height}:force_original_aspect_ratio=decrease[fg]`);
+        filterParts.push(`[bg_raw]scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height},boxblur=20:5[bg]`);
+        filterParts.push(`[bg][fg]overlay=(W-w)/2:(H-h)/2[base]`);
+      } else {
+        // Crop central (padrão) — igual ao Opus Clip, Klap, Submagic
+        filterParts.push(`[0:v]scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height}[base]`);
+      }
       let lastOut = 'base';
       if (assPath) {
         const safePath = assPath.replace(/\\/g, '/').replace(/'/g, "\\'");

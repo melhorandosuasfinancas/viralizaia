@@ -62,7 +62,7 @@ function _runNext() {
 router.post('/upload', verifySubscription, upload.single('video'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Arquivo de video e obrigatorio.' });
 
-  const { platforms = '["tiktok","instagram"]', mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60, captionColor = '#FFFFFF', addWatermark: bodyWatermark } = req.body;
+  const { platforms = '["tiktok","instagram"]', mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60, captionColor = '#FFFFFF', addWatermark: bodyWatermark, layout = 'crop' } = req.body;
   const addWatermarkUpload = (req.userPlan === 'trial' || req.userPlan === 'gratis') ? true : (bodyWatermark !== false && bodyWatermark !== 'false');
 
   let parsedPlatforms;
@@ -86,13 +86,13 @@ router.post('/upload', verifySubscription, upload.single('video'), async (req, r
   const destPath = path.join(tempDir, 'source.mp4');
   await fs.move(req.file.path, destPath);
 
-  enqueue(jobId, () => processVideoFromFile(jobId, destPath, tempDir, parsedPlatforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60, captionColor, addWatermarkUpload)
+  enqueue(jobId, () => processVideoFromFile(jobId, destPath, tempDir, parsedPlatforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60, captionColor, addWatermarkUpload, layout)
     .catch(err => jobs.set(jobId, { status: 'error', progress: 0, clips: [], error: err.message })));
 });
 
 // POST /api/video/process
 router.post('/process', verifySubscription, async (req, res) => {
-  const { url, platforms = ['tiktok', 'instagram'], mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60, captionColor = '#FFFFFF', addWatermark: bodyWatermarkP } = req.body;
+  const { url, platforms = ['tiktok', 'instagram'], mode = 'ai', maxClips, captionStyle = 'tiktok', targetDuration = 60, captionColor = '#FFFFFF', addWatermark: bodyWatermarkP, layout = 'crop' } = req.body;
   const addWatermarkProcess = (req.userPlan === 'trial' || req.userPlan === 'gratis') ? true : (bodyWatermarkP !== false && bodyWatermarkP !== 'false');
 
   if (!url) return res.status(400).json({ error: 'URL do YouTube e obrigatoria.' });
@@ -109,7 +109,7 @@ router.post('/process', verifySubscription, async (req, res) => {
   jobs.set(jobId, { status: 'queued', progress: 0, clips: [], error: null });
   res.json({ jobId, message: 'Processamento iniciado.' });
 
-  enqueue(jobId, () => processVideo(jobId, url, platforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60, captionColor, addWatermarkProcess)
+  enqueue(jobId, () => processVideo(jobId, url, platforms, mode, clipsToProcess, captionStyle, req.userEmail, req.userPlan, parseInt(targetDuration) || 60, captionColor, addWatermarkProcess, layout)
     .catch(err => jobs.set(jobId, { status: 'error', progress: 0, clips: [], error: err.message })));
 });
 
@@ -130,7 +130,7 @@ router.delete('/job/:jobId', async (req, res) => {
 });
 
 // --- Processamento via URL do YouTube ---
-async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF', addWatermark = true) {
+async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF', addWatermark = true, layout = 'crop') {
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
   const tempDir = path.join(__dirname, '../temp', jobId);
   const outputDir = path.join(__dirname, '../output', jobId);
@@ -204,7 +204,8 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
           captionStyle,
           addWatermark,
           captionColor,
-          i
+          i,
+          layout
         );
         clips.push(...clipsResult);
       }
@@ -265,7 +266,8 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
           captionStyle,
           addWatermark,
           captionColor,
-          i
+          i,
+          layout
         );
         clips.push(...clipsResult);
       }
@@ -281,7 +283,7 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
       console.error('[video.js] Audio-only falhou, baixando video completo:', audioErr.message);
       videoPath = await downloader.download(url, tempDir);
     }
-    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, null, userEmail, userPlan, targetDuration, captionColor, addWatermark);
+    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, null, userEmail, userPlan, targetDuration, captionColor, addWatermark, layout);
 
   } catch (err) {
     updateJob({ status: 'error', error: err.message });
@@ -292,12 +294,12 @@ async function processVideo(jobId, url, platforms, mode, maxClips, captionStyle,
 }
 
 // --- Processamento via upload de arquivo ---
-async function processVideoFromFile(jobId, videoPath, tempDir, platforms, mode, maxClips, captionStyle, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF', addWatermark = true) {
+async function processVideoFromFile(jobId, videoPath, tempDir, platforms, mode, maxClips, captionStyle, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF', addWatermark = true, layout = 'crop') {
   const outputDir = path.join(__dirname, '../output', jobId);
   await fs.ensureDir(outputDir);
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
   try {
-    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, null, null, userEmail, userPlan, targetDuration, captionColor, addWatermark);
+    await processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, null, null, userEmail, userPlan, targetDuration, captionColor, addWatermark, layout);
   } catch (err) {
     updateJob({ status: 'error', error: err.message });
     throw err;
@@ -322,7 +324,7 @@ async function getVideoDurationAsTranscript(videoPath, maxClips, targetDuration)
 }
 
 // --- Pipeline comum (transcricao Whisper + analise + cortes) ---
-async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, existingTranscript, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF', addWatermark = true) {
+async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, mode, maxClips, captionStyle, url, existingTranscript, userEmail, userPlan, targetDuration = 60, captionColor = '#FFFFFF', addWatermark = true, layout = 'crop') {
   const updateJob = (update) => jobs.set(jobId, { ...jobs.get(jobId), ...update });
 
   updateJob({ status: 'transcribing', progress: 30 });
@@ -354,7 +356,9 @@ async function processFromPath(jobId, videoPath, tempDir, outputDir, platforms, 
     transcriptSegs,
     captionStyle,
     addWatermark,
-    captionColor
+    captionColor,
+    0,
+    layout
   );
 
   finalizeJob(userEmail, userPlan, segments.length);
