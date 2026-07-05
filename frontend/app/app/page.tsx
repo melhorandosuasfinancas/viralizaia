@@ -195,6 +195,24 @@ export default function AppPage() {
         }).catch(() => {});
       }
     }
+
+    // Ler erros do NextAuth passados via URL params (ex: ?error=OAuthCallback)
+    const params = new URLSearchParams(window.location.search);
+    const authError = params.get('error');
+    if (authError) {
+      const msgs: Record<string, string> = {
+        OAuthSignin:          'Erro ao iniciar login com Google. Tente novamente.',
+        OAuthCallback:        'Erro no retorno do Google. Limpe os cookies e tente novamente.',
+        OAuthCreateAccount:   'Erro ao criar conta com Google.',
+        OAuthAccountNotLinked:'Esta conta já está cadastrada com outro método de login.',
+        Callback:             'Erro no callback de autenticação. Tente novamente.',
+        Configuration:        'Erro de configuração do servidor. Contate o suporte.',
+        Verification:         'Link inválido ou expirado.',
+        Default:              'Erro ao fazer login. Tente novamente.',
+      };
+      setLoginError(msgs[authError] || `Erro de autenticação (${authError}). Tente novamente.`);
+      window.history.replaceState({}, '', '/app');
+    }
     // History
     try {
       const h = localStorage.getItem("viralizaia_history");
@@ -208,13 +226,37 @@ export default function AppPage() {
     if (bw) setBrandWatermark(bw);
   }, []);
 
-  // ── OAuth auto-login ──
+  // ── OAuth auto-login (NextAuth session) ──
   useEffect(() => {
     if (sessionStatus === "authenticated" && session?.user?.email && step === "login" && !loggingIn) {
       handleOAuthLogin(session.user.email);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionStatus, session]);
+
+  // ── OAuth auto-login fallback (mobile: busca sessão via fetch se useSession falhar) ──
+  useEffect(() => {
+    if (step !== "login" || loggingIn) return;
+    // Só tenta se vier de um redirect OAuth (sem token local e sem error no URL)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error')) return;
+    const hasLocalToken = !!localStorage.getItem("viralizaia_token");
+    if (hasLocalToken) return;
+
+    const tryFetchSession = async () => {
+      try {
+        const res = await fetch('/api/auth/session');
+        const data = await res.json();
+        if (data?.user?.email && step === "login" && !loggingIn) {
+          handleOAuthLogin(data.user.email);
+        }
+      } catch { /* silent */ }
+    };
+    // Aguarda o carregamento do NextAuth antes de tentar o fallback
+    const timer = setTimeout(tryFetchSession, 2000);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Poll job status ──
   useEffect(() => {
