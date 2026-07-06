@@ -119,6 +119,7 @@ const HUB_DATA = [
 
 export default function AppPage() {
   const { data: session, status: sessionStatus } = useSession();
+  const oauthInitiatedRef = useRef(false);
 
   const [step, setStep] = useState<"login" | "register" | "app" | "trial-register">("login");
   const [email, setEmail] = useState("");
@@ -229,31 +230,30 @@ export default function AppPage() {
   // ── OAuth auto-login (NextAuth session) ──
   useEffect(() => {
     if (sessionStatus === "authenticated" && session?.user?.email && step === "login" && !loggingIn) {
+      oauthInitiatedRef.current = true;
       handleOAuthLogin(session.user.email);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionStatus, session]);
 
-  // ── OAuth auto-login fallback (mobile: busca sessão via fetch se useSession falhar) ──
+  // ── OAuth auto-login fallback (mobile: alguns browsers não disparam useSession após redirect) ──
   useEffect(() => {
-    if (step !== "login" || loggingIn) return;
-    // Só tenta se vier de um redirect OAuth (sem token local e sem error no URL)
     const params = new URLSearchParams(window.location.search);
     if (params.get('error')) return;
-    const hasLocalToken = !!localStorage.getItem("viralizaia_token");
-    if (hasLocalToken) return;
+    if (localStorage.getItem("viralizaia_token")) return;
 
     const tryFetchSession = async () => {
+      if (oauthInitiatedRef.current) return;
       try {
         const res = await fetch('/api/auth/session');
         const data = await res.json();
-        if (data?.user?.email && step === "login" && !loggingIn) {
+        if (data?.user?.email && !oauthInitiatedRef.current) {
+          oauthInitiatedRef.current = true;
           handleOAuthLogin(data.user.email);
         }
       } catch { /* silent */ }
     };
-    // Aguarda o carregamento do NextAuth antes de tentar o fallback
-    const timer = setTimeout(tryFetchSession, 2000);
+    const timer = setTimeout(tryFetchSession, 2500);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
