@@ -25,8 +25,8 @@ function getNextRenewalDate(resetDay) {
 
 // Maximo de clips por video (limite de processamento por job)
 const PLAN_MAX_CLIPS = {
-  trial:   2,
-  gratis:  2,
+  trial:   10,
+  gratis:  10,
   basico:  10,
   pro:     20,
   full:    50,
@@ -35,8 +35,8 @@ const PLAN_MAX_CLIPS = {
 
 // Creditos mensais por plano (resetam no mesmo dia da ativacao)
 const PLAN_MONTHLY_CREDITS = {
-  trial:   2,
-  gratis:  2,
+  trial:   10,
+  gratis:  10,
   basico:  10,
   pro:     20,
   full:    50,
