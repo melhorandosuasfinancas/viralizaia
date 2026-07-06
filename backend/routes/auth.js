@@ -1,9 +1,9 @@
 const express = require('express');
 const { sendWelcomeEmail, sendCancellationEmail } = require('../services/mailer');
 const router = express.Router();
-const fs = require('fs-extra');
 const path = require('path');
 const axios = require('axios');
+const { MongoClient } = require('mongodb');
 
 // ─── Notificação para o bot WhatsApp ──────────────────────────────────────────
 async function notifyBot(endpoint, data) {
@@ -22,8 +22,6 @@ function getNextRenewalDate(resetDay) {
   if (d.getTime() <= now.getTime()) d = new Date(now.getFullYear(), now.getMonth() + 1, resetDay);
   return d;
 }
-
-const DATA_FILE = path.join(__dirname, '../data/users.json');
 
 // Maximo de clips por video (limite de processamento por job)
 const PLAN_MAX_CLIPS = {
@@ -61,11 +59,43 @@ const AVULSO_PACKS = {
 };
 
 let store = { users: {}, trials: {} };
-fs.ensureDirSync(path.dirname(DATA_FILE));
-try { store = fs.readJsonSync(DATA_FILE); } catch { /* arquivo nao existe ainda */ }
+let _dbCol = null;
+
+(async () => {
+  try {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) throw new Error('MONGODB_URI nao configurada');
+    const client = new MongoClient(uri);
+    await client.connect();
+    _dbCol = client.db('viralizadb').collection('store');
+    const doc = await _dbCol.findOne({ _id: 'main' });
+    if (doc) {
+      store = { users: doc.users || {}, trials: doc.trials || {} };
+      console.log('[MongoDB] Store carregado:', Object.keys(store.users).length, 'usuarios');
+    } else {
+      // tenta migrar do arquivo local se existir
+      try {
+        const fsExtra = require('fs-extra');
+        const local = fsExtra.readJsonSync(path.join(__dirname, '../data/users.json'));
+        if (local && (local.users || local.trials)) {
+          store = { users: local.users || {}, trials: local.trials || {} };
+          await _dbCol.replaceOne({ _id: 'main' }, { _id: 'main', users: store.users, trials: store.trials }, { upsert: true });
+          console.log('[MongoDB] Migrado de users.json:', Object.keys(store.users).length, 'usuarios');
+        }
+      } catch { /* sem arquivo local */ }
+    }
+  } catch (e) {
+    console.error('[MongoDB] Erro ao conectar:', e.message, '— usando store em memoria');
+  }
+})();
 
 function saveStore() {
-  fs.writeJsonSync(DATA_FILE, store, { spaces: 2 });
+  if (!_dbCol) return;
+  _dbCol.replaceOne(
+    { _id: 'main' },
+    { _id: 'main', users: store.users, trials: store.trials },
+    { upsert: true }
+  ).catch(e => console.error('[MongoDB] Erro ao salvar:', e.message));
 }
 
 // ─── Sistema de Creditos ──────────────────────────────────────────────────────
