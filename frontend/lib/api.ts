@@ -184,13 +184,14 @@ export async function deleteJob(jobId: string): Promise<void> {
   await fetch(`${API_URL}/api/video/job/${jobId}`, { method: "DELETE" });
 }
 
-export async function checkIn(token: string): Promise<{ ok: boolean; message: string; credits?: Credits }> {
+export async function checkIn(token: string): Promise<{ ok: boolean; message: string; subscriberOnly?: boolean; streak?: number; credits?: Credits }> {
   const res = await fetch(`${API_URL}/api/auth/checkin`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   });
-  if (!res.ok) throw new Error("Erro no check-in");
-  return res.json();
+  const data = await res.json();
+  if (!res.ok && !data.subscriberOnly) throw new Error(data.message || "Erro no check-in");
+  return data;
 }
 
 export function getStatusLabel(status: string): string {

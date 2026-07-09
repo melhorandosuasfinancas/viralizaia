@@ -402,10 +402,13 @@ export default function AppPage() {
   }
 
   async function handleCheckIn() {
-    if (checkingIn || checkedInToday || !token) return;
+    if (!token) return;
+    if (isTrial) { setShowUpgradeModal(true); return; }
+    if (checkingIn || checkedInToday) return;
     setCheckingIn(true);
     try {
       const result = await checkIn(token);
+      if (result.subscriberOnly) { setShowUpgradeModal(true); return; }
       const today = new Date().toISOString().slice(0, 10);
       localStorage.setItem("viralizaia_last_checkin", today);
       setCheckedInToday(true);
@@ -644,13 +647,21 @@ export default function AppPage() {
         </div>
         <div className="flex items-center gap-2">
           {/* Daily check-in */}
-          <button onClick={handleCheckIn} disabled={checkingIn || checkedInToday}
+          <button onClick={handleCheckIn} disabled={checkingIn || (!isTrial && checkedInToday)}
+            title={isTrial ? "Check-in exclusivo para assinantes — até 30 créditos/mês" : undefined}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border backdrop-blur transition-all ${
-              checkedInToday
-                ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/25 cursor-default"
-                : "bg-fuchsia-500/10 text-fuchsia-200 border-fuchsia-400/30 hover:bg-fuchsia-500/20"
+              isTrial
+                ? "bg-white/5 text-white/30 border-white/10 hover:bg-fuchsia-500/10 hover:text-fuchsia-300 hover:border-fuchsia-400/30"
+                : checkedInToday
+                  ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/25 cursor-default"
+                  : "bg-fuchsia-500/10 text-fuchsia-200 border-fuchsia-400/30 hover:bg-fuchsia-500/20"
             }`}>
-            {checkinMsg ? <span className="animate-pulse">{checkinMsg}</span> : checkedInToday ? "✓ Check-in" : "🎁 Check-in +1"}
+            {isTrial
+              ? <><span>🔒</span> Check-in</>
+              : checkinMsg
+                ? <span className="animate-pulse">{checkinMsg}</span>
+                : checkedInToday ? "✓ Check-in" : "🎁 Check-in +1"
+            }
           </button>
           {/* Credits badge */}
           <span className={`text-xs px-2.5 py-1.5 rounded-lg border font-bold tabular-nums backdrop-blur ${
@@ -1260,6 +1271,10 @@ export default function AppPage() {
               <div className="text-4xl mb-3">🚀</div>
               <h2 className="text-lg font-bold text-white">Seus créditos grátis acabaram!</h2>
               <p className="text-white/60 text-sm mt-1">Assine e continue gerando cortes virais com o melhor custo-benefício do mercado</p>
+              <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-fuchsia-300/80 bg-fuchsia-500/10 rounded-lg px-3 py-2 border border-fuchsia-400/20">
+                <span>🎁</span>
+                <span>Assinantes ganham <strong>+1 crédito/dia</strong> no check-in — até 30 bônus por mês!</span>
+              </div>
             </div>
             <div className="p-4 space-y-2.5">
               {([
