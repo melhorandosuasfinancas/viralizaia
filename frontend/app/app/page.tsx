@@ -160,6 +160,7 @@ export default function AppPage() {
   const [job, setJob] = useState<Job | null>(null);
   const [processing, setProcessing] = useState(false);
   const [urlError, setUrlError] = useState("");
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Navigation & new features
@@ -380,6 +381,11 @@ export default function AppPage() {
     localStorage.setItem("viralizaia_plan", p);
     localStorage.setItem("viralizaia_email", loginEmail);
     if (creds) { setCredits(creds); localStorage.setItem("viralizaia_credits", JSON.stringify(creds)); }
+
+    if (trial && typeof window !== "undefined" && typeof (window as any).gtag === "function") {
+      (window as any).gtag("event", "conversion", { send_to: "AW-18297418601/gRLJCNKCoMscEOnm8ZRE" });
+    }
+
     setStep("app");
   }
 
@@ -446,7 +452,8 @@ export default function AppPage() {
       setProcessing(false);
       const msg = err instanceof Error ? err.message : "Erro ao processar";
       if (msg.toLowerCase().includes("cr") && msg.toLowerCase().includes("ditos")) {
-        setUrlError("Créditos insuficientes. Adquira mais créditos ou aguarde a renovação mensal.");
+        setUrlError("Créditos insuficientes.");
+        setShowUpgradeModal(true);
         if (email) fetchCredits(email).then(c => { setCredits(c); localStorage.setItem("viralizaia_credits", JSON.stringify(c)); }).catch(() => {});
       } else {
         setUrlError(msg);
@@ -738,7 +745,7 @@ export default function AppPage() {
                           <span className="text-rose-400 text-sm">⚠</span>
                           <div>
                             <p className="text-rose-300 text-xs">{urlError}</p>
-                            {urlError.includes("réditos") && <a href="/#planos" className="text-xs text-fuchsia-300 hover:underline mt-1 inline-block">Ver planos →</a>}
+                            {urlError.includes("réditos") && <button type="button" onClick={() => setShowUpgradeModal(true)} className="text-xs text-fuchsia-300 hover:underline mt-1 inline-block">Ver planos →</button>}
                           </div>
                         </div>
                       )}
@@ -1244,6 +1251,46 @@ export default function AppPage() {
           </div>
         </main>
       </div>
+
+      {/* ── UPGRADE MODAL ── */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setShowUpgradeModal(false)}>
+          <div className="w-full max-w-sm bg-[#0d0d0d] border border-white/10 rounded-2xl overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="bg-gradient-to-br from-fuchsia-900/60 to-violet-900/60 p-6 text-center border-b border-white/10">
+              <div className="text-4xl mb-3">🚀</div>
+              <h2 className="text-lg font-bold text-white">Seus créditos grátis acabaram!</h2>
+              <p className="text-white/60 text-sm mt-1">Assine e continue gerando cortes virais com o melhor custo-benefício do mercado</p>
+            </div>
+            <div className="p-4 space-y-2.5">
+              {([
+                { name: "Starter", credits: 110, price: "R$29,90", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888128" },
+                { name: "Pro", credits: 160, price: "R$49,90", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888178", popular: true },
+                { name: "Full", credits: 280, price: "R$99,90", href: "https://viralizacortes.carrinho.app/one-checkout/ocmtb/36888195" },
+              ] as Array<{ name: string; credits: number; price: string; href: string; popular?: boolean }>).map(pkg => (
+                <a key={pkg.name} href={pkg.href} target="_blank" rel="noopener noreferrer"
+                  className={`flex items-center justify-between px-4 py-3.5 rounded-xl border transition-all ${pkg.popular ? "border-fuchsia-400/60 bg-fuchsia-500/15 shadow-[0_0_20px_-4px_rgba(217,70,239,0.3)]" : "border-white/10 bg-white/5 hover:bg-white/10"}`}>
+                  <div>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="font-bold text-sm text-white">{pkg.name}</span>
+                      {pkg.popular && <span className="text-[10px] bg-fuchsia-500 text-white px-2 py-0.5 rounded-full font-bold">MELHOR CUSTO</span>}
+                    </div>
+                    <span className="text-xs text-white/50">{pkg.credits} créditos/mês · sem marca d&apos;água</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-bold text-fuchsia-300 text-base">{pkg.price}</span>
+                    <p className="text-[10px] text-white/40">por mês</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+            <div className="px-4 pb-5 text-center">
+              <button onClick={() => setShowUpgradeModal(false)} className="text-xs text-white/35 hover:text-white/60 transition-colors">
+                Agora não
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bottom navigation — mobile */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/10 flex z-50">
