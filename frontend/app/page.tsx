@@ -1166,6 +1166,55 @@ export default function HomePage() {
       {/* ── Floating mobile CTA ── */}
       <MobileFloatingCTA />
 
+      {/* ── App Google Play ── */}
+      <motion.section
+        className="relative z-10 px-6 py-16"
+        initial="hidden" whileInView="show" viewport={REVEAL} variants={stagger}
+      >
+        <motion.div variants={fadeUp} className="max-w-3xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-center gap-8 p-8 rounded-2xl border border-white/[0.08]"
+            style={{ background: "linear-gradient(135deg,rgba(34,211,238,0.06) 0%,rgba(168,85,247,0.06) 100%)" }}>
+            {/* Ícone mobile */}
+            <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-violet-600 flex items-center justify-center shadow-[0_8px_30px_rgba(168,85,247,0.4)]">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+                <path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/>
+              </svg>
+            </div>
+
+            {/* Texto */}
+            <div className="flex-1 text-center sm:text-left">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider mb-2">
+                <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" /></span>
+                Disponível agora
+              </div>
+              <h3 className="text-xl font-bold text-white mb-1">Viraliza Cortes no Android</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                Acesse seus cortes pelo celular. <span className="text-zinc-300 font-medium">Faça o cadastro no site primeiro</span> — planos e pagamento são gerenciados aqui. O app é a ferramenta.
+              </p>
+            </div>
+
+            {/* Badge Google Play */}
+            <a
+              href="https://play.google.com/store/apps/details?id=com.viralizacortes.viraliza_cortes"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-shrink-0 flex items-center gap-3 px-5 py-3 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 hover:border-white/25 transition-all group"
+            >
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <path d="M3.18 23.76c.31.17.67.19 1 .07l11.9-6.87-2.58-2.58-10.32 9.38z" fill="#EA4335"/>
+                <path d="M20.82 10.01c-.54-.31-5.74-3.32-7.05-4.07L3.18.24C2.85.12 2.49.14 2.18.31L13.14 11.27l7.68-1.26z" fill="#FBBC05"/>
+                <path d="M2.18.31A1.2 1.2 0 0 0 1.6 1.4v21.2c0 .44.22.84.58 1.16L13.14 11.27 2.18.31z" fill="#4285F4"/>
+                <path d="M20.82 10.01l-7.68 1.26 2.58 2.58 5.1-2.95c.75-.43.75-1.46 0-1.89z" fill="#34A853"/>
+              </svg>
+              <div className="text-left">
+                <div className="text-[10px] text-zinc-400 leading-none mb-0.5 group-hover:text-zinc-300 transition-colors">Disponível no</div>
+                <div className="text-sm font-bold text-white leading-none">Google Play</div>
+              </div>
+            </a>
+          </div>
+        </motion.div>
+      </motion.section>
+
       {/* ── Footer ── */}
       <footer className="relative z-10 px-6 pt-16 pb-10 border-t border-white/[0.06]">
         <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-10">
@@ -1177,7 +1226,7 @@ export default function HomePage() {
             <p className="text-xs text-zinc-500 leading-relaxed">IA 100% brasileira pra transformar vídeos longos em cortes virais.</p>
           </div>
           {[
-            { title: "Produto", links: [["Recursos","#recursos"],["Planos","#planos"],["Como funciona","#como-funciona"]] },
+            { title: "Produto", links: [["Recursos","#recursos"],["Planos","#planos"],["Como funciona","#como-funciona"],["App Android","https://play.google.com/store/apps/details?id=com.viralizacortes.viraliza_cortes"]] },
             { title: "Empresa", links: [["Blog","/blog"],["Contato","mailto:contato@viralizacortes.com.br"],["FAQ","#faq"]] },
             { title: "Legal", links: [["Privacidade","/privacidade"],["Excluir conta","/excluir-conta"]] },
           ].map((col) => (

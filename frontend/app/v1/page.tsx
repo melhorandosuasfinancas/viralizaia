@@ -447,7 +447,8 @@ export default function LandingPage() {
 
             {/* Google Play badge */}
             <div className="flex justify-center lg:justify-start mt-5">
-              <div className="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
+              <a href="https://play.google.com/store/apps/details?id=com.viralizacortes.viraliza_cortes" target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 hover:border-white/20 transition-all">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                   <path d="M3.18 23.76c.31.17.67.19 1 .07l11.9-6.87-2.58-2.58-10.32 9.38z" fill="#EA4335"/>
                   <path d="M20.82 10.01c-.54-.31-5.74-3.32-7.05-4.07L3.18.24C2.85.12 2.49.14 2.18.31L13.14 11.27l7.68-1.26z" fill="#FBBC05"/>
@@ -455,10 +456,10 @@ export default function LandingPage() {
                   <path d="M20.82 10.01l-7.68 1.26 2.58 2.58 5.1-2.95c.75-.43.75-1.46 0-1.89z" fill="#34A853"/>
                 </svg>
                 <div className="text-left">
-                  <div className="text-[10px] text-gray-400 leading-none mb-0.5">Em breve no</div>
+                  <div className="text-[10px] text-gray-400 leading-none mb-0.5">Disponível no</div>
                   <div className="text-sm font-bold text-white leading-none">Google Play</div>
                 </div>
-              </div>
+              </a>
             </div>
 
             {/* Plataformas — visível só no mobile abaixo do CTA */}
