@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://viralizaia.duckdns.org";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.viralizacortes.com.br";
 
 type User = {
   email: string;
